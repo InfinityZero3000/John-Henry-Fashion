@@ -75,22 +75,32 @@ async function addToCartWithValidation(productId, quantity = 1, size = null, col
         };
     }
     
-    // Create form data
-    const formData = new FormData();
-    formData.append('productId', productId.trim());
-    formData.append('quantity', parseInt(quantity));
-    if (size) formData.append('size', size);
-    if (color) formData.append('color', color);
+    // Create request data as JSON
+    const requestData = {
+        productId: productId.trim(),
+        quantity: parseInt(quantity)
+    };
     
-    console.log('Sending request to /Products/AddToCart');
+    if (size) requestData.size = size;
+    if (color) requestData.color = color;
+    
+    console.log('Sending request to /Products/AddToCart with data:', requestData);
     
     try {
         const response = await fetch('/Products/AddToCart', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(requestData)
         });
         
         console.log('📥 Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const result = await response.json();
         console.log('📥 Response data:', result);

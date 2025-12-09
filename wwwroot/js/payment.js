@@ -13,15 +13,22 @@ $(document).ready(function() {
     // Show appropriate payment section based on selected method
     showPaymentSection();
     
-    // Auto-generate QR code for VNPay or MoMo
+    // Auto-generate QR code for VNPay or MoMo ONLY if payment method is already selected
+    // Don't auto-generate if user needs to select first
     const selectedMethod = $('input[name="SelectedPaymentMethod"]').val();
-    console.log('Selected payment method:', selectedMethod); // Debug log
+    const hasPaymentMethodSelection = $('.payment-methods-selection').length > 0;
     
-    if (selectedMethod === 'vnpay' || selectedMethod === 'momo') {
-        console.log('Generating QR code for', selectedMethod); // Debug log
+    console.log('Payment page loaded - SelectedMethod:', selectedMethod, 'HasSelectionUI:', hasPaymentMethodSelection);
+    
+    // Only auto-generate if method is selected AND no selection UI is shown
+    if (selectedMethod && !hasPaymentMethodSelection && (selectedMethod === 'vnpay' || selectedMethod === 'momo')) {
+        console.log('Auto-generating QR code for', selectedMethod);
+        // Delay a bit to ensure page is fully loaded
+        setTimeout(() => {
         generateAndShowQRCode(selectedMethod);
+        }, 500);
     } else {
-        console.log('Payment method not vnpay/momo, skipping QR generation'); // Debug log
+        console.log('Skipping auto QR generation - Method:', selectedMethod, 'HasSelectionUI:', hasPaymentMethodSelection);
     }
 });
 
@@ -263,11 +270,23 @@ function showPaymentTimeout() {
 }
 
 function validatePaymentForm() {
-    const selectedPaymentMethod = $('input[name="SelectedPaymentMethod"]').val();
+    // Check if payment method is selected from radio buttons
+    const radioMethod = $('input[name="paymentMethodRadio"]:checked').val();
+    const hiddenMethod = $('input[name="SelectedPaymentMethod"]').val();
+    const selectedPaymentMethod = radioMethod || hiddenMethod;
     
     if (!selectedPaymentMethod) {
         showError('Vui lòng chọn phương thức thanh toán');
+        // Scroll to payment method selection
+        $('html, body').animate({
+            scrollTop: $('.payment-methods-selection').offset().top - 100
+        }, 500);
         return false;
+    }
+    
+    // Update hidden field if radio button is selected
+    if (radioMethod && radioMethod !== hiddenMethod) {
+        $('input[name="SelectedPaymentMethod"]').val(radioMethod);
     }
 
     // Validate specific payment methods
@@ -298,13 +317,23 @@ function validateBankTransferForm() {
 
 function processPayment() {
     const selectedPaymentMethod = $('input[name="SelectedPaymentMethod"]').val();
+    const radioMethod = $('input[name="paymentMethodRadio"]:checked').val();
+    const finalMethod = radioMethod || selectedPaymentMethod;
+    
+    // Update hidden field
+    if (finalMethod) {
+        $('input[name="SelectedPaymentMethod"]').val(finalMethod);
+        $('#PaymentMethod').val(finalMethod);
+    }
     
     // Show loading modal
     $('#paymentLoadingModal').modal('show');
     
-    if (selectedPaymentMethod === 'stripe') {
+    if (finalMethod === 'stripe') {
         processStripePayment();
     } else {
+        // For other methods (including VNPay/MoMo), submit form normally
+        // Payment gateway URL will be returned and user will be redirected
         processStandardPayment();
     }
 }
@@ -339,44 +368,104 @@ function processStandardPayment() {
 }
 
 function getPaymentFormData() {
-    const selectedPaymentMethod = $('input[name="SelectedPaymentMethod"]').val();
+    // Check both radio button and hidden field
+    const radioMethod = $('input[name="paymentMethodRadio"]:checked').val();
+    const hiddenMethod = $('input[name="SelectedPaymentMethod"]').val();
+    const selectedPaymentMethod = radioMethod || hiddenMethod;
+    
+    // Update both hidden fields
+    if (selectedPaymentMethod) {
+        $('input[name="SelectedPaymentMethod"]').val(selectedPaymentMethod);
+        $('#PaymentMethod').val(selectedPaymentMethod);
+    }
     
     return {
-        sessionId: $('#SessionId').val(),
-        paymentMethod: selectedPaymentMethod,
-        paymentMethodId: $('input[name="PaymentMethodId"]').val()
+        SessionId: $('#SessionId').val(),
+        PaymentMethod: selectedPaymentMethod,
+        PaymentMethodId: $('input[name="PaymentMethodId"]').val() || null
     };
 }
 
 function submitPaymentForm(formData) {
+    console.log('Submitting payment form with data:', formData);
+    
+    // Ensure PaymentMethod is set
+    if (!formData.PaymentMethod) {
+        showError('Vui lòng chọn phương thức thanh toán');
+        return;
+    }
+    
+    // Convert to form data format for ASP.NET Core model binding
+    // ASP.NET Core expects PascalCase property names
+    const formDataObj = {
+        SessionId: formData.SessionId,
+        PaymentMethod: formData.PaymentMethod,
+        PaymentMethodId: formData.PaymentMethodId || null
+    };
+    
+    const csrfToken = $('input[name="__RequestVerificationToken"]').val();
+    
+    console.log('Sending form data:', formDataObj);
+    console.log('CSRF Token:', csrfToken ? 'Present' : 'Missing');
+    
     $.ajax({
         url: $('#paymentForm').attr('action'),
         method: 'POST',
-        data: formData,
+        data: formDataObj,
         headers: {
-            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            'RequestVerificationToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
         },
         success: function(response) {
+            console.log('Payment response:', response);
             $('#paymentLoadingModal').modal('hide');
             
             if (response.success) {
                 if (response.redirectUrl) {
                     // Redirect to payment gateway or success page
+                    console.log('Redirecting to:', response.redirectUrl);
                     window.location.href = response.redirectUrl;
                 } else {
                     showSuccess(response.message || 'Thanh toán thành công');
                 }
             } else {
-                showError(response.message || 'Thanh toán thất bại');
+                const errorMsg = response.message || 'Thanh toán thất bại';
+                if (response.errors) {
+                    console.error('Validation errors:', response.errors);
+                }
+                showError(errorMsg);
             }
         },
-        error: function(xhr) {
+        error: function(xhr, status, error) {
+            console.error('Payment error:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
             $('#paymentLoadingModal').modal('hide');
             
             let errorMessage = 'Có lỗi xảy ra khi xử lý thanh toán';
             
-            if (xhr.responseJSON && xhr.responseJSON.message) {
+            if (xhr.responseJSON) {
+                if (xhr.responseJSON.message) {
                 errorMessage = xhr.responseJSON.message;
+                }
+                if (xhr.responseJSON.errors) {
+                    console.error('Model errors:', xhr.responseJSON.errors);
+                    const errorList = xhr.responseJSON.errors.map(e => e.Errors.join(', ')).join('; ');
+                    errorMessage += ': ' + errorList;
+                }
+            } else if (xhr.responseText) {
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    if (errorData.message) {
+                        errorMessage = errorData.message;
+                    }
+                } catch (e) {
+                    errorMessage = `Lỗi ${xhr.status}: ${xhr.statusText}`;
+                }
             }
             
             showError(errorMessage);

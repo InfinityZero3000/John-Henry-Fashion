@@ -317,15 +317,25 @@ function quickAddToCart(productId, productName, productSku, hasSize, hasColor) {
 
 // Quick add to cart without selection (for products without size/color)
 function quickAddToCartDirect(productSku) {
-    const formData = new FormData();
-    formData.append('productId', productSku);
-    formData.append('quantity', 1);
+    const requestData = {
+        productId: productSku,
+        quantity: 1
+    };
 
     fetch('/Products/AddToCart', {
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             showToast('Thành công', data.message || 'Đã thêm vào giỏ hàng', 'success');
@@ -501,27 +511,37 @@ function changeQuickQuantity(change) {
 
 // Confirm quick add to cart
 function confirmQuickAdd(productSku, modalId) {
-    const quantity = document.getElementById('quickQty').value;
+    const quantity = parseInt(document.getElementById('quickQty').value) || 1;
     const selectedSizeBtn = document.querySelector('.size-btn-quick.active');
     const selectedColorBtn = document.querySelector('.color-swatch-quick.active');
     
-    const formData = new FormData();
-    formData.append('productId', productSku);
-    formData.append('quantity', quantity);
+    const requestData = {
+        productId: productSku,
+        quantity: quantity
+    };
     
     if (selectedSizeBtn) {
-        formData.append('size', selectedSizeBtn.dataset.size);
+        requestData.size = selectedSizeBtn.dataset.size;
     }
     
     if (selectedColorBtn) {
-        formData.append('color', selectedColorBtn.dataset.color);
+        requestData.color = selectedColorBtn.dataset.color;
     }
 
     fetch('/Products/AddToCart', {
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Close modal
