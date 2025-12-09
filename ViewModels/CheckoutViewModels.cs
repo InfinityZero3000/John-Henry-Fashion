@@ -46,6 +46,8 @@ namespace JohnHenryFashionWeb.ViewModels
         [Required(ErrorMessage = "Phương thức vận chuyển là bắt buộc")]
         public string ShippingMethod { get; set; } = "";
 
+        public string? PaymentMethod { get; set; }
+
         public string? CouponCode { get; set; }
         public string? Notes { get; set; }
     }

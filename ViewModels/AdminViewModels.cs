@@ -331,6 +331,10 @@ namespace JohnHenryFashionWeb.ViewModels
         public string PrimaryRole => Roles.FirstOrDefault() ?? "Customer";
         public string StatusText => IsActive ? "Hoạt động" : "Đã khóa";
         public string StatusClass => IsActive ? "success" : "danger";
+        
+        // Lockout properties
+        public bool IsLockedOut { get; set; }
+        public DateTime? LockoutEnd { get; set; }
     }
 
     // Inventory Management ViewModels
@@ -767,6 +771,11 @@ namespace JohnHenryFashionWeb.ViewModels
         public DateTime JoinDate { get; set; }
         public DateTime? LastActivity { get; set; }
         public Dictionary<string, object> AdditionalInfo { get; set; } = new();
+        
+        // Lockout information
+        public bool IsLockedOut { get; set; }
+        public DateTime? LockoutEnd { get; set; }
+        public int FailedLoginAttempts { get; set; }
     }
 
     public class UserCreateViewModel

@@ -20,6 +20,18 @@ namespace JohnHenryFashionWeb.ViewModels
         public string? ReturnUrl { get; set; }
     }
 
+    public class UnlockAdminViewModel
+    {
+        [Required(ErrorMessage = "Email là bắt buộc")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Display(Name = "Email Admin")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Mã bảo mật là bắt buộc")]
+        [Display(Name = "Mã bảo mật")]
+        public string SecretKey { get; set; } = string.Empty;
+    }
+
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "Họ là bắt buộc")]
