@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <rect width="1200" height="1600" fill="#f8f9fa"/>
+  
+  <text x="600" y="40" font-family="Arial" font-size="22" font-weight="bold" fill="#2c3e50" text-anchor="middle">USER FLOW - John Henry Fashion</text>
+  
+  <rect x="50" y="80" width="1100" height="120" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="6"/>
+  <text x="70" y="110" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">PHASE 1: Google OAuth</text>
+  
+  <rect x="100" y="130" width="140" height="40" fill="#3498db" rx="4"/>
+  <text x="170" y="155" font-family="Arial" font-size="11" fill="white" text-anchor="middle">User Login</text>
+  
+  <line x1="240" y1="150" x2="270" y2="150" stroke="#000" stroke-width="2"/>
+  <polygon points="270,150 265,147 265,153" fill="#000"/>
+  
+  <rect x="270" y="130" width="140" height="40" fill="#ea4335" rx="4"/>
+  <text x="340" y="155" font-family="Arial" font-size="11" fill="white" text-anchor="middle">Google OAuth</text>
+  
+  <line x1="410" y1="150" x2="440" y2="150" stroke="#000" stroke-width="2"/>
+  <polygon points="440,150 435,147 435,153" fill="#000"/>
+  
+  <ellipse cx="520" cy="150" rx="80" ry="30" fill="#27ae60"/>
+  <text x="520" y="155" font-family="Arial" font-size="11" fill="white" text-anchor="middle">AspNetUsers</text>
+  
+  <rect x="50" y="220" width="1100" height="160" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="6"/>
+  <text x="70" y="250" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">PHASE 2: Add to Cart</text>
+  
+  <rect x="100" y="270" width="130" height="40" fill="#3498db" rx="4"/>
+  <text x="165" y="295" font-family="Arial" font-size="11" fill="white" text-anchor="middle">Add Product</text>
+  
+  <line x1="230" y1="290" x2="260" y2="290" stroke="#000" stroke-width="2"/>
+  <polygon points="260,290 255,287 255,293" fill="#000"/>
+  
+  <rect x="260" y="270" width="130" height="40" fill="#e74c3c" rx="4"/>
+  <text x="325" y="295" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Auth Check</text>
+  
+  <line x1="390" y1="290" x2="420" y2="290" stroke="#000" stroke-width="2"/>
+  <polygon points="420,290 415,287 415,293" fill="#000"/>
+  
+  <ellipse cx="500" cy="290" rx="80" ry="30" fill="#27ae60"/>
+  <text x="500" y="292" font-family="Arial" font-size="10" fill="white" text-anchor="middle">ShoppingCartItems</text>
+  <text x="500" y="305" font-family="Arial" font-size="8" fill="white" text-anchor="middle">UserId + ProductId</text>
+  
+  <text x="650" y="285" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">Requires Authentication</text>
+  <text x="650" y="305" font-family="Arial" font-size="10" fill="#7f8c8d">Cart linked to UserId</text>
+  
+  <rect x="50" y="400" width="1100" height="180" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="6"/>
+  <text x="70" y="430" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">PHASE 3: Checkout</text>
+  
+  <rect x="100" y="450" width="120" height="40" fill="#3498db" rx="4"/>
+  <text x="160" y="475" font-family="Arial" font-size="10" fill="white" text-anchor="middle">View Cart</text>
+  
+  <line x1="220" y1="470" x2="250" y2="470" stroke="#000" stroke-width="2"/>
+  <polygon points="250,470 245,467 245,473" fill="#000"/>
+  
+  <rect x="250" y="450" width="120" height="40" fill="#3498db" rx="4"/>
+  <text x="310" y="475" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Select Items</text>
+  
+  <line x1="370" y1="470" x2="400" y2="470" stroke="#000" stroke-width="2"/>
+  <polygon points="400,470 395,467 395,473" fill="#000"/>
+  
+  <rect x="400" y="450" width="120" height="40" fill="#3498db" rx="4"/>
+  <text x="460" y="475" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Checkout</text>
+  
+  <line x1="460" y1="490" x2="460" y2="510" stroke="#000" stroke-width="2"/>
+  <polygon points="460,510 457,505 463,505" fill="#000"/>
+  
+  <rect x="400" y="510" width="120" height="40" fill="#3498db" rx="4"/>
+  <text x="460" y="535" font-family="Arial" font-size="10" fill="white" text-anchor="middle">CreateSession</text>
+  
+  <line x1="520" y1="530" x2="550" y2="530" stroke="#000" stroke-width="2"/>
+  <polygon points="550,530 545,527 545,533" fill="#000"/>
+  
+  <ellipse cx="640" cy="530" rx="90" ry="30" fill="#27ae60"/>
+  <text x="640" y="532" font-family="Arial" font-size="10" fill="white" text-anchor="middle">CheckoutSessions</text>
+  <text x="640" y="545" font-family="Arial" font-size="8" fill="white" text-anchor="middle">UserId + SessionId</text>
+  
+  <text x="100" y="485" font-family="Arial" font-size="9" fill="#7f8c8d">Session stores IDs only</text>
+  <text x="100" y="545" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">Query: WHERE UserId = current</text>
+  
+  <rect x="50" y="600" width="1100" height="180" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="6"/>
+  <text x="70" y="630" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">PHASE 4: Payment</text>
+  
+  <rect x="100" y="650" width="120" height="40" fill="#3498db" rx="4"/>
+  <text x="160" y="675" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Payment Page</text>
+  
+  <line x1="220" y1="670" x2="250" y2="670" stroke="#000" stroke-width="2"/>
+  <polygon points="250,670 245,667 245,673" fill="#000"/>
+  
+  <rect x="250" y="650" width="120" height="40" fill="#e74c3c" rx="4"/>
+  <text x="310" y="675" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Validate Session</text>
+  
+  <line x1="370" y1="670" x2="400" y2="670" stroke="#000" stroke-width="2"/>
+  <polygon points="400,670 395,667 395,673" fill="#000"/>
+  
+  <rect x="400" y="650" width="120" height="40" fill="#9b59b6" rx="4"/>
+  <text x="460" y="675" font-family="Arial" font-size="10" fill="white" text-anchor="middle">PaymentService</text>
+  
+  <line x1="520" y1="670" x2="550" y2="670" stroke="#000" stroke-width="2"/>
+  <polygon points="550,670 545,667 545,673" fill="#000"/>
+  
+  <ellipse cx="640" cy="670" rx="80" ry="30" fill="#27ae60"/>
+  <text x="640" y="672" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Orders</text>
+  <text x="640" y="685" font-family="Arial" font-size="8" fill="white" text-anchor="middle">UserId + OrderId</text>
+  
+  <text x="100" y="720" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">Order.UserId = session.UserId</text>
+  <text x="100" y="740" font-family="Arial" font-size="9" fill="#7f8c8d">Session expires after 1 hour</text>
+  
+  <rect x="50" y="800" width="1100" height="160" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="6"/>
+  <text x="70" y="830" font-family="Arial" font-size="14" font-weight="bold" fill="#2c3e50">PHASE 5: Success</text>
+  
+  <rect x="100" y="850" width="130" height="40" fill="#27ae60" rx="4"/>
+  <text x="165" y="875" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Payment Success</text>
+  
+  <line x1="230" y1="870" x2="260" y2="870" stroke="#000" stroke-width="2"/>
+  <polygon points="260,870 255,867 255,873" fill="#000"/>
+  
+  <rect x="260" y="850" width="130" height="40" fill="#3498db" rx="4"/>
+  <text x="325" y="875" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Update Order</text>
+  
+  <line x1="390" y1="870" x2="420" y2="870" stroke="#000" stroke-width="2"/>
+  <polygon points="420,870 415,867 415,873" fill="#000"/>
+  
+  <rect x="420" y="850" width="130" height="40" fill="#3498db" rx="4"/>
+  <text x="485" y="875" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Clear Cart</text>
+  
+  <line x1="550" y1="870" x2="580" y2="870" stroke="#000" stroke-width="2"/>
+  <polygon points="580,870 575,867 575,873" fill="#000"/>
+  
+  <rect x="580" y="850" width="130" height="40" fill="#27ae60" rx="4"/>
+  <text x="645" y="875" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Success Page</text>
+  
+  <line x1="645" y1="890" x2="645" y2="910" stroke="#000" stroke-width="2"/>
+  <polygon points="645,910 642,905 648,905" fill="#000"/>
+  
+  <rect x="580" y="910" width="130" height="40" fill="#e74c3c" rx="4"/>
+  <text x="645" y="935" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Validate Order</text>
+  
+  <text x="100" y="920" font-family="Arial" font-size="10" fill="#e74c3c" font-weight="bold">Cart cleared for current user</text>
+  
+  <rect x="50" y="980" width="1100" height="140" fill="#fff3cd" stroke="#ffc107" stroke-width="2" rx="6"/>
+  <text x="600" y="1010" font-family="Arial" font-size="14" font-weight="bold" fill="#856404" text-anchor="middle">SECURITY VALIDATION</text>
+  <text x="100" y="1040" font-family="Arial" font-size="11" fill="#2c3e50">+ Authentication: All actions require UserId</text>
+  <text x="100" y="1060" font-family="Arial" font-size="11" fill="#2c3e50">+ Authorization: Every query filters by UserId = current user</text>
+  <text x="100" y="1080" font-family="Arial" font-size="11" fill="#2c3e50">+ Data Isolation: User A cannot access User B data</text>
+  <text x="100" y="1100" font-family="Arial" font-size="11" fill="#2c3e50">+ Foreign Keys: Database enforces relationships</text>
+  
+  <rect x="50" y="1140" width="1100" height="220" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" rx="6"/>
+  <text x="70" y="1170" font-family="Arial" font-size="14" font-weight="bold" fill="#1b5e20">DATABASE RELATIONSHIPS</text>
+  
+  <ellipse cx="250" cy="1220" rx="70" ry="28" fill="#2196f3"/>
+  <text x="250" y="1225" font-family="Arial" font-size="10" fill="white" text-anchor="middle">AspNetUsers</text>
+  
+  <line x1="320" y1="1210" x2="370" y2="1200" stroke="#1976d2" stroke-width="2"/>
+  <polygon points="370,1200 365,1197 366,1203" fill="#1976d2"/>
+  <text x="345" y="1200" font-family="Arial" font-size="9" fill="#1976d2">1:N</text>
+  
+  <ellipse cx="450" cy="1200" rx="80" ry="25" fill="#4caf50"/>
+  <text x="450" y="1203" font-family="Arial" font-size="9" fill="white" text-anchor="middle">ShoppingCartItems</text>
+  
+  <line x1="320" y1="1220" x2="370" y2="1220" stroke="#1976d2" stroke-width="2"/>
+  <polygon points="370,1220 365,1217 365,1223" fill="#1976d2"/>
+  <text x="345" y="1215" font-family="Arial" font-size="9" fill="#1976d2">1:N</text>
+  
+  <ellipse cx="450" cy="1240" rx="80" ry="25" fill="#4caf50"/>
+  <text x="450" y="1243" font-family="Arial" font-size="9" fill="white" text-anchor="middle">CheckoutSessions</text>
+  
+  <line x1="320" y1="1230" x2="370" y2="1260" stroke="#1976d2" stroke-width="2"/>
+  <polygon points="370,1260 365,1257 366,1263" fill="#1976d2"/>
+  <text x="345" y="1250" font-family="Arial" font-size="9" fill="#1976d2">1:N</text>
+  
+  <ellipse cx="450" cy="1280" rx="80" ry="25" fill="#4caf50"/>
+  <text x="450" y="1283" font-family="Arial" font-size="9" fill="white" text-anchor="middle">Orders</text>
+  
+  <line x1="530" y1="1200" x2="630" y2="1200" stroke="#f57c00" stroke-width="2"/>
+  <polygon points="630,1200 625,1197 625,1203" fill="#f57c00"/>
+  <text x="580" y="1195" font-family="Arial" font-size="9" fill="#f57c00">N:1</text>
+  
+  <ellipse cx="700" cy="1200" rx="70" ry="25" fill="#ff9800"/>
+  <text x="700" y="1203" font-family="Arial" font-size="9" fill="white" text-anchor="middle">Products</text>
+  
+  <line x1="530" y1="1280" x2="600" y2="1280" stroke="#7b1fa2" stroke-width="2"/>
+  <polygon points="600,1280 595,1277 595,1283" fill="#7b1fa2"/>
+  <text x="565" y="1275" font-family="Arial" font-size="9" fill="#7b1fa2">1:N</text>
+  
+  <ellipse cx="670" cy="1280" rx="70" ry="25" fill="#9c27b0"/>
+  <text x="670" y="1283" font-family="Arial" font-size="9" fill="white" text-anchor="middle">OrderItems</text>
+  
+  <text x="100" y="1210" font-family="Arial" font-size="10" fill="#1b5e20" font-weight="bold">All tables linked</text>
+  <text x="100" y="1228" font-family="Arial" font-size="10" fill="#1b5e20" font-weight="bold">via UserId Foreign Keys</text>
+  <text x="100" y="1253" font-family="Arial" font-size="9" fill="#4caf50">- Database-level enforcement</text>
+  <text x="100" y="1271" font-family="Arial" font-size="9" fill="#4caf50">- Cascading deletes configured</text>
+  <text x="100" y="1289" font-family="Arial" font-size="9" fill="#4caf50">- Referential integrity guaranteed</text>
+  
+  <text x="600" y="1500" font-family="Arial" font-size="10" fill="#95a5a6" text-anchor="middle">Generated: October 26, 2025 | John Henry Fashion</text>
+</svg>
