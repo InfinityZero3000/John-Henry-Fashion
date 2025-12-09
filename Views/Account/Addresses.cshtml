@@ -1,26 +1,92 @@
 @model List<Address>
+@inject UserManager<ApplicationUser> UserManager
+
 @{
-    ViewData["Title"] = "Quản lý địa chỉ";
+    ViewData["Title"] = "Địa chỉ của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentUser = await UserManager.GetUserAsync(User);
 }
 
-<div class="container-fluid px-4">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0 text-gray-800">Quản lý địa chỉ</h1>
-                <a href="@Url.Action("AddAddress", "Account")" class="btn btn-primary">
-                    <i class="fas fa-plus fa-sm text-white-50"></i>
-                    Thêm địa chỉ mới
-                </a>
+        <!-- Sidebar Navigation -->
+        <nav class="col-md-3 col-lg-2 d-md-block user-sidebar">
+            <div class="sidebar-content">
+                <div class="text-center mb-3">
+                    <div class="user-avatar">
+                        <img src="@(currentUser?.Avatar ?? "/images/default-avatar.svg")" alt="Avatar" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='/images/default-avatar.svg';">
+                    </div>
+                    <h5 class="mt-2">@(currentUser?.FullName ?? "User")</h5>
+                    <p class="text-muted">@currentUser?.Email</p>
+                </div>
+                
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Profile", "UserDashboard")">
+                            <i data-lucide="user" class="me-2"></i>
+                            Hồ sơ 
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Orders", "UserDashboard")">
+                            <i data-lucide="shopping-bag" class="me-2"></i>
+                            Đơn hàng 
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Wishlist">
+                            <i data-lucide="heart" class="me-2"></i>
+                            Yêu thích
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="@Url.Action("Addresses", "Account")">
+                            <i data-lucide="map-pin" class="me-2"></i>
+                            Địa chỉ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("ChangePassword", "Account")">
+                            <i data-lucide="lock" class="me-2"></i>
+                            Đổi mật khẩu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Notifications", "UserDashboard")">
+                            <i data-lucide="bell" class="me-2"></i>
+                            Thông báo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-action="Logout" asp-controller="Account" method="post" style="display: inline; width: 100%;">
+                            <button type="submit" class="nav-link w-100 text-start" style="background: none; border: none; color: #000000;">
+                                <i data-lucide="log-out" class="me-2"></i>
+                                Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Địa chỉ của tôi</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="@Url.Action("AddAddress", "Account")" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm địa chỉ mới
+                    </a>
+                </div>
             </div>
 
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     @TempData["SuccessMessage"]
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
 
@@ -29,60 +95,66 @@
                 <div class="row">
                     @foreach (var address in Model)
                     {
-                        <div class="col-lg-6 col-xl-4 mb-4">
-                            <div class="card border-left-primary shadow h-100">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow h-100 @(address.IsDefault ? "border-primary" : "")">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="card-title">
+                                        <h6 class="card-title mb-0">
                                             @address.FirstName @address.LastName
                                             @if (address.IsDefault)
                                             {
-                                                <span class="badge badge-primary ml-2">Mặc định</span>
+                                                <span class="badge bg-primary ms-2">Mặc định</span>
                                             }
-                                        </h5>
+                                        </h6>
                                         <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="@Url.Action("EditAddress", "Account", new { id = address.Id })">
-                                                    <i class="fas fa-edit mr-2"></i>Chỉnh sửa
-                                                </a>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="@Url.Action("EditAddress", "Account", new { id = address.Id })">
+                                                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                                    </a>
+                                                </li>
                                                 @if (!address.IsDefault)
                                                 {
-                                                    <button class="dropdown-item" onclick="setDefaultAddress('@address.Id')">
-                                                        <i class="fas fa-star mr-2"></i>Đặt làm mặc định
-                                                    </button>
-                                                    <div class="dropdown-divider"></div>
-                                                    <button class="dropdown-item text-danger" onclick="deleteAddress('@address.Id')">
-                                                        <i class="fas fa-trash mr-2"></i>Xóa
-                                                    </button>
+                                                    <li>
+                                                        <button class="dropdown-item" onclick="setDefaultAddress('@address.Id')">
+                                                            <i class="fas fa-star me-2"></i>Đặt làm mặc định
+                                                        </button>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <button class="dropdown-item text-danger" onclick="deleteAddress('@address.Id')">
+                                                            <i class="fas fa-trash me-2"></i>Xóa
+                                                        </button>
+                                                    </li>
                                                 }
-                                            </div>
+                                            </ul>
                                         </div>
                                     </div>
 
                                     @if (!string.IsNullOrEmpty(address.Company))
                                     {
-                                        <p class="mb-1 text-muted">@address.Company</p>
+                                        <p class="mb-1 text-muted small">@address.Company</p>
                                     }
                                     
-                                    <p class="mb-1">@address.Address1</p>
+                                    <p class="mb-1 small">@address.Address1</p>
                                     @if (!string.IsNullOrEmpty(address.Address2))
                                     {
-                                        <p class="mb-1">@address.Address2</p>
+                                        <p class="mb-1 small">@address.Address2</p>
                                     }
-                                    <p class="mb-1">@address.City, @address.State @address.PostalCode</p>
-                                    <p class="mb-1">@address.Country</p>
+                                    <p class="mb-1 small">@address.City, @address.State @address.PostalCode</p>
+                                    <p class="mb-1 small">@address.Country</p>
                                     
                                     @if (!string.IsNullOrEmpty(address.Phone))
                                     {
-                                        <p class="mb-0 text-muted">
-                                            <i class="fas fa-phone fa-sm mr-1"></i>@address.Phone
+                                        <p class="mb-0 text-muted small">
+                                            <i class="fas fa-phone fa-sm me-1"></i>@address.Phone
                                         </p>
                                     }
                                 </div>
-                                <div class="card-footer bg-transparent">
+                                <div class="card-footer bg-transparent py-2">
                                     <small class="text-muted">
                                         Cập nhật: @address.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
                                     </small>
@@ -96,52 +168,213 @@
             {
                 <div class="card shadow">
                     <div class="card-body text-center py-5">
-                        <i class="fas fa-map-marker-alt fa-3x text-gray-300 mb-4"></i>
-                        <h4 class="text-gray-600 mb-3">Chưa có địa chỉ nào</h4>
-                        <p class="text-gray-500 mb-4">Thêm địa chỉ đầu tiên để thuận tiện cho việc đặt hàng.</p>
+                        <i data-lucide="map-pin" style="width: 64px; height: 64px; color: #dee2e6;" class="mb-4"></i>
+                        <h5 class="text-muted mb-3">Chưa có địa chỉ nào</h5>
+                        <p class="text-muted mb-4">Thêm địa chỉ đầu tiên để thuận tiện cho việc đặt hàng.</p>
                         <a href="@Url.Action("AddAddress", "Account")" class="btn btn-primary">
-                            <i class="fas fa-plus fa-sm text-white-50"></i>
+                            <i class="fas fa-plus me-1"></i>
                             Thêm địa chỉ mới
                         </a>
                     </div>
                 </div>
             }
-        </div>
+        </main>
     </div>
 </div>
 
-<script>
-function setDefaultAddress(addressId) {
-    if (confirm('Bạn có chắc muốn đặt địa chỉ này làm mặc định?')) {
-        $.post('@Url.Action("SetDefaultAddress", "Account")', { id: addressId })
-            .done(function(data) {
-                if (data.success) {
-                    toastr.success(data.message);
-                    location.reload();
-                } else {
-                    toastr.error(data.message);
-                }
-            })
-            .fail(function() {
-                toastr.error('Có lỗi xảy ra. Vui lòng thử lại!');
-            });
+<style>
+/* Container and Layout Fixes */
+.container-fluid {
+    padding: 0;
+}
+
+.row {
+    margin: 0;
+    display: flex;
+}
+
+/* Sidebar - Optimized shorter layout */
+.user-sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid #dee2e6;
+    min-height: auto;
+    max-height: 80vh;
+    position: relative !important;
+    padding: 0 !important;
+    z-index: 1;
+}
+
+.sidebar-content {
+    padding: 15px 10px;
+    height: auto;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Main content area */
+main.col-md-9 {
+    margin-left: 0 !important;
+    padding: 20px;
+    flex: 1;
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+/* Navigation styles */
+.user-sidebar .nav-link {
+    font-weight: 500;
+    color: #333;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 3px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.user-sidebar .nav-link:hover {
+    color: #333;
+    background-color: #f8f9fa;
+    text-decoration: none;
+}
+
+.user-sidebar .nav-link.active {
+    color: #951329;
+    background-color: rgba(149, 19, 41, 0.1);
+    font-weight: 600;
+    border-left: 3px solid #951329;
+}
+
+.user-sidebar .nav-link i {
+    width: 18px;
+    height: 18px;
+    text-align: center;
+}
+
+/* Lucide icons styling */
+.user-sidebar i[data-lucide] {
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.5;
+}
+
+/* Avatar and user info - Compact */
+.user-avatar {
+    margin-bottom: 10px;
+}
+
+.text-center h5 {
+    margin-bottom: 3px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.text-center .text-muted {
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+}
+
+/* Form and button styling */
+.user-sidebar form {
+    width: 100%;
+}
+
+.user-sidebar button.nav-link {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    color: #000000 !important;
+}
+
+.user-sidebar button.nav-link:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    color: #000000 !important;
+}
+
+/* Shadow utility */
+.shadow {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+}
+
+/* Card styling */
+.card.border-primary {
+    border-left: 4px solid #951329 !important;
+}
+
+/* Mobile Responsive */
+@@media (max-width: 767.98px) {
+    .row {
+        flex-direction: column;
+    }
+    
+    .user-sidebar {
+        min-height: auto;
+        max-height: 60vh;
+        order: 2;
+    }
+    
+    main.col-md-9 {
+        order: 1;
+        min-height: auto;
+        margin-bottom: 0;
+    }
+    
+    .sidebar-content {
+        padding: 10px 8px;
     }
 }
 
-function deleteAddress(addressId) {
-    if (confirm('Bạn có chắc muốn xóa địa chỉ này? Hành động này không thể hoàn tác.')) {
-        $.post('@Url.Action("DeleteAddress", "Account")', { id: addressId })
-            .done(function(data) {
-                if (data.success) {
-                    toastr.success(data.message);
-                    location.reload();
-                } else {
-                    toastr.error(data.message);
-                }
-            })
-            .fail(function() {
-                toastr.error('Có lỗi xảy ra. Vui lòng thử lại!');
-            });
-    }
+/* Ensure footer is never covered */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
-</script>
+
+.container-fluid {
+    flex: 1;
+}
+
+footer {
+    margin-top: auto;
+    z-index: 999 !important;
+}
+</style>
+
+@section Scripts {
+    <script>
+    function setDefaultAddress(addressId) {
+        if (confirm('Bạn có chắc muốn đặt địa chỉ này làm mặc định?')) {
+            $.post('@Url.Action("SetDefaultAddress", "Account")', { id: addressId })
+                .done(function(data) {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        location.reload();
+                    } else {
+                        toastr.error(data.message);
+                    }
+                })
+                .fail(function() {
+                    toastr.error('Có lỗi xảy ra. Vui lòng thử lại!');
+                });
+        }
+    }
+
+    function deleteAddress(addressId) {
+        if (confirm('Bạn có chắc muốn xóa địa chỉ này? Hành động này không thể hoàn tác.')) {
+            $.post('@Url.Action("DeleteAddress", "Account")', { id: addressId })
+                .done(function(data) {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        location.reload();
+                    } else {
+                        toastr.error(data.message);
+                    }
+                })
+                .fail(function() {
+                    toastr.error('Có lỗi xảy ra. Vui lòng thử lại!');
+                });
+        }
+    }
+    </script>
+}

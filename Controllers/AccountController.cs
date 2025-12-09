@@ -347,6 +347,82 @@ namespace JohnHenryFashionWeb.Controllers
 
         [HttpGet]
         [AllowAnonymous]
+        public IActionResult UnlockAdmin()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnlockAdmin(UnlockAdminViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Verify secret key
+            var adminUnlockSecret = _configuration["Security:AdminUnlockSecret"];
+            if (string.IsNullOrEmpty(adminUnlockSecret) || model.SecretKey != adminUnlockSecret)
+            {
+                ModelState.AddModelError(string.Empty, "Mã bảo mật không đúng.");
+                _logger.LogWarning("Failed admin unlock attempt with invalid secret key for email: {Email}", model.Email);
+                return View(model);
+            }
+
+            // Find user by email
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Không tìm thấy tài khoản với email này.");
+                return View(model);
+            }
+
+            // Check if user is admin
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains(UserRoles.Admin))
+            {
+                ModelState.AddModelError(string.Empty, "Tài khoản này không phải là Admin. Chỉ có thể mở khóa tài khoản Admin.");
+                _logger.LogWarning("Attempted to unlock non-admin account: {Email}", model.Email);
+                return View(model);
+            }
+
+            // Check if account is locked
+            var isLockedOut = await _userManager.IsLockedOutAsync(user);
+            if (!isLockedOut)
+            {
+                ModelState.AddModelError(string.Empty, "Tài khoản này không bị khóa.");
+                return View(model);
+            }
+
+            // Unlock the account
+            var unlockResult = await _userManager.SetLockoutEndDateAsync(user, null);
+            if (!unlockResult.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi mở khóa tài khoản.");
+                _logger.LogError("Failed to unlock admin account: {Email}, Errors: {Errors}", 
+                    model.Email, string.Join(", ", unlockResult.Errors.Select(e => e.Description)));
+                return View(model);
+            }
+
+            // Reset failed access attempts
+            var resetResult = await _userManager.ResetAccessFailedCountAsync(user);
+            if (!resetResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to reset access failed count for user: {Email}", model.Email);
+            }
+
+            // Log the unlock action
+            _logger.LogInformation("Admin account unlocked via emergency unlock: {Email}, IP: {IpAddress}", 
+                model.Email, HttpContext.Connection.RemoteIpAddress?.ToString());
+
+            TempData["SuccessMessage"] = "Mở khóa tài khoản Admin thành công! Bạn có thể đăng nhập ngay bây giờ.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> LoginWith2fa(bool rememberMe, string? returnUrl = null)
         {
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -411,62 +487,20 @@ namespace JohnHenryFashionWeb.Controllers
             return View("LoginWith2fa", model);
         }
 
+        // Redirect to UserDashboard Profile (main profile page)
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Profile(string? tab = null)
+        public IActionResult Profile(string? tab = null)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
-
-            var model = new ProfileViewModel
-            {
-                Email = user.Email!,
-                FirstName = user.FirstName ?? "",
-                LastName = user.LastName ?? "",
-                PhoneNumber = user.PhoneNumber ?? "",
-                Gender = user.Gender ?? "",
-                DateOfBirth = user.DateOfBirth,
-                Avatar = user.Avatar
-            };
-
-            return View(model);
+            return RedirectToAction("Profile", "UserDashboard", new { tab });
         }
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(ProfileViewModel model)
+        public IActionResult Profile(ProfileViewModel model)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.PhoneNumber = model.PhoneNumber;
-            user.Gender = model.Gender;
-            user.DateOfBirth = model.DateOfBirth;
-            user.UpdatedAt = DateTime.UtcNow;
-
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-            {
-                AddErrors(updateResult);
-                return View(model);
-            }
-
-            TempData["StatusMessage"] = "Thông tin của bạn đã được cập nhật.";
-            return RedirectToAction(nameof(Profile));
+            return RedirectToAction("Profile", "UserDashboard");
         }
 
         [HttpGet]
@@ -667,28 +701,78 @@ namespace JohnHenryFashionWeb.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult AddAddress()
+        public IActionResult AddAddress(string? returnUrl = null)
         {
+            // Lưu lại trang trước đó để sau khi lưu địa chỉ sẽ quay lại đúng nơi
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                // Ưu tiên query string, nếu không có thì dùng Referer
+                returnUrl = Request.Query["returnUrl"].ToString();
+                if (string.IsNullOrEmpty(returnUrl))
+                {
+                    returnUrl = Request.Headers["Referer"].ToString();
+                }
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View(new Address());
         }
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddAddress(Address model)
+        public async Task<IActionResult> AddAddress(Address model, string? returnUrl = null)
         {
-            if (ModelState.IsValid)
+            // Remove navigation property validation - these are not bound from form
+            ModelState.Remove("User");
+            ModelState.Remove("UserId");
+            
+            // Log validation errors for debugging
+            if (!ModelState.IsValid)
             {
-                var userId = _userManager.GetUserId(User);
-                if (userId == null)
-                {
-                    return RedirectToAction("Login");
-                }
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value?.Errors.Select(e => e.ErrorMessage).ToList() })
+                    .ToList();
+                
+                _logger.LogWarning("AddAddress validation failed: {Errors}", 
+                    System.Text.Json.JsonSerializer.Serialize(errors));
+                
+                // Remove validation errors for optional fields
+                ModelState.Remove("PostalCode");
+                ModelState.Remove("Company");
+                ModelState.Remove("Address2");
+                ModelState.Remove("Phone");
+            }
+            
+            // Check required fields manually
+            if (string.IsNullOrWhiteSpace(model.FirstName) ||
+                string.IsNullOrWhiteSpace(model.LastName) ||
+                string.IsNullOrWhiteSpace(model.Address1) ||
+                string.IsNullOrWhiteSpace(model.City))
+            {
+                ModelState.AddModelError("", "Vui lòng điền đầy đủ thông tin bắt buộc");
+                ViewData["ReturnUrl"] = returnUrl;
+                return View(model);
+            }
+            
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
 
+            try
+            {
                 model.UserId = userId;
                 model.Id = Guid.NewGuid();
                 model.CreatedAt = DateTime.UtcNow;
                 model.UpdatedAt = DateTime.UtcNow;
+                
+                // Set default values for optional fields
+                model.PostalCode = model.PostalCode ?? "";
+                model.State = model.State ?? "";
+                model.Country = model.Country ?? "Vietnam";
 
                 // If this is the first address, make it default
                 var existingAddresses = await _context.Addresses.Where(a => a.UserId == userId).CountAsync();
@@ -701,10 +785,23 @@ namespace JohnHenryFashionWeb.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Địa chỉ đã được thêm thành công!";
+
+                // Nếu có returnUrl hợp lệ thì quay về đúng trang trước đó
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+
+                // Mặc định quay về danh sách địa chỉ
                 return RedirectToAction("Addresses");
             }
-
-            return View(model);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving address for user {UserId}", userId);
+                ModelState.AddModelError("", "Có lỗi xảy ra khi lưu địa chỉ. Vui lòng thử lại.");
+                ViewData["ReturnUrl"] = returnUrl;
+                return View(model);
+            }
         }
 
         [Authorize]
@@ -840,7 +937,7 @@ namespace JohnHenryFashionWeb.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> EditAddress(Guid id)
+        public async Task<IActionResult> EditAddress(Guid id, string? returnUrl = null)
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null)
@@ -856,49 +953,90 @@ namespace JohnHenryFashionWeb.Controllers
                 return NotFound();
             }
 
+            // Lưu lại trang trước đó (ưu tiên query string > Referer)
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                returnUrl = Request.Query["returnUrl"].ToString();
+                if (string.IsNullOrEmpty(returnUrl))
+                {
+                    returnUrl = Request.Headers["Referer"].ToString();
+                }
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View(address);
         }
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditAddress(Guid id, Address model)
+        public async Task<IActionResult> EditAddress(Guid id, Address model, string? returnUrl = null)
         {
-            if (ModelState.IsValid)
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
             {
-                var userId = _userManager.GetUserId(User);
-                if (userId == null)
-                {
-                    return RedirectToAction("Login");
-                }
-
-                var address = await _context.Addresses
-                    .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
-
-                if (address == null)
-                {
-                    return NotFound();
-                }
-
-                address.FirstName = model.FirstName;
-                address.LastName = model.LastName;
-                address.Company = model.Company;
-                address.Address1 = model.Address1;
-                address.Address2 = model.Address2;
-                address.City = model.City;
-                address.State = model.State;
-                address.PostalCode = model.PostalCode;
-                address.Country = model.Country;
-                address.Phone = model.Phone;
-                address.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Địa chỉ đã được cập nhật thành công!";
-                return RedirectToAction("Addresses");
+                return RedirectToAction("Login");
             }
 
-            return View(model);
+            // Remove validation for navigation properties that shouldn't be validated
+            ModelState.Remove("User");
+            ModelState.Remove("UserId");
+            
+            // Log ModelState errors for debugging
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Where(x => x.Value?.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value?.Errors.Select(e => e.ErrorMessage) })
+                    .ToList();
+                _logger.LogWarning("EditAddress ModelState invalid: {@Errors}", errors);
+                
+                // Return view with model to show validation errors
+                ViewData["ReturnUrl"] = returnUrl;
+                return View(model);
+            }
+
+            var address = await _context.Addresses
+                .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+            if (address == null)
+            {
+                return NotFound();
+            }
+
+            address.FirstName = model.FirstName;
+            address.LastName = model.LastName;
+            address.Company = model.Company;
+            address.Address1 = model.Address1;
+            address.Address2 = model.Address2;
+            address.City = model.City;
+            address.State = model.State;
+            address.PostalCode = model.PostalCode;
+            address.Country = model.Country;
+            address.Phone = model.Phone;
+            address.UpdatedAt = DateTime.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Address {AddressId} updated successfully for user {UserId}", id, userId);
+                TempData["SuccessMessage"] = "Địa chỉ đã được cập nhật thành công!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating address {AddressId}", id);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi cập nhật địa chỉ.";
+                ViewData["ReturnUrl"] = returnUrl;
+                return View(model);
+            }
+
+            // Nếu có returnUrl hợp lệ thì quay về đúng trang trước đó
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            // Mặc định quay về danh sách địa chỉ
+            return RedirectToAction("Addresses");
         }
 
         [Authorize]
@@ -1524,6 +1662,18 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         #endregion
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied(string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            
+            _logger.LogWarning("Access denied for user {User} trying to access {ReturnUrl}", 
+                User?.Identity?.Name ?? "Anonymous", returnUrl);
+            
+            return View();
+        }
 
         #endregion
     }

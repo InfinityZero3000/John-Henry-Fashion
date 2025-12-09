@@ -11,7 +11,18 @@
                     <h6 class="m-0 font-weight-bold text-primary">Chỉnh sửa địa chỉ</h6>
                 </div>
                 <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle mr-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+                    
                     <form asp-action="EditAddress" asp-route-id="@Model.Id" method="post">
+                        <input type="hidden" name="returnUrl" value="@(ViewData["ReturnUrl"] as string ?? string.Empty)" />
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                         
                         <div class="row">
@@ -50,53 +61,40 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
-                                    <label asp-for="City" class="form-label required">Thành phố</label>
-                                    <input asp-for="City" class="form-control" placeholder="Nhập thành phố" />
-                                    <span asp-validation-for="City" class="text-danger small"></span>
+                                    <label for="province" class="form-label required">Tỉnh/Thành phố</label>
+                                    <select id="province" class="form-control">
+                                        <option value="">-- Chọn tỉnh/thành --</option>
+                                    </select>
+                                    <span class="text-danger small" id="province-error"></span>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
-                                    <label asp-for="State" class="form-label required">Tỉnh/Bang</label>
-                                    <input asp-for="State" class="form-control" placeholder="Nhập tỉnh/bang" />
-                                    <span asp-validation-for="State" class="text-danger small"></span>
+                                    <label for="district" class="form-label required">Quận/Huyện</label>
+                                    <select id="district" class="form-control" disabled>
+                                        <option value="">-- Chọn quận/huyện --</option>
+                                    </select>
+                                    <span class="text-danger small" id="district-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="ward" class="form-label required">Phường/Xã</label>
+                                    <select id="ward" class="form-control" disabled>
+                                        <option value="">-- Chọn phường/xã --</option>
+                                    </select>
+                                    <span class="text-danger small" id="ward-error"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label asp-for="PostalCode" class="form-label required">Mã bưu điện</label>
-                                    <input asp-for="PostalCode" class="form-control" placeholder="Nhập mã bưu điện" />
-                                    <span asp-validation-for="PostalCode" class="text-danger small"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label asp-for="Country" class="form-label required">Quốc gia</label>
-                                    <select asp-for="Country" class="form-control">
-                                        <option value="">Chọn quốc gia</option>
-                                        <option value="Vietnam">Việt Nam</option>
-                                        <option value="United States">Hoa Kỳ</option>
-                                        <option value="Canada">Canada</option>
-                                        <option value="United Kingdom">Vương quốc Anh</option>
-                                        <option value="Australia">Úc</option>
-                                        <option value="Singapore">Singapore</option>
-                                        <option value="Thailand">Thái Lan</option>
-                                        <option value="Malaysia">Malaysia</option>
-                                        <option value="Indonesia">Indonesia</option>
-                                        <option value="Philippines">Philippines</option>
-                                        <option value="Japan">Nhật Bản</option>
-                                        <option value="South Korea">Hàn Quốc</option>
-                                        <option value="China">Trung Quốc</option>
-                                    </select>
-                                    <span asp-validation-for="Country" class="text-danger small"></span>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Hidden fields to store the selected values -->
+                        <input type="hidden" asp-for="City" id="cityHidden" />
+                        <input type="hidden" asp-for="State" id="stateHidden" />
+                        <input type="hidden" asp-for="PostalCode" value="" />
+                        <input type="hidden" asp-for="Country" value="Vietnam" />
 
                         <div class="form-group">
                             <label asp-for="Phone" class="form-label">Số điện thoại (tùy chọn)</label>
@@ -116,7 +114,10 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save mr-2"></i>Cập nhật địa chỉ
                             </button>
-                            <a href="@Url.Action("Addresses", "Account")" class="btn btn-secondary ml-2">
+                            @{
+                                var backUrl = ViewData["ReturnUrl"] as string;
+                            }
+                            <a href="@(Url.IsLocalUrl(backUrl) ? backUrl : Url.Action("Addresses", "Account"))" class="btn btn-secondary ml-2">
                                 <i class="fas fa-times mr-2"></i>Hủy
                             </a>
                         </div>
@@ -136,4 +137,118 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Store original values to pre-select
+        var originalCity = '@Model.City';
+        var originalState = '@Model.State';
+        
+        $(document).ready(function() {
+            // Load provinces and pre-select if editing
+            loadProvincesAndSelect();
+            
+            // Province change event
+            $('#province').on('change', function() {
+                const provinceCode = $(this).val();
+                const provinceName = $(this).find('option:selected').text();
+                
+                $('#cityHidden').val(provinceName);
+                $('#district').empty().append('<option value="">-- Chọn quận/huyện --</option>').prop('disabled', !provinceCode);
+                $('#ward').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', true);
+                $('#stateHidden').val('');
+                
+                if (provinceCode) {
+                    loadDistricts(provinceCode);
+                }
+            });
+            
+            // District change event
+            $('#district').on('change', function() {
+                const districtCode = $(this).val();
+                $('#ward').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', !districtCode);
+                
+                if (districtCode) {
+                    loadWards(districtCode);
+                }
+            });
+            
+            // Ward change event
+            $('#ward').on('change', function() {
+                const wardName = $(this).find('option:selected').text();
+                const districtName = $('#district option:selected').text();
+                
+                if (wardName && wardName !== '-- Chọn phường/xã --') {
+                    $('#stateHidden').val(districtName + ', ' + wardName);
+                }
+            });
+        });
+        
+        function loadProvincesAndSelect() {
+            $.ajax({
+                url: '/api/VietnameseAddress/provinces',
+                method: 'GET',
+                success: function(data) {
+                    const select = $('#province');
+                    select.empty().append('<option value="">-- Chọn tỉnh/thành --</option>');
+                    
+                    var selectedProvinceCode = null;
+                    data.forEach(function(province) {
+                        select.append(`<option value="${province.code}">${province.name}</option>`);
+                        // Try to match original city
+                        if (province.name === originalCity) {
+                            selectedProvinceCode = province.code;
+                        }
+                    });
+                    
+                    // Pre-select if found
+                    if (selectedProvinceCode) {
+                        select.val(selectedProvinceCode).trigger('change');
+                    }
+                },
+                error: function() {
+                    alert('Không thể tải danh sách tỉnh/thành phố.');
+                }
+            });
+        }
+        
+        function loadDistricts(provinceCode) {
+            $.ajax({
+                url: `/api/VietnameseAddress/districts/${provinceCode}`,
+                method: 'GET',
+                success: function(data) {
+                    const select = $('#district');
+                    select.empty().append('<option value="">-- Chọn quận/huyện --</option>');
+                    
+                    data.forEach(function(district) {
+                        select.append(`<option value="${district.code}">${district.name}</option>`);
+                    });
+                    
+                    select.prop('disabled', false);
+                },
+                error: function() {
+                    alert('Không thể tải danh sách quận/huyện.');
+                }
+            });
+        }
+        
+        function loadWards(districtCode) {
+            $.ajax({
+                url: `/api/VietnameseAddress/wards/${districtCode}`,
+                method: 'GET',
+                success: function(data) {
+                    const select = $('#ward');
+                    select.empty().append('<option value="">-- Chọn phường/xã --</option>');
+                    
+                    data.forEach(function(ward) {
+                        select.append(`<option value="${ward.code}">${ward.name}</option>`);
+                    });
+                    
+                    select.prop('disabled', false);
+                },
+                error: function() {
+                    alert('Không thể tải danh sách phường/xã.');
+                }
+            });
+        }
+    </script>
 }
