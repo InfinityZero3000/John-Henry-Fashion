@@ -1655,9 +1655,127 @@ namespace JohnHenryFashionWeb.Controllers
                 : new List<string>();
         }
 
+        // Quick Actions - 1-click status updates
+        [HttpPost("orders/{id}/quick-ship")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickShip(Guid id, string? trackingNumber = null)
+        {
+            return await UpdateOrderStatus(id, "shipped", $"Đã giao hàng. Mã vận đơn: {trackingNumber ?? "N/A"}", trackingNumber);
+        }
+
+        [HttpPost("orders/{id}/quick-deliver")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickDeliver(Guid id)
+        {
+            return await UpdateOrderStatus(id, "delivered", "Đã giao hàng thành công");
+        }
+
+        [HttpPost("orders/{id}/quick-process")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickProcess(Guid id)
+        {
+            return await UpdateOrderStatus(id, "processing", "Đã bắt đầu xử lý đơn hàng");
+        }
+
+        // Bulk Actions
+        [HttpPost("orders/bulk-update")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkUpdateStatus([FromBody] BulkUpdateOrderRequestModel request)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Json(new { success = false, message = "Vui lòng đăng nhập." });
+            }
+
+            if (request.OrderIds == null || !request.OrderIds.Any())
+            {
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất một đơn hàng." });
+            }
+
+            var validStatuses = new[] { "processing", "shipped", "delivered", "cancelled" };
+            if (!validStatuses.Contains(request.NewStatus?.ToLower()))
+            {
+                return Json(new { success = false, message = "Trạng thái không hợp lệ." });
+            }
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => request.OrderIds.Contains(o.Id) &&
+                           o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
+                .ToListAsync();
+
+            var updatedCount = 0;
+            var errors = new List<string>();
+
+            foreach (var order in orders)
+            {
+                var availableStatuses = GetAvailableStatusTransitions(order.Status);
+                var newStatus = request.NewStatus?.ToLower() ?? string.Empty;
+                if (!string.IsNullOrEmpty(newStatus) && availableStatuses.Contains(newStatus))
+                {
+                    var oldStatus = order.Status;
+                    order.Status = newStatus;
+                    order.UpdatedAt = DateTime.UtcNow;
+
+                    switch (newStatus)
+                    {
+                        case "shipped":
+                            order.ShippedAt = DateTime.UtcNow;
+                            break;
+                        case "delivered":
+                            order.DeliveredAt = DateTime.UtcNow;
+                            break;
+                    }
+
+                    // Add status history
+                    var statusHistory = new OrderStatusHistory
+                    {
+                        OrderId = order.Id,
+                        Status = newStatus,
+                        Notes = request.Notes ?? $"Bulk update: {oldStatus} → {newStatus}",
+                        ChangedBy = currentUser.Id,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.OrderStatusHistories.Add(statusHistory);
+
+                    // Notify customer
+                    var notification = new Notification
+                    {
+                        UserId = order.UserId,
+                        Title = $"Cập nhật đơn hàng #{order.OrderNumber}",
+                        Message = $"Đơn hàng #{order.OrderNumber} đã được cập nhật trạng thái.",
+                        Type = "order",
+                        ActionUrl = $"/user/orders/{order.Id}",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Notifications.Add(notification);
+
+                    updatedCount++;
+                }
+                else
+                {
+                    var requestedStatus = request.NewStatus ?? "unknown";
+                    errors.Add($"Đơn hàng #{order.OrderNumber}: Không thể chuyển từ '{order.Status}' sang '{requestedStatus}'");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                message = $"Đã cập nhật {updatedCount} đơn hàng thành công.",
+                updatedCount = updatedCount,
+                errors = errors
+            });
+        }
+
         [HttpPost("orders/update-status")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateOrderStatus(Guid orderId, string newStatus, string? notes = null)
+        public async Task<IActionResult> UpdateOrderStatus(Guid orderId, string newStatus, string? notes = null, string? trackingNumber = null)
         {
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null)
@@ -1785,5 +1903,13 @@ namespace JohnHenryFashionWeb.Controllers
         }
         
         #endregion
+    }
+
+    // Helper class for bulk update
+    public class BulkUpdateOrderRequestModel
+    {
+        public List<Guid> OrderIds { get; set; } = new();
+        public string NewStatus { get; set; } = string.Empty;
+        public string? Notes { get; set; }
     }
 }

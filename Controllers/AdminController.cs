@@ -1081,6 +1081,18 @@ namespace JohnHenryFashionWeb.Controllers
             return Json(new { success = false, message = "Có lỗi xảy ra khi đặt lại mật khẩu!" });
         }
 
+        [HttpPost("users/{id}/unlock")]
+        public async Task<IActionResult> UnlockUser(string id)
+        {
+            var success = await _userManagementService.UnlockUserAsync(id);
+            if (success)
+            {
+                return Json(new { success = true, message = "Gỡ khóa tài khoản thành công!" });
+            }
+
+            return Json(new { success = false, message = "Có lỗi xảy ra khi gỡ khóa tài khoản!" });
+        }
+
         [HttpPost("users/{id}/delete")]
         public async Task<IActionResult> DeleteUser(string id)
         {

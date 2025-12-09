@@ -118,8 +118,8 @@ public class AdminProductsController : Controller
         return View(product);
     }
 
-    // GET: admin/products/{id}
-    [HttpGet("{id}")]
+    // GET: admin/products/edit/{id}
+    [HttpGet("edit/{id}")]
     public async Task<IActionResult> Edit(Guid id)
     {
         var product = await _context.Products.FindAsync(id);
@@ -133,8 +133,8 @@ public class AdminProductsController : Controller
         return View(product);
     }
 
-    // POST: admin/products/{id}
-    [HttpPost("{id}")]
+    // POST: admin/products/edit/{id}
+    [HttpPost("edit/{id}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, Product product, IFormFile? imageFile)
     {
