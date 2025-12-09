@@ -1,0 +1,477 @@
+@model JohnHenryFashionWeb.Models.Product
+@{
+    ViewData["Title"] = "Chỉnh sửa sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = $"<li class=\"breadcrumb-item\"><a href=\"{Url.Action("Index")}\">Sản phẩm</a></li><li class=\"breadcrumb-item active\">Chỉnh sửa</li>";
+}
+
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="edit"></i>
+                Chỉnh sửa sản phẩm
+            </h1>
+            <a href="@Url.Action("Index")" class="admin-btn admin-btn-secondary">
+                <i data-lucide="arrow-left"></i>
+                Quay lại
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" id="productForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedAt" />
+        <input type="hidden" asp-for="Slug" />
+        <input type="hidden" asp-for="FeaturedImageUrl" />
+        
+        <div class="row g-4">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <!-- Basic Information -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h5 class="admin-card-title">
+                            <i data-lucide="package"></i>
+                            Thông tin cơ bản
+                        </h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="admin-form-group">
+                            <label asp-for="Name" class="admin-form-label">
+                                Tên sản phẩm <span style="color: var(--admin-danger);">*</span>
+                            </label>
+                            <input asp-for="Name" class="admin-form-input" placeholder="Nhập tên sản phẩm...">
+                            <span asp-validation-for="Name" class="admin-form-error"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label asp-for="SKU" class="admin-form-label">
+                                        Mã SKU <span style="color: var(--admin-danger);">*</span>
+                                    </label>
+                                    <input asp-for="SKU" class="admin-form-input" placeholder="VD: PROD-001">
+                                    <span asp-validation-for="SKU" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label asp-for="CategoryId" class="admin-form-label">
+                                        Danh mục <span style="color: var(--admin-danger);">*</span>
+                                    </label>
+                                    <select asp-for="CategoryId" class="admin-form-select" asp-items="ViewBag.Categories">
+                                        <option value="">-- Chọn danh mục --</option>
+                                    </select>
+                                    <span asp-validation-for="CategoryId" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label asp-for="BrandId" class="admin-form-label">
+                                        Thương hiệu
+                                    </label>
+                                    <select asp-for="BrandId" class="admin-form-select" asp-items="ViewBag.Brands">
+                                        <option value="">-- Chọn thương hiệu --</option>
+                                    </select>
+                                    <span asp-validation-for="BrandId" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label asp-for="Status" class="admin-form-label">
+                                        Trạng thái
+                                    </label>
+                                    <select asp-for="Status" class="admin-form-select">
+                                        <option value="active">Đang hoạt động</option>
+                                        <option value="inactive">Tạm dừng</option>
+                                        <option value="out_of_stock">Hết hàng</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label asp-for="Description" class="admin-form-label">
+                                Mô tả ngắn
+                            </label>
+                            <textarea asp-for="Description" class="admin-form-textarea" rows="3" 
+                                      placeholder="Mô tả ngắn gọn về sản phẩm..."></textarea>
+                            <span asp-validation-for="Description" class="admin-form-error"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="admin-form-group">
+                                    <label asp-for="Size" class="admin-form-label">
+                                        Kích thước
+                                    </label>
+                                    <input asp-for="Size" class="admin-form-input" placeholder="VD: S, M, L, XL">
+                                    <span asp-validation-for="Size" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="admin-form-group">
+                                    <label asp-for="Color" class="admin-form-label">
+                                        Màu sắc
+                                    </label>
+                                    <input asp-for="Color" class="admin-form-input" placeholder="VD: Đỏ, Xanh">
+                                    <span asp-validation-for="Color" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="admin-form-group">
+                                    <label asp-for="Material" class="admin-form-label">
+                                        Chất liệu
+                                    </label>
+                                    <input asp-for="Material" class="admin-form-input" placeholder="VD: Cotton, Polyester">
+                                    <span asp-validation-for="Material" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing & Inventory -->
+                <div class="admin-card mt-4">
+                    <div class="admin-card-header">
+                        <h5 class="admin-card-title">
+                            <i data-lucide="dollar-sign"></i>
+                            Giá & Kho hàng
+                        </h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="admin-form-group">
+                                    <label asp-for="Price" class="admin-form-label">
+                                        Giá gốc (₫) <span style="color: var(--admin-danger);">*</span>
+                                    </label>
+                                    <input asp-for="Price" type="number" class="admin-form-input" min="0" step="1000" placeholder="0">
+                                    <span asp-validation-for="Price" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="admin-form-group">
+                                    <label asp-for="SalePrice" class="admin-form-label">
+                                        Giá khuyến mại (₫)
+                                    </label>
+                                    <input asp-for="SalePrice" type="number" class="admin-form-input" min="0" step="1000" placeholder="0">
+                                    <small class="admin-form-help">Để trống nếu không có khuyến mại</small>
+                                    <span asp-validation-for="SalePrice" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="admin-form-group">
+                                    <label asp-for="StockQuantity" class="admin-form-label">
+                                        Số lượng tồn kho <span style="color: var(--admin-danger);">*</span>
+                                    </label>
+                                    <input asp-for="StockQuantity" type="number" class="admin-form-input" min="0" placeholder="0">
+                                    <span asp-validation-for="StockQuantity" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label asp-for="Weight" class="admin-form-label">
+                                        Trọng lượng (gram)
+                                    </label>
+                                    <input asp-for="Weight" type="number" class="admin-form-input" min="0" step="0.01" placeholder="0">
+                                    <span asp-validation-for="Weight" class="admin-form-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label class="admin-form-label">
+                                        Trạng thái kho
+                                    </label>
+                                    <div style="padding-top: 0.5rem;">
+                                        @if (Model.StockQuantity > 0)
+                                        {
+                                            <span class="admin-badge admin-badge-success">
+                                                <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                                                Còn hàng
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-badge admin-badge-danger">
+                                                <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+                                                Hết hàng
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Image -->
+                <div class="admin-card mt-4">
+                    <div class="admin-card-header">
+                        <h5 class="admin-card-title">
+                            <i data-lucide="image"></i>
+                            Hình ảnh sản phẩm
+                        </h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="admin-form-group">
+                            <label for="imageFile" class="admin-form-label">Hình ảnh chính</label>
+                            <input type="file" name="imageFile" id="imageFile" class="admin-form-input" accept="image/*">
+                            <small class="admin-form-help">Chấp nhận file: JPG, JPEG, PNG. Kích thước tối đa: 5MB. Để trống nếu không muốn đổi ảnh.</small>
+                            
+                            <!-- Current Image -->
+                            @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+                            {
+                                <div class="mt-3">
+                                    <label class="admin-form-label">Hình ảnh hiện tại:</label>
+                                    <div style="margin-top: 0.5rem;">
+                                        <img src="@Url.Content(Model.FeaturedImageUrl)" alt="@Model.Name" 
+                                             style="max-width: 300px; max-height: 300px; border-radius: var(--admin-border-radius); border: 1px solid var(--admin-border); object-fit: cover;">
+                                    </div>
+                                </div>
+                            }
+                            
+                            <!-- Image Preview -->
+                            <div id="imagePreview" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publish Actions -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h5 class="admin-card-title">
+                            <i data-lucide="settings"></i>
+                            Cài đặt
+                        </h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="admin-form-group">
+                            <div class="admin-form-check">
+                                <input asp-for="IsActive" class="admin-form-check-input" type="checkbox" id="isActive">
+                                <label asp-for="IsActive" class="admin-form-check-label" for="isActive">
+                                    Sản phẩm hoạt động
+                                </label>
+                            </div>
+                            <small class="admin-form-help">Sản phẩm không hoạt động sẽ bị ẩn khỏi website</small>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <div class="admin-form-check">
+                                <input asp-for="IsFeatured" class="admin-form-check-input" type="checkbox" id="isFeatured">
+                                <label asp-for="IsFeatured" class="admin-form-check-label" for="isFeatured">
+                                    Sản phẩm nổi bật
+                                </label>
+                            </div>
+                            <small class="admin-form-help">Hiển thị trong mục sản phẩm nổi bật</small>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Đánh giá</label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="color: #ffc107;">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (Model.Rating.HasValue && i <= (int)Model.Rating.Value)
+                                        {
+                                            <i data-lucide="star" style="width: 16px; height: 16px; fill: currentColor;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i data-lucide="star" style="width: 16px; height: 16px;"></i>
+                                        }
+                                    }
+                                </div>
+                                <span>@(Model.Rating?.ToString("F1") ?? "0.0") (@Model.ReviewCount đánh giá)</span>
+                            </div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Lượt xem</label>
+                            <p style="margin: 0; font-weight: 500;">@Model.ViewCount lượt</p>
+                        </div>
+
+                        <hr style="margin: 1rem 0; border-color: var(--admin-border);">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="admin-btn admin-btn-primary">
+                                <i data-lucide="save"></i>
+                                Cập nhật sản phẩm
+                            </button>
+                            <a href="@Url.Action("Index")" class="admin-btn admin-btn-secondary">
+                                <i data-lucide="x"></i>
+                                Hủy bỏ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="admin-card mt-4">
+                    <div class="admin-card-header">
+                        <h6 class="admin-card-title">
+                            <i data-lucide="info"></i>
+                            Thông tin
+                        </h6>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="admin-stat-item" style="padding: 0.5rem 0; border-bottom: 1px solid var(--admin-border);">
+                            <div class="admin-stat-label" style="font-size: 0.875rem;">
+                                <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                                Ngày tạo
+                            </div>
+                            <div class="admin-stat-value" style="font-size: 0.875rem;">
+                                @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                        <div class="admin-stat-item" style="padding: 0.5rem 0;">
+                            <div class="admin-stat-label" style="font-size: 0.875rem;">
+                                <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                                Cập nhật
+                            </div>
+                            <div class="admin-stat-value" style="font-size: 0.875rem;">
+                                @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Tips -->
+                <div class="admin-card mt-4">
+                    <div class="admin-card-header">
+                        <h6 class="admin-card-title">
+                            <i data-lucide="lightbulb"></i>
+                            Gợi ý
+                        </h6>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="admin-help-section">
+                            <p class="admin-help-text">
+                                <i data-lucide="check" style="width: 16px; height: 16px; color: var(--admin-success);"></i>
+                                Tên sản phẩm nên ngắn gọn, súc tích
+                            </p>
+                            <p class="admin-help-text">
+                                <i data-lucide="check" style="width: 16px; height: 16px; color: var(--admin-success);"></i>
+                                Mô tả chi tiết giúp tăng chuyển đổi
+                            </p>
+                            <p class="admin-help-text">
+                                <i data-lucide="check" style="width: 16px; height: 16px; color: var(--admin-success);"></i>
+                                Hình ảnh nên rõ nét, kích thước phù hợp
+                            </p>
+                            <p class="admin-help-text">
+                                <i data-lucide="check" style="width: 16px; height: 16px; color: var(--admin-success);"></i>
+                                Giá sale phải nhỏ hơn giá gốc
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Image preview
+            const imageInput = document.getElementById('imageFile');
+            const previewContainer = document.getElementById('imagePreview');
+            
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    previewContainer.innerHTML = '';
+                    
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.createElement('div');
+                            preview.innerHTML = `
+                                <label class="admin-form-label">Xem trước ảnh mới:</label>
+                                <div style="margin-top: 0.5rem;">
+                                    <img src="${e.target.result}" alt="Preview" 
+                                         style="max-width: 300px; max-height: 300px; border-radius: var(--admin-border-radius); border: 1px solid var(--admin-border); object-fit: cover;">
+                                </div>
+                            `;
+                            previewContainer.appendChild(preview);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Price validation
+            const priceInput = document.querySelector('input[name="Price"]');
+            const salePriceInput = document.querySelector('input[name="SalePrice"]');
+            
+            if (priceInput && salePriceInput) {
+                salePriceInput.addEventListener('input', function() {
+                    const price = parseFloat(priceInput.value) || 0;
+                    const salePrice = parseFloat(salePriceInput.value) || 0;
+                    
+                    if (salePrice > 0 && salePrice >= price) {
+                        salePriceInput.setCustomValidity('Giá khuyến mại phải nhỏ hơn giá gốc');
+                    } else {
+                        salePriceInput.setCustomValidity('');
+                    }
+                });
+            }
+
+            // Stock quantity color coding
+            const stockInput = document.querySelector('input[name="StockQuantity"]');
+            if (stockInput) {
+                stockInput.addEventListener('input', function() {
+                    const quantity = parseInt(this.value) || 0;
+                    if (quantity < 10) {
+                        this.style.borderColor = 'var(--admin-danger)';
+                    } else if (quantity < 50) {
+                        this.style.borderColor = 'var(--admin-warning)';
+                    } else {
+                        this.style.borderColor = 'var(--admin-success)';
+                    }
+                });
+            }
+
+            // Form submission
+            const form = document.getElementById('productForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i data-lucide="loader" class="spinning"></i> Đang cập nhật...';
+                    submitBtn.disabled = true;
+                    lucide.createIcons();
+
+                    // Re-enable after 5 seconds (in case of error)
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        lucide.createIcons();
+                    }, 5000);
+                });
+            }
+
+            // Reinitialize icons
+            lucide.createIcons();
+        });
+    </script>
+}
