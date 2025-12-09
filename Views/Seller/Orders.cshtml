@@ -128,6 +128,31 @@
         </a>
     </div>
 
+    <!-- Bulk Actions Bar -->
+    <div id="bulkActionsBar" class="admin-bulk-actions mb-3" style="display: none;">
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted" id="selectedCount">0 đơn hàng đã chọn</span>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="bulkUpdateStatus('processing')">
+                    <i data-lucide="play" class="me-1" style="width: 14px; height: 14px;"></i>
+                    Duyệt đơn
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="bulkUpdateStatus('shipped')">
+                    <i data-lucide="truck" class="me-1" style="width: 14px; height: 14px;"></i>
+                    Gửi hàng
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-success" onclick="bulkUpdateStatus('delivered')">
+                    <i data-lucide="check-circle" class="me-1" style="width: 14px; height: 14px;"></i>
+                    Hoàn thành
+                </button>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSelection()">
+                <i data-lucide="x" class="me-1" style="width: 14px; height: 14px;"></i>
+                Bỏ chọn
+            </button>
+        </div>
+    </div>
+
     <!-- Orders Table -->
     @if (Model.Orders.Any())
     {
@@ -135,6 +160,9 @@
             <table class="admin-table">
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                        </th>
                         <th style="width: 130px;">Mã đơn hàng</th>
                         <th>Khách hàng</th>
                         <th style="width: 80px;">Số lượng</th>
@@ -142,13 +170,16 @@
                         <th style="width: 120px;">Trạng thái</th>
                         <th style="width: 120px;">Thanh toán</th>
                         <th style="width: 140px;">Ngày đặt</th>
-                        <th style="width: 180px;">Thao tác</th>
+                        <th style="width: 200px;">Thao tác nhanh</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var order in Model.Orders)
                     {
-                        <tr>
+                        <tr data-order-id="@order.Id">
+                            <td>
+                                <input type="checkbox" class="order-checkbox" value="@order.Id" onchange="updateBulkActions()">
+                            </td>
                             <td>
                                 <code class="text-primary fw-semibold">@order.OrderNumber</code>
                             </td>
@@ -211,25 +242,57 @@
                                 <small class="text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                             </td>
                             <td>
-                                <div class="admin-table-actions">
+                                <div class="admin-table-actions d-flex gap-1 flex-wrap">
                                     <a href="@Url.Action("OrderDetail", "Seller", new { id = order.Id })" 
                                        class="admin-btn admin-btn-sm admin-btn-outline" title="Chi tiết">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    @if (order.Status == "pending")
+                                    
+                                    @* Quick Actions based on status *@
+                                    @if (order.Status.ToLower() == "pending")
                                     {
                                         <button class="admin-btn admin-btn-sm admin-btn-success" 
-                                                onclick="updateOrderStatus('@order.Id', 'processing')" title="Duyệt đơn">
-                                            <i data-lucide="check"></i>
+                                                onclick="quickProcess('@order.Id')" title="Duyệt đơn (1-click)">
+                                            <i data-lucide="check"></i> Duyệt
                                         </button>
                                     }
-                                    else if (order.Status == "processing")
+                                    else if (order.Status.ToLower() == "processing")
                                     {
                                         <button class="admin-btn admin-btn-sm admin-btn-primary" 
-                                                onclick="updateOrderStatus('@order.Id', 'shipped')" title="Gửi hàng">
-                                            <i data-lucide="truck"></i>
+                                                onclick="quickShip('@order.Id')" title="Gửi hàng (1-click)">
+                                            <i data-lucide="truck"></i> Gửi
                                         </button>
                                     }
+                                    else if (order.Status.ToLower() == "shipped")
+                                    {
+                                        <button class="admin-btn admin-btn-sm admin-btn-success" 
+                                                onclick="quickDeliver('@order.Id')" title="Hoàn thành (1-click)">
+                                            <i data-lucide="check-circle"></i> Hoàn thành
+                                        </button>
+                                    }
+                                    
+                                    @* Manual update button (fallback) *@
+                                    <div class="dropdown">
+                                        <button class="admin-btn admin-btn-sm admin-btn-outline dropdown-toggle" 
+                                                type="button" data-bs-toggle="dropdown" title="Thao tác khác">
+                                            <i data-lucide="more-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="@Url.Action("OrderDetail", "Seller", new { id = order.Id })">
+                                                <i data-lucide="eye" class="me-2"></i> Xem chi tiết
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus('@order.Id', 'processing'); return false;">
+                                                <i data-lucide="play" class="me-2"></i> Duyệt đơn
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus('@order.Id', 'shipped'); return false;">
+                                                <i data-lucide="truck" class="me-2"></i> Gửi hàng
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus('@order.Id', 'delivered'); return false;">
+                                                <i data-lucide="check-circle" class="me-2"></i> Hoàn thành
+                                            </a></li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -327,6 +390,141 @@
             lucide.createIcons();
         });
 
+        // Quick Actions - 1-click updates
+        function quickProcess(orderId) {
+            updateOrderStatusQuick(orderId, 'processing', '@Url.Action("QuickProcess", "Seller")');
+        }
+
+        function quickShip(orderId) {
+            const trackingNumber = prompt('Nhập mã vận đơn (tùy chọn):');
+            if (trackingNumber !== null) {
+                updateOrderStatusQuick(orderId, 'shipped', '@Url.Action("QuickShip", "Seller")', trackingNumber);
+            }
+        }
+
+        function quickDeliver(orderId) {
+            updateOrderStatusQuick(orderId, 'delivered', '@Url.Action("QuickDeliver", "Seller")');
+        }
+
+        function updateOrderStatusQuick(orderId, status, url, trackingNumber = null) {
+            const button = event?.target?.closest('button') || document.querySelector(`[onclick*="${orderId}"]`);
+            if (button) {
+                const originalContent = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const body = new URLSearchParams({
+                    id: orderId,
+                    __RequestVerificationToken: token
+                });
+                if (trackingNumber) {
+                    body.append('trackingNumber', trackingNumber);
+                }
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: body
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show toast notification instead of alert
+                        showToast('success', data.message);
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast('error', data.message);
+                        button.disabled = false;
+                        button.innerHTML = originalContent;
+                        lucide.createIcons();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+                    button.disabled = false;
+                    button.innerHTML = originalContent;
+                    lucide.createIcons();
+                });
+            }
+        }
+
+        // Bulk Actions
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateBulkActions();
+        }
+
+        function updateBulkActions() {
+            const selected = document.querySelectorAll('.order-checkbox:checked');
+            const bulkBar = document.getElementById('bulkActionsBar');
+            const countSpan = document.getElementById('selectedCount');
+            
+            if (selected.length > 0) {
+                bulkBar.style.display = 'flex';
+                countSpan.textContent = `${selected.length} đơn hàng đã chọn`;
+            } else {
+                bulkBar.style.display = 'none';
+            }
+        }
+
+        function bulkUpdateStatus(newStatus) {
+            const selected = Array.from(document.querySelectorAll('.order-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            if (selected.length === 0) {
+                showToast('warning', 'Vui lòng chọn ít nhất một đơn hàng');
+                return;
+            }
+
+            const statusText = {
+                'processing': 'duyệt',
+                'shipped': 'gửi hàng',
+                'delivered': 'hoàn thành'
+            };
+
+            if (confirm(`Bạn có chắc chắn muốn ${statusText[newStatus] || 'cập nhật'} ${selected.length} đơn hàng đã chọn?`)) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                
+                fetch('@Url.Action("BulkUpdateStatus", "Seller")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        OrderIds: selected,
+                        NewStatus: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', data.message);
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+                });
+            }
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+            updateBulkActions();
+        }
+
+        // Manual update (fallback)
         function updateOrderStatus(orderId, newStatus) {
             const statusText = {
                 'processing': 'duyệt đơn hàng và bắt đầu xử lý',
@@ -338,16 +536,15 @@
             const actionText = statusText[newStatus] || 'cập nhật trạng thái';
             
             if (confirm(`Bạn có chắc chắn muốn ${actionText}?`)) {
-                // Show loading state
-                const button = event.target.closest('button');
-                const originalContent = button.innerHTML;
+                const button = event?.target?.closest('button') || event?.target?.closest('a');
+                const originalContent = button?.innerHTML;
+                if (button) {
                 button.disabled = true;
                 button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                }
                 
-                // Get anti-forgery token
                 const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
                 
-                // Make AJAX call
                 fetch('@Url.Action("UpdateOrderStatus", "Seller")', {
                     method: 'POST',
                     headers: {
@@ -363,28 +560,40 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Show success message
-                        alert(data.message);
-                        // Reload page to show updated status
-                        window.location.reload();
+                        showToast('success', data.message);
+                        setTimeout(() => window.location.reload(), 1000);
                     } else {
-                        // Show error message
-                        alert('Lỗi: ' + data.message);
-                        // Restore button
+                        showToast('error', data.message);
+                        if (button) {
                         button.disabled = false;
                         button.innerHTML = originalContent;
                         lucide.createIcons();
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Đã xảy ra lỗi khi cập nhật trạng thái. Vui lòng thử lại.');
-                    // Restore button
+                    showToast('error', 'Đã xảy ra lỗi khi cập nhật trạng thái. Vui lòng thử lại.');
+                    if (button) {
                     button.disabled = false;
                     button.innerHTML = originalContent;
                     lucide.createIcons();
+                    }
                 });
             }
+        }
+
+        // Toast notification helper
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning'} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
     </script>
     
