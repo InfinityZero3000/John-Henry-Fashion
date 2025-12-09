@@ -6,7 +6,7 @@
     var currentUser = await UserManager.GetUserAsync(User);
     var avatarUrl = !string.IsNullOrEmpty(currentUser?.Avatar) 
         ? currentUser.Avatar 
-        : "/images/avatars/default-avatar.svg";
+        : "/images/default-avatar.svg";
     var userName = currentUser != null && !string.IsNullOrEmpty(currentUser.FirstName) 
         ? $"{currentUser.FirstName} {currentUser.LastName}".Trim()
         : (User.Identity?.Name ?? "User");
@@ -17,7 +17,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="/Account/Profile">Tài khoản</a></li>
+            <li class="breadcrumb-item"><a href="/UserDashboard/Profile">Tài khoản</a></li>
             <li class="breadcrumb-item active">Lịch sử mua hàng</li>
         </ol>
     </nav>
@@ -39,7 +39,7 @@
                         <small class="text-muted">Thành viên</small>
                     </div>
                     <div class="list-group list-group-flush">
-                        <a href="/Account/Profile" class="list-group-item list-group-item-action">
+                        <a href="/UserDashboard/Profile" class="list-group-item list-group-item-action">
                             <i class="fas fa-user me-2"></i>Thông tin cá nhân
                         </a>
                         <a href="/Account/ChangePassword" class="list-group-item list-group-item-action">
