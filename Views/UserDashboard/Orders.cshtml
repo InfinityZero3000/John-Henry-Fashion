@@ -14,15 +14,8 @@
             <div class="sidebar-content">
                 <div class="text-center mb-3">
                     <div class="user-avatar">
-                        @if (!string.IsNullOrEmpty(currentUser?.Avatar))
-                        {
-                            <img src="@currentUser.Avatar" alt="Avatar" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;"
-                                 onerror="this.onerror=null; this.style.display='none'; var icon = document.createElement('i'); icon.setAttribute('data-lucide', 'user-circle'); icon.style.cssText = 'width: 60px; height: 60px; color: #6c757d;'; this.parentElement.appendChild(icon); if(typeof lucide !== 'undefined') lucide.createIcons();">
-                        }
-                        else
-                        {
-                            <i data-lucide="user-circle" style="width: 60px; height: 60px; color: #6c757d;"></i>
-                        }
+                        <img src="@(currentUser?.Avatar ?? "/images/default-avatar.svg")" alt="Avatar" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='/images/default-avatar.svg';">
                     </div>
                     <h5 class="mt-2">@(currentUser?.FullName ?? "User")</h5>
                     <p class="text-muted">@currentUser?.Email</p>
@@ -45,6 +38,12 @@
                         <a class="nav-link" href="/Wishlist">
                             <i data-lucide="heart" class="me-2"></i>
                             Yêu thích
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Addresses", "Account")">
+                            <i data-lucide="map-pin" class="me-2"></i>
+                            Địa chỉ
                         </a>
                     </li>
                     <li class="nav-item">
@@ -273,9 +272,10 @@ main.col-md-9 {
 }
 
 .user-sidebar .nav-link.active {
-    color: #333;
-    background-color: #e9ecef;
+    color: #951329;
+    background-color: rgba(149, 19, 41, 0.1);
     font-weight: 600;
+    border-left: 3px solid #951329;
 }
 
 .user-sidebar .nav-link i {
