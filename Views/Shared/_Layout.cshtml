@@ -80,6 +80,7 @@
     <link rel="stylesheet" href="~/css/product-card-additions.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/z-index-hierarchy.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive-mobile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/profile-sidebar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/JohnHenryFashionWeb.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
     
@@ -1251,21 +1252,7 @@
                     }
                     
                     <!-- Dashboard Icon for Admin and Seller -->
-                    @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Seller")))
-                    {
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a href="@Url.Action("Dashboard", "Admin")" class="header-icon" title="Bảng điều khiển Admin">
-                                <i data-lucide="layout-dashboard"></i>
-                            </a>
-                        }
-                        else if (User.IsInRole("Seller"))
-                        {
-                            <a href="@Url.Action("Dashboard", "Seller")" class="header-icon" title="Bảng điều khiển Seller">
-                                <i data-lucide="store"></i>
-                            </a>
-                        }
-                    }
+                    @await Component.InvokeAsync("UserRole")
                     
                     @if (User?.Identity?.IsAuthenticated == true)
                     {
