@@ -200,6 +200,7 @@ namespace JohnHenryFashionWeb.Models
         public decimal Price { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(7);
 
         // Navigation properties
         public ApplicationUser User { get; set; } = null!;
@@ -303,12 +304,12 @@ namespace JohnHenryFashionWeb.Models
         public string Type { get; set; } = "shipping"; // shipping, billing
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string Company { get; set; } = string.Empty;
+        public string? Company { get; set; }
         public string Address1 { get; set; } = string.Empty;
         public string? Address2 { get; set; }
         public string City { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
+        public string? State { get; set; }  // Quận/Huyện, Phường/Xã - optional
+        public string? PostalCode { get; set; }  // Mã bưu điện - optional
         public string Country { get; set; } = "Vietnam";
         public string? Phone { get; set; }
         public bool IsDefault { get; set; } = false;
@@ -322,7 +323,7 @@ namespace JohnHenryFashionWeb.Models
         public string FullName => $"{FirstName} {LastName}".Trim();
         public string PhoneNumber => Phone ?? "";
         public string Ward => ""; // Thêm thuộc tính nếu cần
-        public string District => State; // Hoặc mapping phù hợp
+        public string District => State ?? ""; // Hoặc mapping phù hợp
         public string FullAddress => Address1 + (string.IsNullOrEmpty(Address2) ? "" : ", " + Address2);
     }
 
@@ -481,7 +482,7 @@ namespace JohnHenryFashionWeb.Models
     {
         public int Id { get; set; }
         public string PaymentId { get; set; } = string.Empty;
-        public string OrderId { get; set; } = string.Empty;
+        public string OrderId { get; set; } = string.Empty;  // Stores Order.OrderNumber (string)
         public string UserId { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public string Currency { get; set; } = "VND";
@@ -496,7 +497,7 @@ namespace JohnHenryFashionWeb.Models
 
         // Navigation properties
         public ApplicationUser User { get; set; } = null!;
-        public Order Order { get; set; } = null!;
+        // Note: Order navigation removed to avoid EF Core creating duplicate FK column
     }
 
     public class PaymentMethod
@@ -567,12 +568,13 @@ namespace JohnHenryFashionWeb.Models
     public class RefundRequest
     {
         public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
         public string PaymentId { get; set; } = string.Empty;
-        public string OrderId { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public string Reason { get; set; } = string.Empty;
         public string Status { get; set; } = "pending"; // pending, approved, rejected, completed
         public string? AdminNotes { get; set; }
+        public string? RejectionReason { get; set; }
         public string? RefundTransactionId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ProcessedAt { get; set; }

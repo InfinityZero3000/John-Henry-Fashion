@@ -392,6 +392,33 @@ namespace JohnHenryFashionWeb.Data
                 entity.HasIndex(e => new { e.UserId, e.Purpose });
             });
 
+            // Cấu hình cho bảng RefundRequests
+            modelBuilder.Entity<RefundRequest>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Amount).HasColumnType("decimal(10,2)");
+                entity.Property(e => e.Reason).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Foreign key relationships
+                entity.HasOne(d => d.Order)
+                    .WithMany()
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(d => d.RequestedByUser)
+                    .WithMany()
+                    .HasForeignKey(d => d.RequestedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                // Indexes
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.RequestedBy);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
             // Seed data
             SeedData(modelBuilder);
         }
@@ -746,12 +773,8 @@ namespace JohnHenryFashionWeb.Data
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Configure Order relationship using existing OrderId property
-                entity.HasOne(e => e.Order)
-                    .WithMany()
-                    .HasForeignKey(e => e.OrderId)
-                    .HasPrincipalKey(o => o.OrderNumber)
-                    .OnDelete(DeleteBehavior.Cascade);
+                // OrderId stores Order.OrderNumber as string reference (no FK constraint)
+                entity.Property(e => e.OrderId).IsRequired().HasMaxLength(255);
             });
 
             // PaymentMethod configuration
@@ -824,36 +847,8 @@ namespace JohnHenryFashionWeb.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // RefundRequest configuration
-            modelBuilder.Entity<RefundRequest>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.PaymentId).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.OrderId).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
-                entity.Property(e => e.Reason).IsRequired().HasMaxLength(1000);
-                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.AdminNotes).HasMaxLength(1000);
-                entity.Property(e => e.RefundTransactionId).HasMaxLength(255);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                entity.HasIndex(e => e.PaymentId);
-                entity.HasIndex(e => e.OrderId);
-                entity.HasIndex(e => e.Status);
-                entity.HasIndex(e => e.RequestedBy);
-
-                entity.HasOne(e => e.RequestedByUser)
-                    .WithMany(u => u.RefundRequests)
-                    .HasForeignKey(e => e.RequestedBy)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                // Configure Order relationship using existing OrderId property
-                entity.HasOne(e => e.Order)
-                    .WithMany()
-                    .HasForeignKey(e => e.OrderId)
-                    .HasPrincipalKey(o => o.OrderNumber)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+            // RefundRequest configuration - Moved to OnModelCreating (line 372-396)
+            // Configuration is already defined earlier in OnModelCreating method
 
             // ShippingMethod configuration
             modelBuilder.Entity<ShippingMethod>(entity =>

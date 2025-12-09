@@ -81,7 +81,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ActiveSessions");
+                    b.ToTable("ActiveSessions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Address", b =>
@@ -149,7 +149,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.AnalyticsData", b =>
@@ -191,7 +191,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AnalyticsData");
+                    b.ToTable("AnalyticsData", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ApplicationUser", b =>
@@ -359,7 +359,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.BlogCategory", b =>
@@ -393,7 +393,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BlogCategories");
+                    b.ToTable("BlogCategories", (string)null);
 
                     b.HasData(
                         new
@@ -482,7 +482,7 @@ namespace JohnHenryFashionWeb.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("BlogPosts");
+                    b.ToTable("BlogPosts", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Brand", b =>
@@ -519,7 +519,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("Brands", (string)null);
 
                     b.HasData(
                         new
@@ -581,7 +581,7 @@ namespace JohnHenryFashionWeb.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -652,7 +652,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("CategoryApprovalRules");
+                    b.ToTable("CategoryApprovalRules", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.CheckoutSession", b =>
@@ -728,7 +728,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CheckoutSessions");
+                    b.ToTable("CheckoutSessions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.CheckoutSessionItem", b =>
@@ -776,7 +776,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("CheckoutSessionItems");
+                    b.ToTable("CheckoutSessionItems", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ContactMessage", b =>
@@ -844,7 +844,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ContactMessages");
+                    b.ToTable("ContactMessages", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ContentModeration", b =>
@@ -901,7 +901,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("SubmittedBy");
 
-                    b.ToTable("ContentModerations");
+                    b.ToTable("ContentModerations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ConversionEvent", b =>
@@ -954,7 +954,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ConversionEvents");
+                    b.ToTable("ConversionEvents", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Coupon", b =>
@@ -1013,7 +1013,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Coupons");
+                    b.ToTable("Coupons", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.CouponUsage", b =>
@@ -1046,7 +1046,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CouponUsages");
+                    b.ToTable("CouponUsages", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Dispute", b =>
@@ -1135,7 +1135,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("Disputes");
+                    b.ToTable("Disputes", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.District", b =>
@@ -1168,7 +1168,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("Districts");
+                    b.ToTable("Districts", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.EmailCampaign", b =>
@@ -1241,7 +1241,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("EmailCampaigns");
+                    b.ToTable("EmailCampaigns", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.EmailConfiguration", b =>
@@ -1299,7 +1299,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailConfigurations");
+                    b.ToTable("EmailConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.FAQ", b =>
@@ -1345,7 +1345,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FAQs");
+                    b.ToTable("FAQs", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.FlashSale", b =>
@@ -1400,7 +1400,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("FlashSales");
+                    b.ToTable("FlashSales", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.InventoryItem", b =>
@@ -1448,7 +1448,7 @@ namespace JohnHenryFashionWeb.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("InventoryItems");
+                    b.ToTable("InventoryItems", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.MarketingBanner", b =>
@@ -1529,7 +1529,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("StartDate");
 
-                    b.ToTable("MarketingBanners");
+                    b.ToTable("MarketingBanners", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Notification", b =>
@@ -1587,7 +1587,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId", "IsRead");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Order", b =>
@@ -1665,7 +1665,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.OrderItem", b =>
@@ -1704,7 +1704,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.OrderStatusHistory", b =>
@@ -1745,7 +1745,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("OrderStatusHistories");
+                    b.ToTable("OrderStatusHistories", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PageView", b =>
@@ -1810,7 +1810,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("ViewedAt");
 
-                    b.ToTable("PageViews");
+                    b.ToTable("PageViews", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PasswordHistory", b =>
@@ -1842,7 +1842,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordHistories");
+                    b.ToTable("PasswordHistories", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Payment", b =>
@@ -1884,7 +1884,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PaymentAttempt", b =>
@@ -1965,7 +1965,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PaymentAttempts");
+                    b.ToTable("PaymentAttempts", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PaymentGatewayConfiguration", b =>
@@ -2033,7 +2033,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentGatewayConfigurations");
+                    b.ToTable("PaymentGatewayConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PaymentMethod", b =>
@@ -2101,7 +2101,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("SortOrder");
 
-                    b.ToTable("PaymentMethods");
+                    b.ToTable("PaymentMethods", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PaymentMethodConfig", b =>
@@ -2150,7 +2150,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentMethodConfigs");
+                    b.ToTable("PaymentMethodConfigs", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PaymentTransaction", b =>
@@ -2220,7 +2220,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PaymentTransactions");
+                    b.ToTable("PaymentTransactions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PlatformFeeConfiguration", b =>
@@ -2273,7 +2273,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("SellerTier");
 
-                    b.ToTable("PlatformFeeConfigurations");
+                    b.ToTable("PlatformFeeConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Product", b =>
@@ -2390,7 +2390,7 @@ namespace JohnHenryFashionWeb.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ProductApproval", b =>
@@ -2451,7 +2451,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("SubmittedAt");
 
-                    b.ToTable("ProductApprovals");
+                    b.ToTable("ProductApprovals", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ProductApprovalHistory", b =>
@@ -2499,7 +2499,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("ProductApprovalId");
 
-                    b.ToTable("ProductApprovalHistories");
+                    b.ToTable("ProductApprovalHistories", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ProductImage", b =>
@@ -2531,7 +2531,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductImages");
+                    b.ToTable("ProductImages", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ProductReview", b =>
@@ -2572,7 +2572,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductReviews");
+                    b.ToTable("ProductReviews", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Promotion", b =>
@@ -2651,7 +2651,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("StartDate");
 
-                    b.ToTable("Promotions");
+                    b.ToTable("Promotions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Province", b =>
@@ -2679,7 +2679,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Provinces");
+                    b.ToTable("Provinces", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.PushNotificationCampaign", b =>
@@ -2750,7 +2750,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("PushNotificationCampaigns");
+                    b.ToTable("PushNotificationCampaigns", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.RefundRequest", b =>
@@ -2815,7 +2815,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("RefundRequests");
+                    b.ToTable("RefundRequests", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ReportTemplate", b =>
@@ -2875,7 +2875,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("ReportTemplates");
+                    b.ToTable("ReportTemplates", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.RolePermission", b =>
@@ -2909,7 +2909,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RolePermissions");
+                    b.ToTable("RolePermissions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SalesReport", b =>
@@ -2960,7 +2960,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("GeneratedByUserId");
 
-                    b.ToTable("SalesReports");
+                    b.ToTable("SalesReports", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SecurityLog", b =>
@@ -3011,7 +3011,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId", "EventType");
 
-                    b.ToTable("SecurityLogs");
+                    b.ToTable("SecurityLogs", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SellerSettlement", b =>
@@ -3083,7 +3083,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("SellerSettlements");
+                    b.ToTable("SellerSettlements", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SellerStore", b =>
@@ -3115,7 +3115,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("SellerStores");
+                    b.ToTable("SellerStores", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ShippingConfiguration", b =>
@@ -3190,7 +3190,7 @@ namespace JohnHenryFashionWeb.Migrations
                     b.HasIndex("ProviderCode")
                         .IsUnique();
 
-                    b.ToTable("ShippingConfigurations");
+                    b.ToTable("ShippingConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ShippingMethod", b =>
@@ -3257,7 +3257,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("SortOrder");
 
-                    b.ToTable("ShippingMethods");
+                    b.ToTable("ShippingMethods", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.ShoppingCartItem", b =>
@@ -3297,7 +3297,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShoppingCartItems");
+                    b.ToTable("ShoppingCartItems", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.StockMovement", b =>
@@ -3342,7 +3342,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StockMovements");
+                    b.ToTable("StockMovements", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Store", b =>
@@ -3426,7 +3426,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Stores");
+                    b.ToTable("Stores", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.StoreInventory", b =>
@@ -3471,7 +3471,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("StoreInventories");
+                    b.ToTable("StoreInventories", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.StoreSettings", b =>
@@ -3510,7 +3510,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("StoreSettings");
+                    b.ToTable("StoreSettings", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SupportTicket", b =>
@@ -3605,7 +3605,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SupportTickets");
+                    b.ToTable("SupportTickets", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SystemConfiguration", b =>
@@ -3658,7 +3658,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("SystemConfigurations");
+                    b.ToTable("SystemConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.SystemPromotion", b =>
@@ -3746,7 +3746,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("StartDate");
 
-                    b.ToTable("SystemPromotions");
+                    b.ToTable("SystemPromotions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.TaxConfiguration", b =>
@@ -3799,7 +3799,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaxConfigurations");
+                    b.ToTable("TaxConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.TicketReply", b =>
@@ -3839,7 +3839,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketReplies");
+                    b.ToTable("TicketReplies", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.TwoFactorToken", b =>
@@ -3888,7 +3888,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId", "Purpose");
 
-                    b.ToTable("TwoFactorTokens");
+                    b.ToTable("TwoFactorTokens", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.UserSession", b =>
@@ -3946,7 +3946,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSessions");
+                    b.ToTable("UserSessions", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Ward", b =>
@@ -3979,7 +3979,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("DistrictId");
 
-                    b.ToTable("Wards");
+                    b.ToTable("Wards", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.Wishlist", b =>
@@ -4004,7 +4004,7 @@ namespace JohnHenryFashionWeb.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Wishlists");
+                    b.ToTable("Wishlists", (string)null);
                 });
 
             modelBuilder.Entity("JohnHenryFashionWeb.Models.WithdrawalRequest", b =>
@@ -4087,7 +4087,7 @@ namespace JohnHenryFashionWeb.Migrations
                     b.HasIndex("WithdrawalNumber")
                         .IsUnique();
 
-                    b.ToTable("WithdrawalRequests");
+                    b.ToTable("WithdrawalRequests", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
