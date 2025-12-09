@@ -15,6 +15,7 @@ namespace JohnHenryFashionWeb.Services
         Task<bool> UpdateUserRolesAsync(string userId, List<string> roles);
         Task<UserDetailViewModel> GetUserDetailAsync(string userId);
         Task<bool> DeleteUserAsync(string userId);
+        Task<bool> UnlockUserAsync(string userId);
         Task<Dictionary<string, int>> GetUserStatisticsAsync();
         Task<List<ApplicationUser>> GetRecentUsersAsync(int count = 10);
     }

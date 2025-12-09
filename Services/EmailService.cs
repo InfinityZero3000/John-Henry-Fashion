@@ -19,6 +19,9 @@ namespace JohnHenryFashionWeb.Services
         Task<bool> SendBulkEmailAsync(List<string> recipients, string subject, string content);
         Task<bool> SendProductNotificationEmailAsync(string email, Product product, string notificationType);
         Task<bool> SendTwoFactorCodeEmailAsync(string email, string code);
+        Task<bool> SendRefundRequestedEmailAsync(string email, string customerName, string orderNumber, decimal amount);
+        Task<bool> SendRefundApprovedEmailAsync(string email, string customerName, string orderNumber, decimal amount);
+        Task<bool> SendRefundRejectedEmailAsync(string email, string customerName, string orderNumber, string reason);
     }
 
     public class EmailService : IEmailService
@@ -335,6 +338,77 @@ namespace JohnHenryFashionWeb.Services
                 .Replace("{{VerificationCode}}", code)
                 .Replace("{{CompanyName}}", "John Henry Fashion")
                 .Replace("{{BaseUrl}}", _emailSettings.BaseUrl);
+
+            return await SendEmailAsync(email, subject, body, isHtml: true);
+        }
+
+        public async Task<bool> SendRefundRequestedEmailAsync(string email, string customerName, string orderNumber, decimal amount)
+        {
+            var subject = $"Yêu Cầu Hoàn Trả Đơn Hàng #{orderNumber}";
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <h2 style='color: #333;'>Yêu Cầu Hoàn Trả Đã Được Tiếp Nhận</h2>
+                    <p>Xin chào <strong>{customerName}</strong>,</p>
+                    <p>Chúng tôi đã nhận được yêu cầu hoàn trả cho đơn hàng <strong>#{orderNumber}</strong>.</p>
+                    <div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        <p><strong>Số tiền hoàn trả:</strong> {amount:N0} VNĐ</p>
+                        <p><strong>Thời gian xử lý:</strong> 24-48 giờ</p>
+                    </div>
+                    <p>Chúng tôi sẽ xem xét và phản hồi trong thời gian sớm nhất.</p>
+                    <p>Nếu có thắc mắc, vui lòng liên hệ: <a href='mailto:support@johnhenry.vn'>support@johnhenry.vn</a></p>
+                    <hr style='margin-top: 30px; border: none; border-top: 1px solid #ddd;'>
+                    <p style='color: #666; font-size: 12px;'>Email tự động từ John Henry Fashion</p>
+                </div>";
+
+            return await SendEmailAsync(email, subject, body, isHtml: true);
+        }
+
+        public async Task<bool> SendRefundApprovedEmailAsync(string email, string customerName, string orderNumber, decimal amount)
+        {
+            var subject = $"✅ Yêu Cầu Hoàn Trả Được Chấp Nhận - #{orderNumber}";
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <div style='background-color: #4CAF50; color: white; padding: 20px; border-radius: 5px;'>
+                        <h2>Yêu Cầu Hoàn Trả Được Chấp Nhận</h2>
+                    </div>
+                    <p style='margin-top: 20px;'>Xin chào <strong>{customerName}</strong>,</p>
+                    <p>Yêu cầu hoàn trả cho đơn hàng <strong>#{orderNumber}</strong> đã được chấp nhận.</p>
+                    <div style='background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        <p><strong>Số tiền hoàn trả:</strong> {amount:N0} VNĐ</p>
+                        <p><strong>Phương thức hoàn trả:</strong> Chuyển khoản ngân hàng</p>
+                        <p><strong>Thời gian nhận tiền:</strong> 3-5 ngày làm việc</p>
+                    </div>
+                    <p>Chúng tôi sẽ liên hệ để xác nhận thông tin tài khoản ngân hàng.</p>
+                    <p>Cảm ơn bạn đã tin tưởng John Henry Fashion!</p>
+                    <hr style='margin-top: 30px; border: none; border-top: 1px solid #ddd;'>
+                    <p style='color: #666; font-size: 12px;'>Email tự động từ John Henry Fashion</p>
+                </div>";
+
+            return await SendEmailAsync(email, subject, body, isHtml: true);
+        }
+
+        public async Task<bool> SendRefundRejectedEmailAsync(string email, string customerName, string orderNumber, string reason)
+        {
+            var subject = $"Yêu Cầu Hoàn Trả Bị Từ Chối - #{orderNumber}";
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <div style='background-color: #ff9800; color: white; padding: 20px; border-radius: 5px;'>
+                        <h2>Yêu Cầu Hoàn Trả Bị Từ Chối</h2>
+                    </div>
+                    <p style='margin-top: 20px;'>Xin chào <strong>{customerName}</strong>,</p>
+                    <p>Rất tiếc, yêu cầu hoàn trả cho đơn hàng <strong>#{orderNumber}</strong> không được chấp nhận.</p>
+                    <div style='background-color: #fff3e0; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        <p><strong>Lý do:</strong></p>
+                        <p>{reason}</p>
+                    </div>
+                    <p>Nếu bạn không đồng ý với quyết định này, vui lòng liên hệ:</p>
+                    <ul>
+                        <li>Email: <a href='mailto:support@johnhenry.vn'>support@johnhenry.vn</a></li>
+                        <li>Hotline: 1900-xxxx</li>
+                    </ul>
+                    <hr style='margin-top: 30px; border: none; border-top: 1px solid #ddd;'>
+                    <p style='color: #666; font-size: 12px;'>Email tự động từ John Henry Fashion</p>
+                </div>";
 
             return await SendEmailAsync(email, subject, body, isHtml: true);
         }

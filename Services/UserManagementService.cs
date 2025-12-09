@@ -97,6 +97,10 @@ namespace JohnHenryFashionWeb.Services
                     .Where(o => o.UserId == user.Id && (o.Status == "Completed" || o.Status == "completed" || o.Status == "delivered"))
                     .SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
                 
+                // Check if user is locked out
+                var isLockedOut = await _userManager.IsLockedOutAsync(user);
+                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+                
                 userViewModels.Add(new UserListItemViewModel
                 {
                     Id = user.Id,
@@ -110,7 +114,9 @@ namespace JohnHenryFashionWeb.Services
                     LastLoginDate = user.LastLoginDate, // Đã có
                     Roles = roles.ToList(),
                     OrderCount = orderCount, // Thêm số đơn hàng
-                    TotalSpent = totalSpent // Thêm tổng chi tiêu
+                    TotalSpent = totalSpent, // Thêm tổng chi tiêu
+                    IsLockedOut = isLockedOut, // Thêm thông tin lockout
+                    LockoutEnd = lockoutEnd?.DateTime // Thêm thời gian lockout kết thúc
                 });
             }
 
@@ -162,6 +168,11 @@ namespace JohnHenryFashionWeb.Services
                 .Where(o => o.UserId == userId && o.Status == "Completed")
                 .SumAsync(o => o.Total);
 
+            // Check lockout status
+            var isLockedOut = await _userManager.IsLockedOutAsync(user);
+            var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+            var failedAttempts = await _userManager.GetAccessFailedCountAsync(user);
+
             return new UserDetailViewModel
             {
                 User = user,
@@ -170,7 +181,10 @@ namespace JohnHenryFashionWeb.Services
                 OrderCount = orderCount,
                 TotalSpent = totalSpent,
                 JoinDate = user.CreatedAt,
-                LastActivity = user.LastLoginDate
+                LastActivity = user.LastLoginDate,
+                IsLockedOut = isLockedOut,
+                LockoutEnd = lockoutEnd?.DateTime,
+                FailedLoginAttempts = failedAttempts
             };
         }
 
@@ -287,6 +301,37 @@ namespace JohnHenryFashionWeb.Services
                     return true;
                 }
                 return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UnlockUserAsync(string userId)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null) return false;
+
+                // Unlock the account by setting lockout end date to null
+                var unlockResult = await _userManager.SetLockoutEndDateAsync(user, null);
+                if (!unlockResult.Succeeded) return false;
+
+                // Reset failed access attempts count
+                var resetResult = await _userManager.ResetAccessFailedCountAsync(user);
+                if (!resetResult.Succeeded) return false;
+
+                // Log the unlock action
+                await _auditLogService.LogAdminActionAsync(
+                    "SYSTEM",
+                    "UNLOCK_USER",
+                    userId,
+                    $"Unlocked user account: {user.Email}"
+                );
+
+                return true;
             }
             catch
             {

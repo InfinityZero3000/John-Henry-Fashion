@@ -229,6 +229,39 @@ namespace JohnHenryFashionWeb.Services
                         $"/admin/orders/{order.Id}"
                     );
                 }
+
+                // Notify sellers about new orders containing their products
+                var orderItems = await _context.OrderItems
+                    .Include(oi => oi.Product)
+                    .Where(oi => oi.OrderId == order.Id && oi.Product != null && !string.IsNullOrEmpty(oi.Product.SellerId))
+                    .ToListAsync();
+
+                var sellerIds = orderItems
+                    .Select(oi => oi.Product.SellerId)
+                    .Where(id => !string.IsNullOrEmpty(id))
+                    .Distinct()
+                    .ToList();
+
+                foreach (var sellerId in sellerIds)
+                {
+                    if (string.IsNullOrEmpty(sellerId))
+                        continue;
+                        
+                    var sellerProducts = orderItems
+                        .Where(oi => oi.Product != null && oi.Product.SellerId == sellerId)
+                        .ToList();
+                    
+                    var productCount = sellerProducts.Sum(oi => oi.Quantity);
+                    var totalAmount = sellerProducts.Sum(oi => oi.TotalPrice);
+
+                    await CreateNotificationAsync(
+                        sellerId,
+                        "Đơn hàng mới",
+                        $"Bạn có đơn hàng mới #{order.OrderNumber} với {productCount} sản phẩm (Tổng: {totalAmount:N0} ₫)",
+                        "seller_order",
+                        $"/seller/orders/{order.Id}"
+                    );
+                }
             }
             catch (Exception ex)
             {

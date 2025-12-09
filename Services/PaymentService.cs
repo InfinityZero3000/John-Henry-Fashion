@@ -69,23 +69,9 @@ namespace JohnHenryFashionWeb.Services
                     };
                 }
 
-                // Log payment attempt
-                var attempt = new PaymentAttempt
-                {
-                    PaymentId = Guid.NewGuid().ToString(),
-                    OrderId = request.OrderId,
-                    UserId = request.UserId,
-                    Amount = request.Amount,
-                    Currency = request.Currency,
-                    PaymentMethod = request.PaymentMethod,
-                    Status = "pending",
-                    CreatedAt = DateTime.UtcNow,
-                    IpAddress = request.IpAddress,
-                    UserAgent = request.UserAgent
-                };
-
-                await LogPaymentAttemptAsync(attempt);
-
+                // Note: PaymentAttempt logging is handled by the controller
+                // to ensure Order exists in database before creating PaymentAttempt
+                
                 // Process payment based on method
                 PaymentResult result = request.PaymentMethod.ToLower() switch
                 {
@@ -120,14 +106,8 @@ namespace JohnHenryFashionWeb.Services
                     }
                 };
 
-                // Update payment attempt status
-                attempt.Status = result.IsSuccess ? "completed" : "failed";
-                attempt.TransactionId = result.TransactionId;
-                attempt.ErrorMessage = result.ErrorMessage;
-                attempt.CompletedAt = DateTime.UtcNow;
-
-                _context.PaymentAttempts.Update(attempt);
-                await _context.SaveChangesAsync();
+                // Note: PaymentAttempt status update is handled by the controller
+                // to ensure proper order of operations
 
                 return result;
             }
@@ -150,31 +130,138 @@ namespace JohnHenryFashionWeb.Services
                 var vnpayConfig = _configuration.GetSection("PaymentGateways:VNPay");
                 var vnp_TmnCode = vnpayConfig["TmnCode"] ?? string.Empty;
                 var vnp_HashSecret = vnpayConfig["HashSecret"];
-                var vnp_Url = vnpayConfig["Url"];
+                var vnp_Url = vnpayConfig["PaymentUrl"] ?? vnpayConfig["Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+
+                // Validate credentials
+                if (string.IsNullOrWhiteSpace(vnp_TmnCode) || string.IsNullOrWhiteSpace(vnp_HashSecret))
+                {
+                    _logger.LogError("VNPay credentials are missing. TmnCode: {HasTmnCode}, HashSecret: {HasHashSecret}",
+                        !string.IsNullOrWhiteSpace(vnp_TmnCode),
+                        !string.IsNullOrWhiteSpace(vnp_HashSecret));
+                    return new PaymentResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Cấu hình VNPay chưa đầy đủ. Vui lòng kiểm tra TmnCode và HashSecret"
+                    };
+                }
+
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(request.ReturnUrl))
+                {
+                    return new PaymentResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "ReturnUrl không được để trống"
+                    };
+                }
+
+                // Generate unique transaction reference (max 100 chars, alphanumeric only)
+                // Try to get OrderNumber from database if OrderId is Guid
+                var txnRef = request.OrderId;
+                
+                // If OrderId is a Guid, try to get OrderNumber from database
+                if (Guid.TryParse(request.OrderId, out var orderGuid))
+                {
+                    var order = await _context.Orders
+                        .FirstOrDefaultAsync(o => o.Id == orderGuid);
+                    
+                    if (order != null && !string.IsNullOrEmpty(order.OrderNumber))
+                    {
+                        // Use OrderNumber (clean alphanumeric)
+                        txnRef = System.Text.RegularExpressions.Regex.Replace(order.OrderNumber, @"[^a-zA-Z0-9]", "");
+                    }
+                    else
+                    {
+                        // Fallback: Use first 8 chars of Guid + timestamp
+                        txnRef = orderGuid.ToString("N").Substring(0, 8) + DateTime.Now.ToString("HHmmss");
+                    }
+                }
+                else
+                {
+                    // Remove any special characters, keep only alphanumeric
+                    txnRef = System.Text.RegularExpressions.Regex.Replace(txnRef, @"[^a-zA-Z0-9]", "");
+                }
+                
+                // Ensure max length
+                if (txnRef.Length > 100)
+                {
+                    txnRef = txnRef.Substring(0, 100);
+                }
+
+                // Calculate amount in VND cents (must be integer, no decimals)
+                var vnp_Amount = (long)(request.Amount * 100);
+                
+                // Format OrderInfo (max 255 chars, URL encode)
+                var orderInfo = request.OrderInfo ?? "Thanh toan don hang";
+                if (orderInfo.Length > 255)
+                {
+                    orderInfo = orderInfo.Substring(0, 255);
+                }
+
+                // Get IP address (required by VNPay)
+                var ipAddress = request.IpAddress;
+                if (string.IsNullOrWhiteSpace(ipAddress) || ipAddress == "::1")
+                {
+                    ipAddress = "127.0.0.1"; // Default for localhost
+                }
+
+                // Create date in VNPay format (yyyyMMddHHmmss)
+                var createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
+                
+                // Expire date (15 minutes from now)
+                var expireDate = DateTime.Now.AddMinutes(15).ToString("yyyyMMddHHmmss");
 
                 var vnp_Params = new Dictionary<string, string>
                 {
                     {"vnp_Version", "2.1.0"},
                     {"vnp_Command", "pay"},
-                    {"vnp_TmnCode", vnp_TmnCode!},
-                    {"vnp_Amount", (request.Amount * 100).ToString()}, // VNPay requires amount in VND cents
+                    {"vnp_TmnCode", vnp_TmnCode},
+                    {"vnp_Amount", vnp_Amount.ToString()}, // Must be integer string
                     {"vnp_CurrCode", "VND"},
-                    {"vnp_TxnRef", request.OrderId},
-                    {"vnp_OrderInfo", request.OrderInfo},
+                    {"vnp_TxnRef", txnRef},
+                    {"vnp_OrderInfo", orderInfo},
                     {"vnp_OrderType", "other"},
                     {"vnp_Locale", "vn"},
                     {"vnp_ReturnUrl", request.ReturnUrl},
-                    {"vnp_IpAddr", request.IpAddress},
-                    {"vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")}
+                    {"vnp_IpAddr", ipAddress},
+                    {"vnp_CreateDate", createDate},
+                    {"vnp_ExpireDate", expireDate}
                 };
 
-                // Sort parameters and create query string
+                // Add NotifyUrl if provided (optional but recommended)
+                if (!string.IsNullOrWhiteSpace(request.NotifyUrl))
+                {
+                    vnp_Params["vnp_NotifyUrl"] = request.NotifyUrl;
+                }
+
+                // Remove empty values
+                vnp_Params = vnp_Params.Where(x => !string.IsNullOrWhiteSpace(x.Value)).ToDictionary(x => x.Key, x => x.Value);
+
+                // Sort parameters alphabetically (required by VNPay)
                 var sortedParams = vnp_Params.OrderBy(x => x.Key).ToList();
+                
+                // Create query string (URL encode values)
                 var query = string.Join("&", sortedParams.Select(x => $"{x.Key}={Uri.EscapeDataString(x.Value)}"));
 
-                // Create signature
-                var signature = CreateVNPaySignature(query, vnp_HashSecret!);
+                // Create signature (HMAC SHA512)
+                var signature = CreateVNPaySignature(query, vnp_HashSecret);
+                
+                // Build final URL
                 var paymentUrl = $"{vnp_Url}?{query}&vnp_SecureHash={signature}";
+                
+                // Enhanced logging for debugging
+                _logger.LogInformation("VNPay Payment URL Details:");
+                _logger.LogInformation("  TmnCode: {TmnCode}", vnp_TmnCode);
+                _logger.LogInformation("  Amount: {Amount} (cents: {AmountCents})", request.Amount, vnp_Amount);
+                _logger.LogInformation("  TxnRef: {TxnRef}", txnRef);
+                _logger.LogInformation("  ReturnUrl: {ReturnUrl}", request.ReturnUrl);
+                _logger.LogInformation("  NotifyUrl: {NotifyUrl}", request.NotifyUrl ?? "N/A");
+                _logger.LogInformation("  IpAddr: {IpAddr}", ipAddress);
+                _logger.LogInformation("  CreateDate: {CreateDate}", createDate);
+                _logger.LogInformation("  ExpireDate: {ExpireDate}", expireDate);
+                _logger.LogInformation("  Query String: {Query}", query);
+                _logger.LogInformation("  Signature: {Signature}", signature);
+                _logger.LogInformation("  Final URL: {PaymentUrl}", paymentUrl);
 
                 return new PaymentResult
                 {
@@ -203,19 +290,44 @@ namespace JohnHenryFashionWeb.Services
                 var partnerCode = momoConfig["PartnerCode"];
                 var accessKey = momoConfig["AccessKey"];
                 var secretKey = momoConfig["SecretKey"];
-                var endpoint = momoConfig["Endpoint"];
+                var endpoint = momoConfig["ApiUrl"] ?? momoConfig["Endpoint"]; // Support both keys
+                
+                // Validate required credentials
+                if (string.IsNullOrWhiteSpace(partnerCode) || 
+                    string.IsNullOrWhiteSpace(accessKey) || 
+                    string.IsNullOrWhiteSpace(secretKey))
+                {
+                    _logger.LogError("MoMo credentials are missing for payment processing");
+                    return new PaymentResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Cấu hình MoMo chưa đầy đủ. Vui lòng kiểm tra credentials trong file .env"
+                    };
+                }
+                
+                if (string.IsNullOrWhiteSpace(endpoint))
+                {
+                    var isSandbox = bool.Parse(momoConfig["IsSandbox"] ?? momoConfig["Sandbox"] ?? "true");
+                    endpoint = isSandbox 
+                        ? "https://test-payment.momo.vn/v2/gateway/api/create"
+                        : "https://payment.momo.vn/v2/gateway/api/create";
+                    _logger.LogWarning("MoMo endpoint not configured, using default: {Endpoint}", endpoint);
+                }
 
                 var requestId = Guid.NewGuid().ToString();
                 var orderId = request.OrderId;
-                var amount = request.Amount.ToString();
+                var amount = (long)request.Amount; // MoMo requires long/number type, not string
                 var orderInfo = request.OrderInfo;
                 var redirectUrl = request.ReturnUrl;
                 var ipnUrl = request.NotifyUrl;
                 var extraData = "";
 
-                // Create signature
+                // Create signature - amount must be string in signature calculation
                 var rawHash = $"accessKey={accessKey}&amount={amount}&extraData={extraData}&ipnUrl={ipnUrl}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&redirectUrl={redirectUrl}&requestId={requestId}&requestType=payWithATM";
                 var signature = CreateMoMoSignature(rawHash, secretKey!);
+
+                _logger.LogInformation("MoMo Request - OrderId: {OrderId}, Amount: {Amount}, Signature Hash: {RawHash}", 
+                    orderId, amount, rawHash);
 
                 var requestData = new
                 {
@@ -223,7 +335,7 @@ namespace JohnHenryFashionWeb.Services
                     partnerName = "John Henry Fashion",
                     storeId = "MomoTestStore",
                     requestId,
-                    amount,
+                    amount, // This will be serialized as number
                     orderId,
                     orderInfo,
                     redirectUrl,
@@ -235,10 +347,14 @@ namespace JohnHenryFashionWeb.Services
                 };
 
                 var json = JsonSerializer.Serialize(requestData);
+                _logger.LogInformation("MoMo Request JSON: {Json}", json);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync(endpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
+                
+                _logger.LogInformation("MoMo Response Status: {StatusCode}, Body: {Response}", 
+                    response.StatusCode, responseContent);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -255,12 +371,24 @@ namespace JohnHenryFashionWeb.Services
                             Message = "Chuyển hướng đến MoMo để thanh toán"
                         };
                     }
+                    else
+                    {
+                        _logger.LogError("MoMo Error - ResultCode: {ResultCode}, Message: {Message}", 
+                            momoResponse?.ResultCode, momoResponse?.Message);
+                        return new PaymentResult
+                        {
+                            IsSuccess = false,
+                            ErrorMessage = $"MoMo Error: {momoResponse?.Message ?? "Unknown error"}"
+                        };
+                    }
                 }
 
+                _logger.LogError("MoMo HTTP Error: {StatusCode}, Response: {Response}", 
+                    response.StatusCode, responseContent);
                 return new PaymentResult
                 {
                     IsSuccess = false,
-                    ErrorMessage = "Lỗi kết nối MoMo"
+                    ErrorMessage = $"Lỗi kết nối MoMo (HTTP {(int)response.StatusCode})"
                 };
             }
             catch (Exception ex)
@@ -440,13 +568,22 @@ namespace JohnHenryFashionWeb.Services
                 string.IsNullOrEmpty(request.UserId) ||
                 request.Amount <= 0)
             {
+                _logger.LogWarning("ValidatePaymentDataAsync failed - OrderId: {OrderId}, UserId: {UserId}, Amount: {Amount}",
+                    request.OrderId, request.UserId, request.Amount);
                 return false;
             }
 
             // Check if order exists and belongs to user
+            // OrderId can be either Guid (Id) or OrderNumber (string)
             var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id.ToString() == request.OrderId && 
+                .FirstOrDefaultAsync(o => (o.Id.ToString() == request.OrderId || o.OrderNumber == request.OrderId) && 
                                         o.UserId == request.UserId);
+
+            if (order == null)
+            {
+                _logger.LogWarning("ValidatePaymentDataAsync - Order not found. OrderId: {OrderId}, UserId: {UserId}",
+                    request.OrderId, request.UserId);
+            }
 
             return order != null;
         }
@@ -562,8 +699,8 @@ namespace JohnHenryFashionWeb.Services
                 var vnpayConfig = _configuration.GetSection("PaymentGateways:VNPay");
                 var vnp_TmnCode = vnpayConfig["TmnCode"] ?? string.Empty;
                 var vnp_HashSecret = vnpayConfig["HashSecret"];
-                var vnp_Url = vnpayConfig["Url"];
-                var isSandbox = bool.Parse(vnpayConfig["Sandbox"] ?? "true");
+                var vnp_Url = vnpayConfig["PaymentUrl"] ?? vnpayConfig["Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+                var isSandbox = bool.Parse(vnpayConfig["IsSandbox"] ?? vnpayConfig["Sandbox"] ?? "true");
 
                 // Generate unique transaction ID
                 var txnRef = $"{request.OrderId}_{DateTime.Now:yyyyMMddHHmmss}";
@@ -639,8 +776,39 @@ namespace JohnHenryFashionWeb.Services
                 var partnerCode = momoConfig["PartnerCode"];
                 var accessKey = momoConfig["AccessKey"];
                 var secretKey = momoConfig["SecretKey"];
-                var endpoint = momoConfig["Endpoint"];
-                var isSandbox = bool.Parse(momoConfig["Sandbox"] ?? "true");
+                var endpoint = momoConfig["ApiUrl"] ?? momoConfig["Endpoint"]; // Support both keys
+                var isSandbox = bool.Parse(momoConfig["IsSandbox"] ?? momoConfig["Sandbox"] ?? "true");
+                
+                // Validate required credentials
+                if (string.IsNullOrWhiteSpace(partnerCode) || 
+                    string.IsNullOrWhiteSpace(accessKey) || 
+                    string.IsNullOrWhiteSpace(secretKey))
+                {
+                    _logger.LogError("MoMo credentials are missing. PartnerCode: {HasPartnerCode}, AccessKey: {HasAccessKey}, SecretKey: {HasSecretKey}",
+                        !string.IsNullOrWhiteSpace(partnerCode),
+                        !string.IsNullOrWhiteSpace(accessKey),
+                        !string.IsNullOrWhiteSpace(secretKey));
+                    return new QRCodeResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Cấu hình MoMo chưa đầy đủ. Vui lòng kiểm tra credentials trong file .env",
+                        OrderId = request.OrderId
+                    };
+                }
+                
+                // Log credentials info (masked for security) - only in debug mode
+                _logger.LogDebug("MoMo Config - PartnerCode: {PartnerCode}, AccessKey prefix: {AccessKeyPrefix}, SecretKey length: {SecretKeyLength}",
+                    partnerCode, 
+                    accessKey?.Length > 5 ? accessKey.Substring(0, 5) + "***" : "***",
+                    secretKey?.Length ?? 0);
+                
+                if (string.IsNullOrWhiteSpace(endpoint))
+                {
+                    endpoint = isSandbox 
+                        ? "https://test-payment.momo.vn/v2/gateway/api/create"
+                        : "https://payment.momo.vn/v2/gateway/api/create";
+                    _logger.LogWarning("MoMo endpoint not configured, using default: {Endpoint}", endpoint);
+                }
 
                 var requestId = Guid.NewGuid().ToString();
                 var orderId = $"{request.OrderId}_{DateTime.Now:yyyyMMddHHmmss}";
@@ -648,14 +816,25 @@ namespace JohnHenryFashionWeb.Services
                 var orderInfo = string.IsNullOrEmpty(request.OrderInfo) 
                     ? $"Thanh toan don hang {request.OrderId}" 
                     : request.OrderInfo;
-                var redirectUrl = request.ReturnUrl;
-                var ipnUrl = request.NotifyUrl;
+                
+                // Ensure URLs are properly formatted (MoMo requires absolute URLs)
+                var redirectUrl = request.ReturnUrl ?? "";
+                var ipnUrl = request.NotifyUrl ?? "";
+                
+                // For sandbox, if localhost, use ngrok or public URL if available
+                // Otherwise, MoMo sandbox should accept localhost
                 var extraData = "";
                 var requestType = "captureWallet"; // For QR code payment
 
-                // Create signature
+                // Create signature - IMPORTANT: Order must match MoMo's exact requirement
+                // Order: accessKey, amount, extraData, ipnUrl, orderId, orderInfo, partnerCode, redirectUrl, requestId, requestType
+                // Note: Do NOT URL encode the rawHash string - use raw values as-is
                 var rawHash = $"accessKey={accessKey}&amount={amount}&extraData={extraData}&ipnUrl={ipnUrl}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&redirectUrl={redirectUrl}&requestId={requestId}&requestType={requestType}";
+                
+                _logger.LogDebug("MoMo Signature Raw Hash: {RawHash}", rawHash);
+                _logger.LogDebug("MoMo SecretKey length: {Length}", secretKey?.Length ?? 0);
                 var signature = CreateMoMoSignature(rawHash, secretKey!);
+                _logger.LogDebug("MoMo Signature: {Signature}", signature);
 
                 var requestData = new
                 {
@@ -679,21 +858,41 @@ namespace JohnHenryFashionWeb.Services
                 var json = JsonSerializer.Serialize(requestData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                _logger.LogInformation("Calling MoMo API: {Endpoint}", endpoint);
+                _logger.LogInformation("Calling MoMo QR API - Endpoint: {Endpoint}, OrderId: {OrderId}, Amount: {Amount}", 
+                    endpoint, orderId, amount);
+                _logger.LogDebug("MoMo Request Data: {RequestData}", json);
 
                 var response = await _httpClient.PostAsync(endpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                _logger.LogInformation("MoMo API Response: {Response}", responseContent);
+                _logger.LogInformation("MoMo API Response - Status: {StatusCode}, Content: {Response}", 
+                    response.StatusCode, responseContent);
 
                 if (response.IsSuccessStatusCode)
                 {
+                    _logger.LogDebug("MoMo API Response Content: {ResponseContent}", responseContent);
+                    
                     var momoResponse = JsonSerializer.Deserialize<MoMoQRResponse>(responseContent, 
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    if (momoResponse?.ResultCode == 0)
+                    if (momoResponse == null)
                     {
-                        _logger.LogInformation("MoMo QR generated successfully for {OrderId}", request.OrderId);
+                        _logger.LogError("Failed to deserialize MoMo response. Content: {ResponseContent}", responseContent);
+                        return new QRCodeResult
+                        {
+                            IsSuccess = false,
+                            ErrorMessage = "Không thể xử lý phản hồi từ MoMo",
+                            OrderId = request.OrderId
+                        };
+                    }
+
+                    _logger.LogInformation("MoMo Response - ResultCode: {ResultCode}, Message: {Message}", 
+                        momoResponse.ResultCode, momoResponse.Message);
+
+                    if (momoResponse.ResultCode == 0)
+                    {
+                        _logger.LogInformation("MoMo QR generated successfully for {OrderId}. QRUrl: {QRUrl}, PayUrl: {PayUrl}", 
+                            request.OrderId, momoResponse.QrCodeUrl, momoResponse.PayUrl);
 
                         return new QRCodeResult
                         {
@@ -716,11 +915,12 @@ namespace JohnHenryFashionWeb.Services
                     }
                     else
                     {
-                        _logger.LogError("MoMo API error: {Message}", momoResponse?.Message);
+                        _logger.LogError("MoMo API error - ResultCode: {ResultCode}, Message: {Message}", 
+                            momoResponse.ResultCode, momoResponse.Message);
                         return new QRCodeResult
                         {
                             IsSuccess = false,
-                            ErrorMessage = momoResponse?.Message ?? "Lỗi từ MoMo",
+                            ErrorMessage = momoResponse.Message ?? $"Lỗi từ MoMo (Code: {momoResponse.ResultCode})",
                             OrderId = request.OrderId
                         };
                     }
@@ -787,6 +987,7 @@ namespace JohnHenryFashionWeb.Services
         public string OrderId { get; set; } = string.Empty;
         public string OrderInfo { get; set; } = string.Empty;
         public string ReturnUrl { get; set; } = string.Empty;
+        public string NotifyUrl { get; set; } = string.Empty;
         public string IpAddress { get; set; } = string.Empty;
     }
 
