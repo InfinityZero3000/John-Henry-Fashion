@@ -54,7 +54,7 @@
             <!-- Payment Content - Full Width Centered -->
             <div class="col-lg-10">
                 <div class="payment-container">
-                    <!-- Payment Method Info Header -->
+                    <!-- Payment Method Selection or Info Header -->
                     <div class="payment-header text-center mb-4">
                         @{
                             var selectedMethod = Model.PaymentMethods.FirstOrDefault(m => m.Code == Model.SelectedPaymentMethod);
@@ -87,13 +87,65 @@
                                     <p class="text-muted">@selectedMethod.Description</p>
                                 </div>
                             }
+                            else if (Model.PaymentMethods.Any())
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Vui lòng chọn phương thức thanh toán
+                                </div>
+                                <div class="payment-methods-selection mt-4">
+                                    <h5 class="mb-3">Chọn phương thức thanh toán:</h5>
+                                    <div class="row g-3">
+                                        @foreach (var method in Model.PaymentMethods.Where(pm => pm.IsActive).OrderBy(pm => pm.SortOrder))
+                                        {
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="payment-method-card" data-payment-method="@method.Code">
+                                                    <input type="radio" name="paymentMethodRadio" id="pm_@method.Code" value="@method.Code" 
+                                                           class="payment-method-radio" @(method.Code == Model.SelectedPaymentMethod ? "checked" : "")>
+                                                    <label class="payment-method-label" for="pm_@method.Code">
+                                                        <div class="payment-method-icon mb-2">
+                                                            @if (method.Code == "vnpay")
+                                                            {
+                                                                <img src="~/images/payment/vnpay.svg" alt="VNPay" style="height: 40px;">
+                                                            }
+                                                            else if (method.Code == "momo")
+                                                            {
+                                                                <img src="~/images/payment/momo.svg" alt="MoMo" style="height: 40px;">
+                                                            }
+                                                            else if (method.Code == "stripe")
+                                                            {
+                                                                <img src="~/images/payment/stripe.svg" alt="Stripe" style="height: 40px;">
+                                                            }
+                                                            else if (method.Code == "cod")
+                                                            {
+                                                                <i class="fas fa-money-bill-wave fa-2x text-success"></i>
+                                                            }
+                                                            else if (method.Code == "bank_transfer")
+                                                            {
+                                                                <i class="fas fa-university fa-2x text-primary"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fas fa-credit-card fa-2x text-secondary"></i>
+                                                            }
+                                                        </div>
+                                                        <div class="fw-bold">@method.DisplayName</div>
+                                                        <small class="text-muted">@method.Description</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
                         }
                     </div>
 
                     <form id="paymentForm" asp-action="ProcessPayment" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="SessionId" />
-                        <input type="hidden" asp-for="SelectedPaymentMethod" />
+                        <input type="hidden" asp-for="SelectedPaymentMethod" id="SelectedPaymentMethod" />
+                        <input type="hidden" name="PaymentMethod" id="PaymentMethod" />
 
 
                         <!-- VNPay QR Payment Section -->
@@ -108,7 +160,7 @@
                                     <div class="qr-code-container">
                                         <div id="vnpayQRCode" class="qr-code-display">
                                             <i class="fas fa-qrcode fa-5x text-primary mb-3"></i>
-                                            <p class="text-muted">Nhấn "Thanh toán" để tạo mã QR</p>
+                                            <p class="text-muted">Mã QR sẽ được tạo sau khi bạn xác nhận thanh toán</p>
                                         </div>
                                     </div>
                                 </div>
@@ -161,7 +213,7 @@
                                     <div class="qr-code-container">
                                         <div id="momoQRCode" class="qr-code-display">
                                             <i class="fas fa-qrcode fa-5x text-danger mb-3"></i>
-                                            <p class="text-muted">Nhấn "Thanh toán" để tạo mã QR</p>
+                                            <p class="text-muted">Mã QR sẽ được tạo sau khi bạn xác nhận thanh toán</p>
                                         </div>
                                     </div>
                                 </div>
@@ -422,9 +474,12 @@
                             </div>
                             
                             <div class="order-totals-compact mt-3">
+                                @{
+                                    var subtotal = Model.Session.TotalAmount - Model.Session.ShippingFee - Model.Session.Tax + Model.Session.DiscountAmount;
+                                }
                                 <div class="total-row-compact">
                                     <span>Tạm tính:</span>
-                                    <span>@(Model.Session.TotalAmount - Model.Session.ShippingFee - Model.Session.Tax + Model.Session.DiscountAmount).ToString("N0") ₫</span>
+                                    <span>@subtotal.ToString("N0") ₫</span>
                                 </div>
                                 <div class="total-row-compact">
                                     <span>Phí vận chuyển:</span>
@@ -473,4 +528,118 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="~/js/payment.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle payment method selection from radio buttons
+            $('.payment-method-radio').on('change', function() {
+                const selectedMethod = $(this).val();
+                $('input[name="SelectedPaymentMethod"]').val(selectedMethod);
+                $('#PaymentMethod').val(selectedMethod);
+                
+                // Update UI to show selected method
+                $('.payment-method-card').removeClass('selected');
+                $(this).closest('.payment-method-card').addClass('selected');
+                
+                // Hide payment method selection and show selected method info
+                const selectedCard = $(this).closest('.payment-method-card');
+                const methodName = selectedCard.find('.fw-bold').text();
+                const methodDesc = selectedCard.find('.text-muted').text();
+                const methodIcon = selectedCard.find('.payment-method-icon').html();
+                
+                $('.payment-methods-selection').slideUp(300, function() {
+                    // Show selected method info
+                    $('.payment-header').html(`
+                        <div class="selected-payment-method">
+                            <div class="payment-method-logo mb-3">
+                                ${methodIcon}
+                            </div>
+                            <h3 class="mb-2">${methodName}</h3>
+                            <p class="text-muted">${methodDesc}</p>
+                            <button type="button" class="btn btn-link btn-sm mt-2" onclick="location.reload()">
+                                <i class="fas fa-edit me-1"></i>Thay đổi phương thức
+                            </button>
+                        </div>
+                    `);
+                });
+                
+                // Show appropriate payment section
+                $('.payment-details-form, .payment-qr-section').hide();
+                switch(selectedMethod) {
+                    case 'vnpay':
+                        $('#vnpayPaymentForm').show();
+                        if (typeof generateAndShowQRCode === 'function') {
+                            generateAndShowQRCode('vnpay');
+                        }
+                        break;
+                    case 'momo':
+                        $('#momoPaymentForm').show();
+                        if (typeof generateAndShowQRCode === 'function') {
+                            generateAndShowQRCode('momo');
+                        }
+                        break;
+                    case 'stripe':
+                        $('#stripePaymentForm').show();
+                        break;
+                    case 'bank_transfer':
+                        $('#bankTransferForm').show();
+                        break;
+                    case 'cod':
+                        $('#codForm').show();
+                        break;
+                }
+                
+                // Update button text
+                updatePaymentButtonText(selectedMethod);
+            });
+            
+            // Initialize: if payment method is already selected, trigger change
+            const initialMethod = $('input[name="SelectedPaymentMethod"]').val();
+            if (initialMethod) {
+                $(`input[name="paymentMethodRadio"][value="${initialMethod}"]`).prop('checked', true).trigger('change');
+            }
+        });
+        
+        function updatePaymentButtonText(paymentMethod) {
+            const buttonTexts = {
+                'vnpay': 'Thanh toán với VNPay',
+                'momo': 'Thanh toán với MoMo',
+                'stripe': 'Thanh toán bằng thẻ',
+                'cod': 'Xác nhận đặt hàng',
+                'bank_transfer': 'Xác nhận chuyển khoản'
+            };
+            $('#paymentButtonText').text(buttonTexts[paymentMethod] || 'Hoàn tất thanh toán');
+        }
+    </script>
+    <style>
+        .payment-method-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .payment-method-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+        }
+        .payment-method-card.selected {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        .payment-method-radio {
+            display: none;
+        }
+        .payment-method-label {
+            cursor: pointer;
+            display: block;
+            text-align: center;
+        }
+        .payment-method-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+    </style>
 }

@@ -39,125 +39,12 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? mode)
+        public IActionResult Index(string? mode)
         {
-            var userId = _userManager.GetUserId(User);
-            
-            // Check if this is a Buy Now request
-            if (mode == "buynow" && TempData["IsBuyNow"] is bool isBuyNow && isBuyNow)
-            {
-                var buyNowItemJson = TempData["BuyNowItem"] as string;
-                if (!string.IsNullOrEmpty(buyNowItemJson))
-                {
-                    try
-                    {
-                        using var doc = System.Text.Json.JsonDocument.Parse(buyNowItemJson);
-                        var buyNowItem = doc.RootElement;
-                        
-                        // Create cart item from Buy Now data
-                        var productIdString = buyNowItem.GetProperty("ProductId").GetString();
-                        var cartItemViewModel = new CartItemViewModel
-                        {
-                            ProductId = Guid.Parse(productIdString ?? Guid.Empty.ToString()),
-                            ProductName = buyNowItem.GetProperty("ProductName").GetString() ?? "",
-                            Price = buyNowItem.GetProperty("Price").GetDecimal(),
-                            Quantity = buyNowItem.GetProperty("Quantity").GetInt32(),
-                            Size = buyNowItem.TryGetProperty("Size", out System.Text.Json.JsonElement sizeEl) ? sizeEl.GetString() : null,
-                            Color = buyNowItem.TryGetProperty("Color", out System.Text.Json.JsonElement colorEl) ? colorEl.GetString() : null,
-                            ImageUrl = buyNowItem.TryGetProperty("ProductImage", out System.Text.Json.JsonElement imageEl) ? imageEl.GetString() : null
-                        };
-                        
-                        var buyNowModel = await CreateCheckoutViewModelAsync(userId, new List<CartItemViewModel> { cartItemViewModel });
-                        return View(buyNowModel);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error parsing Buy Now item from TempData");
-                    }
-                }
-            }
-            
-            if (string.IsNullOrEmpty(userId))
-            {
-                // For anonymous users, get cart from session
-                var sessionCart = GetCartFromSession();
-                if (sessionCart == null || !sessionCart.Any())
-                {
-                    TempData["ErrorMessage"] = "Giỏ hàng của bạn đang trống.";
-                    return RedirectToAction("Index", "Cart");
-                }
-
-                var model = await CreateCheckoutViewModelAsync(null, sessionCart);
-                return View(model);
-            }
-
-            // For authenticated users, get selected items from session
-            var selectedJson = HttpContext.Session.GetString("SelectedCartItems");
-            List<Guid> selectedIds;
-            
-            if (!string.IsNullOrEmpty(selectedJson))
-            {
-                try
-                {
-                    selectedIds = System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(selectedJson) ?? new List<Guid>();
-                    _logger.LogInformation("Checkout Index: Found {Count} selected items in session", selectedIds.Count);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error deserializing SelectedCartItems in Index");
-                    selectedIds = new List<Guid>();
-                }
-            }
-            else
-            {
-                // If no selection in session, take all cart items as fallback
-                selectedIds = await _context.ShoppingCartItems
-                    .Where(c => c.UserId == userId)
-                    .Select(c => c.Id)
-                    .ToListAsync();
-                
-                if (selectedIds.Any())
-                {
-                    _logger.LogInformation("Checkout Index: No selection in session, using all {Count} cart items", selectedIds.Count);
-                    
-                    // Save to session for consistency
-                    HttpContext.Session.SetString("SelectedCartItems", 
-                        System.Text.Json.JsonSerializer.Serialize(selectedIds));
-                }
-                else
-                {
-                    _logger.LogWarning("Checkout Index: No cart items found for user {UserId}", userId);
-                }
-            }
-
-            // Get only selected items from cart
-            var cartItems = await _context.ShoppingCartItems
-                .Include(c => c.Product)
-                .ThenInclude(p => p.Category)
-                .Where(c => c.UserId == userId && selectedIds.Contains(c.Id))
-                .ToListAsync();
-
-            if (!cartItems.Any())
-            {
-                _logger.LogWarning("Checkout Index: No cart items to display for user {UserId}", userId);
-                TempData["ErrorMessage"] = "Giỏ hàng trống. Vui lòng thêm sản phẩm vào giỏ hàng.";
-                return RedirectToAction("Index", "Cart");
-            }
-
-            _logger.LogInformation("Checkout Index: Displaying {Count} cart items for user {UserId}", cartItems.Count, userId);
-
-            var checkoutModel = await CreateCheckoutViewModelAsync(userId, cartItems.Select(c => new CartItemViewModel
-            {
-                ProductId = c.ProductId,
-                ProductName = c.Product.Name,
-                Price = c.Price,
-                Quantity = c.Quantity,
-                Size = c.Size,
-                Color = c.Color,
-                ImageUrl = c.Product.FeaturedImageUrl
-            }).ToList());
-
-            return View(checkoutModel);
+            // Checkout cũ đã được thay thế bởi Payment/Checkout.
+            // Giữ controller này chỉ để redirect cho các link cũ /Checkout, /Checkout?mode=buynow...
+            _logger.LogInformation("Legacy CheckoutController.Index hit. Redirecting to Payment/Checkout with mode = {Mode}", mode);
+            return RedirectToAction("Checkout", "Payment", new { mode });
         }
 
         [HttpPost]
@@ -325,6 +212,7 @@ namespace JohnHenryFashionWeb.Controllers
                     DiscountAmount = totalDiscount,
                     CouponCode = model.CouponCode,
                     ShippingMethod = model.ShippingMethod,
+                    PaymentMethod = model.PaymentMethod,
                     ShippingAddress = JsonSerializer.Serialize(model.ShippingAddress),
                     BillingAddress = JsonSerializer.Serialize(model.BillingAddress),
                     Notes = model.Notes,
@@ -410,9 +298,42 @@ namespace JohnHenryFashionWeb.Controllers
         {
             try
             {
+                // Log incoming request for debugging
+                _logger.LogInformation("ProcessPayment called - SessionId: {SessionId}, PaymentMethod: {PaymentMethod}", 
+                    model.SessionId, model.PaymentMethod);
+                
                 if (!ModelState.IsValid)
                 {
-                    return Json(new { success = false, message = "Dữ liệu thanh toán không hợp lệ" });
+                    var errors = ModelState
+                        .Where(x => x.Value?.Errors.Count > 0)
+                        .Select(x => new 
+                        { 
+                            Field = x.Key, 
+                            Errors = x.Value?.Errors.Select(e => e.ErrorMessage ?? "").ToList() ?? new List<string>()
+                        })
+                        .ToList();
+                    
+                    _logger.LogWarning("ProcessPayment ModelState invalid. Errors: {Errors}", 
+                        System.Text.Json.JsonSerializer.Serialize(errors));
+                    
+                    return Json(new { 
+                        success = false, 
+                        message = "Dữ liệu thanh toán không hợp lệ",
+                        errors = errors
+                    });
+                }
+                
+                // Validate required fields manually
+                if (string.IsNullOrWhiteSpace(model.SessionId))
+                {
+                    _logger.LogWarning("ProcessPayment: SessionId is empty");
+                    return Json(new { success = false, message = "Session ID không hợp lệ" });
+                }
+                
+                if (string.IsNullOrWhiteSpace(model.PaymentMethod))
+                {
+                    _logger.LogWarning("ProcessPayment: PaymentMethod is empty");
+                    return Json(new { success = false, message = "Vui lòng chọn phương thức thanh toán" });
                 }
 
                 // Get checkout session
@@ -740,6 +661,27 @@ namespace JohnHenryFashionWeb.Controllers
 
         private async Task<Order> CreateOrderFromSessionAsync(CheckoutSession session)
         {
+            // IMPORTANT: Validate stock availability BEFORE creating order
+            // This prevents overselling when multiple users checkout simultaneously
+            foreach (var item in session.Items)
+            {
+                var product = await _context.Products
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == item.ProductId);
+                
+                if (product == null)
+                {
+                    throw new InvalidOperationException($"Sản phẩm {item.ProductName} không tồn tại");
+                }
+                
+                if (product.StockQuantity < item.Quantity)
+                {
+                    throw new InvalidOperationException(
+                        $"Sản phẩm {item.ProductName} chỉ còn {product.StockQuantity} sản phẩm trong kho, " +
+                        $"không đủ cho {item.Quantity} sản phẩm bạn đặt. Vui lòng cập nhật giỏ hàng.");
+                }
+            }
+            
             var order = new Order
             {
                 Id = Guid.NewGuid(),
@@ -910,10 +852,10 @@ namespace JohnHenryFashionWeb.Controllers
                 // Get client IP
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
                 
-                // Generate URLs
+                // Generate URLs - IMPORTANT: Must match the actual controller endpoints
                 var baseUrl = $"{Request.Scheme}://{Request.Host}";
-                var returnUrl = $"{baseUrl}/Payment/Return";
-                var notifyUrl = $"{baseUrl}/Payment/Notify";
+                var returnUrl = $"{baseUrl}/Checkout/PaymentReturn";
+                var notifyUrl = $"{baseUrl}/Checkout/PaymentNotify";
 
                 QRCodeResult result;
 

@@ -141,6 +141,139 @@
                     </div>
                 </div>
 
+                <!-- Shipping Method -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shipping-fast me-2"></i>
+                            Phương thức vận chuyển
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var shippingMethods = ViewBag.ShippingMethods as List<JohnHenryFashionWeb.Models.ShippingMethod>;
+                            if (shippingMethods != null && shippingMethods.Any())
+                            {
+                                var subtotal = ViewBag.Subtotal as decimal? ?? 0;
+                                
+                                <!-- Free Shipping Notice -->
+                                if (subtotal >= 500000)
+                                {
+                                    <div class="alert alert-success mb-3">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>Miễn phí vận chuyển!</strong> Đơn hàng của bạn đủ điều kiện được giao hàng miễn phí.
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Mua thêm <strong>@((500000 - subtotal).ToString("N0"))₫</strong> để được miễn phí vận chuyển!
+                                    </div>
+                                }
+                                
+                                foreach (var method in shippingMethods)
+                                {
+                                    // Logic giảm giá shipping
+                                    decimal displayCost = method.Cost;
+                                    bool isFreeShipping = false;
+                                    bool isDiscounted = false;
+                                    
+                                    if (method.Code == "SUPER_EXPRESS")
+                                    {
+                                        // Giao hàng hỏa tốc: Giảm giá theo tầng
+                                        if (subtotal >= 2000000)
+                                        {
+                                            displayCost = 0;
+                                            isFreeShipping = true;
+                                        }
+                                        else if (subtotal >= 1000000)
+                                        {
+                                            displayCost = method.Cost * 0.5m;
+                                            isDiscounted = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Các phương thức khác: Miễn phí khi >= 500k
+                                        if (subtotal >= 500000)
+                                        {
+                                            displayCost = 0;
+                                            isFreeShipping = true;
+                                        }
+                                    }
+                                    
+                                    <div class="form-check border rounded p-3 mb-3">
+                                        <input class="form-check-input shipping-method-input" type="radio" name="shippingMethod" 
+                                               value="@method.Code" id="shipping_@method.Code"
+                                               data-cost="@displayCost"
+                                               data-original-cost="@method.Cost"
+                                               data-days="@method.EstimatedDays"
+                                               @(method.Code == "STANDARD" ? "checked" : "")>
+                                        <label class="form-check-label w-100" for="shipping_@method.Code">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>@method.Name</strong>
+                                                    <br><small class="text-muted">@method.Description</small>
+                                                    @if (method.EstimatedDays > 0)
+                                                    {
+                                                        <br><small class="text-success"><i class="fas fa-clock"></i> Giao trong @method.EstimatedDays ngày</small>
+                                                    }
+                                                    @if (method.Code == "SUPER_EXPRESS")
+                                                    {
+                                                        <br><small class="text-info">
+                                                            <i class="fas fa-gift"></i> 
+                                                            @if (subtotal >= 2000000)
+                                                            {
+                                                                <span>Miễn phí cho đơn >= 2 triệu</span>
+                                                            }
+                                                            else if (subtotal >= 1000000)
+                                                            {
+                                                                <span>Giảm 50% cho đơn >= 1 triệu</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>Giảm 50% từ 1tr, miễn phí từ 2tr</span>
+                                                            }
+                                                        </small>
+                                                    }
+                                                </div>
+                                                <div class="text-end">
+                                                    @if (isFreeShipping)
+                                                    {
+                                                        <strong class="text-success">Miễn phí</strong>
+                                                        if (method.Cost > 0)
+                                                        {
+                                                            <br><small class="text-muted text-decoration-line-through">@method.Cost.ToString("N0")₫</small>
+                                                        }
+                                                    }
+                                                    else if (isDiscounted)
+                                                    {
+                                                        <strong class="text-warning">@displayCost.ToString("N0")₫</strong>
+                                                        <br><small class="text-muted text-decoration-line-through">@method.Cost.ToString("N0")₫</small>
+                                                    }
+                                                    else if (method.Cost > 0)
+                                                    {
+                                                        <strong>@method.Cost.ToString("N0")₫</strong>
+                                                    }
+                                                    else
+                                                    {
+                                                        <strong class="text-success">Miễn phí</strong>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">Không có phương thức vận chuyển khả dụng</p>
+                            }
+                        }
+                    </div>
+                </div>
+
                 <!-- Payment Method -->
                 <div class="card mb-4">
                     <div class="card-header">
@@ -394,35 +527,51 @@
                 showPaymentInstructions($(this).val());
             });
             
-            // Load provinces when form is shown
-            let provincesLoaded = false;
+            // Load provinces immediately
+            loadProvinces();
             
+            // Reload provinces when form is shown
             $('#newAddressForm').on('shown.bs.collapse', function() {
-                console.log('Form shown! provincesLoaded:', provincesLoaded);
-                if (!provincesLoaded) {
-                    console.log('Loading provinces for the first time...');
+                if ($('#newProvince option').length <= 1) {
                     loadProvinces();
-                    provincesLoaded = true;
                 }
             });
             
+            // Function to load provinces from Vietnamese Address API
+            function loadProvinces() {
+                console.log('Loading provinces from Vietnamese API...');
+                fetch('/api/VietnameseAddress/provinces')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Provinces loaded:', data.length);
+                        $('#newProvince').empty().append('<option value="">-- Chọn tỉnh/thành --</option>');
+                        data.forEach(province => {
+                            $('#newProvince').append(`<option value="${province.code}">${province.name}</option>`);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading provinces:', error);
+                        alert('Không thể tải danh sách tỉnh/thành phố. Vui lòng thử lại.');
+                    });
+            }
+            
             // When Province changes, load Districts
             $('#newProvince').on('change', function() {
-                const provinceId = $(this).val();
-                const provinceName = $(this).find('option:selected').data('name');
+                const provinceCode = $(this).val();
+                const provinceName = $(this).find('option:selected').text();
                 
-                console.log('Province changed:', provinceId, provinceName);
+                console.log('Province changed:', provinceCode, provinceName);
                 
-                $('#newDistrict').empty().append('<option value="">-- Chọn quận/huyện --</option>').prop('disabled', !provinceId);
+                $('#newDistrict').empty().append('<option value="">-- Chọn quận/huyện --</option>').prop('disabled', !provinceCode);
                 $('#newWard').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', true);
                 
-                if (provinceId) {
-                    fetch(`/api/AddressApi/districts/${provinceId}`)
+                if (provinceCode) {
+                    fetch(`/api/VietnameseAddress/districts/${provinceCode}`)
                         .then(response => response.json())
                         .then(data => {
                             console.log('Districts loaded:', data.length);
                             data.forEach(district => {
-                                $('#newDistrict').append(`<option value="${district.id}" data-name="${district.name}">${district.name}</option>`);
+                                $('#newDistrict').append(`<option value="${district.code}">${district.name}</option>`);
                             });
                         })
                         .catch(error => console.error('Error loading districts:', error));
@@ -431,20 +580,20 @@
 
             // When District changes, load Wards
             $('#newDistrict').on('change', function() {
-                const districtId = $(this).val();
-                const districtName = $(this).find('option:selected').data('name');
+                const districtCode = $(this).val();
+                const districtName = $(this).find('option:selected').text();
                 
-                console.log('District changed:', districtId, districtName);
+                console.log('District changed:', districtCode, districtName);
                 
-                $('#newWard').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', !districtId);
+                $('#newWard').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', !districtCode);
                 
-                if (districtId) {
-                    fetch(`/api/AddressApi/wards/${districtId}`)
+                if (districtCode) {
+                    fetch(`/api/VietnameseAddress/wards/${districtCode}`)
                         .then(response => response.json())
                         .then(data => {
                             console.log('Wards loaded:', data.length);
                             data.forEach(ward => {
-                                $('#newWard').append(`<option value="${ward.id}" data-name="${ward.name}">${ward.name}</option>`);
+                                $('#newWard').append(`<option value="${ward.code}">${ward.name}</option>`);
                             });
                         })
                         .catch(error => console.error('Error loading wards:', error));
@@ -452,15 +601,37 @@
             });
         });
 
+        // Update shipping cost when shipping method changes
+        $(document).ready(function() {
+            $('.shipping-method-input').on('change', function() {
+                updateOrderTotal();
+            });
+        });
+
+        function updateOrderTotal() {
+            const selectedShipping = $('input[name="shippingMethod"]:checked');
+            const shippingCost = parseFloat(selectedShipping.data('cost')) || 0;
+            
+            // You can add logic here to update the total display if needed
+            console.log('Shipping cost updated:', shippingCost);
+        }
+
         function processPayment() {
             const addressId = $('input[name="addressId"]:checked').val();
             const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+            const shippingMethod = $('input[name="shippingMethod"]:checked').val();
             const notes = $('textarea[name="notes"]').val();
             const token = $('input[name="__RequestVerificationToken"]').val();
             const couponCode = '@ViewBag.CouponCode';
+            const isBuyNow = @(ViewBag.IsBuyNow != null && ViewBag.IsBuyNow ? "true" : "false");
 
             if (!addressId) {
                 alert('Vui lòng chọn địa chỉ giao hàng!');
+                return;
+            }
+
+            if (!shippingMethod) {
+                alert('Vui lòng chọn phương thức vận chuyển!');
                 return;
             }
 
@@ -472,20 +643,29 @@
             // Disable button and show loading
             $('#placeOrderBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
 
-            // Send as JSON instead of FormData
+            // Build request parameters
+            const params = {
+                'addressId': addressId,
+                'shippingMethod': shippingMethod,
+                'paymentMethod': paymentMethod,
+                'notes': notes || '',
+                'couponCode': couponCode || '',
+                '__RequestVerificationToken': token
+            };
+            
+            // Add mode parameter if BuyNow
+            if (isBuyNow) {
+                params['mode'] = 'buynow';
+            }
+            
+            // Send request
             fetch('/Payment/ProcessPayment', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': token
                 },
-                body: new URLSearchParams({
-                    'addressId': addressId,
-                    'paymentMethod': paymentMethod,
-                    'notes': notes || '',
-                    'couponCode': couponCode || '',
-                    '__RequestVerificationToken': token
-                })
+                body: new URLSearchParams(params)
             })
             .then(response => {
                 if (!response.ok) {
@@ -496,11 +676,20 @@
             .then(data => {
                 console.log('Payment response:', data);
                 if (data.success) {
-                    if (data.redirectUrl) {
+                    // If redirecting to payment gateway (VNPay, MoMo), redirect immediately
+                    if (data.isPaymentGateway && data.redirectUrl) {
+                        window.location.href = data.redirectUrl;
+                    } else if (data.redirectUrl) {
+                        // Other redirects (e.g., order confirmation)
                         window.location.href = data.redirectUrl;
                     } else {
+                        // Show message and redirect to order confirmation
                         alert(data.message);
-                        window.location.href = `/Payment/OrderConfirmation/${data.orderId}`;
+                        if (data.orderId) {
+                            window.location.href = `/Payment/OrderConfirmation/${data.orderId}`;
+                        } else {
+                            window.location.href = '/Cart';
+                        }
                     }
                 } else {
                     alert('Lỗi: ' + data.message);
@@ -566,27 +755,7 @@
             window.location.href = '@Url.Action("Checkout", "Payment")?couponCode=' + encodeURIComponent(couponCode);
         });
 
-        // Load Provinces function
-        function loadProvinces() {
-            console.log('Loading provinces...');
-            fetch('/api/AddressApi/provinces')
-                .then(response => {
-                    console.log('Provinces response status:', response.status);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Provinces loaded:', data.length);
-                    const select = $('#newProvince');
-                    select.empty().append('<option value="">-- Chọn tỉnh/thành --</option>');
-                    data.forEach(province => {
-                        select.append(`<option value="${province.id}" data-name="${province.name}">${province.name}</option>`);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading provinces:', error);
-                    alert('Không thể tải danh sách tỉnh/thành phố. Vui lòng thử lại.');
-                });
-        }
+
 
         // Save new address function
         function saveNewAddress() {
@@ -596,10 +765,10 @@
             const address1 = $('#newAddress1').val().trim();
             const address2 = $('#newAddress2').val().trim();
             
-            // Get selected names for display
-            const provinceName = $('#newProvince option:selected').data('name') || '';
-            const districtName = $('#newDistrict option:selected').data('name') || '';
-            const wardName = $('#newWard option:selected').data('name') || '';
+            // Get selected names from text (Vietnamese Address API)
+            const provinceName = $('#newProvince option:selected').text() || '';
+            const districtName = $('#newDistrict option:selected').text() || '';
+            const wardName = $('#newWard option:selected').text() || '';
             
             const isDefault = $('#newIsDefault').is(':checked');
 
