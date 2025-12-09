@@ -77,6 +77,31 @@
                                             }
                                         </div>
                                         <small class="text-muted d-block">SKU: @item.Product.SKU</small>
+                                        @{
+                                            // Calculate available stock for this product
+                                            var totalInOtherCarts = Model.Where(c => c.ProductId == item.ProductId && c.Id != item.Id).Sum(c => c.Quantity);
+                                            var availableStock = item.Product.StockQuantity - totalInOtherCarts;
+                                            var stockWarning = availableStock <= 5;
+                                        }
+                                        @if (stockWarning || availableStock < item.Quantity)
+                                        {
+                                            <div class="stock-warning mt-2">
+                                                @if (availableStock < item.Quantity)
+                                                {
+                                                    <small class="text-danger d-flex align-items-center">
+                                                        <i data-lucide="alert-triangle" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                        <strong>Chỉ còn @availableStock sản phẩm!</strong> Vui lòng giảm số lượng.
+                                                    </small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-warning d-flex align-items-center">
+                                                        <i data-lucide="alert-circle" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                        Chỉ còn @availableStock sản phẩm trong kho
+                                                    </small>
+                                                }
+                                            </div>
+                                        }
                                     </div>
 
                                     <!-- Price -->
@@ -862,15 +887,8 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Redirect to appropriate checkout page based on authentication
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        @:window.location.href = '/Payment/Checkout';
-                    }
-                    else
-                    {
-                        @:window.location.href = '/Checkout';
-                    }
+                    // Redirect to Payment Checkout page
+                    window.location.href = '/Payment/Checkout';
                 } else {
                     showToast(result.message || 'Có lỗi xảy ra', 'error');
                 }

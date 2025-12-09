@@ -295,9 +295,15 @@
                                     <a href="/admin/users/@user.Id" class="admin-btn admin-btn-sm admin-btn-secondary" title="Xem">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    <a href="/admin/users/edit/@user.Id" class="admin-btn admin-btn-sm admin-btn-primary" title="Sửa">
+                                    <a href="/admin/users/@user.Id/edit" class="admin-btn admin-btn-sm admin-btn-primary" title="Sửa">
                                         <i data-lucide="edit"></i>
                                     </a>
+                                    @if (user.IsLockedOut)
+                                    {
+                                        <button onclick="unlockUser('@user.Id')" class="admin-btn admin-btn-sm admin-btn-warning" title="Gỡ khóa tài khoản (do nhập sai mật khẩu)">
+                                            <i data-lucide="key"></i>
+                                        </button>
+                                    }
                                     @if (user.IsActive)
                                     {
                                         <button onclick="toggleUserStatus('@user.Id', false)" class="admin-btn admin-btn-sm admin-btn-danger" title="Khóa">
@@ -414,12 +420,12 @@
                 return;
             }
 
-            fetch('/admin/users/toggle-status', {
+            fetch('/admin/users/' + userId + '/toggle-status', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userId: userId, activate: activate })
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -432,6 +438,34 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            });
+        }
+
+        // Unlock user account (for lockout due to failed login attempts)
+        function unlockUser(userId) {
+            if (!confirm('Xác nhận gỡ khóa tài khoản này? Tài khoản sẽ có thể đăng nhập lại ngay lập tức.')) {
+                return;
+            }
+
+            fetch('/admin/users/' + userId + '/unlock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Gỡ khóa tài khoản thành công!');
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gỡ khóa tài khoản');
             });
         }
 
