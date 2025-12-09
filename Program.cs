@@ -19,94 +19,50 @@ DotNetEnv.Env.Load();
 // Override configuration with environment variables
 var configuration = builder.Configuration;
 
-// Database Configuration
-configuration["ConnectionStrings:DefaultConnection"] = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};Port={Environment.GetEnvironmentVariable("DB_PORT")};Database={Environment.GetEnvironmentVariable("DB_NAME")};Username={Environment.GetEnvironmentVariable("DB_USER")};Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};SSL Mode=Prefer;Trust Server Certificate=true";
-configuration["ConnectionStrings:Redis"] = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+// Database Configuration - Override from environment variables if they exist
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+if (!string.IsNullOrWhiteSpace(dbHost) && !string.IsNullOrWhiteSpace(dbName))
+{
+    configuration["ConnectionStrings:DefaultConnection"] = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword};SSL Mode=Prefer;Trust Server Certificate=true";
+}
 
-// JWT Configuration
-configuration["JWT:SecretKey"] = Environment.GetEnvironmentVariable("JWT_SECRET");
-configuration["JWT:Issuer"] = Environment.GetEnvironmentVariable("JWT_ISSUER");
-configuration["JWT:Audience"] = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
-configuration["JWT:ExpiryHours"] = Environment.GetEnvironmentVariable("JWT_EXPIRY_HOURS");
+// Payment Gateways - Only override if environment variable exists
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VNPAY_TMN_CODE")))
+    configuration["PaymentGateways:VNPay:TmnCode"] = Environment.GetEnvironmentVariable("VNPAY_TMN_CODE");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET")))
+    configuration["PaymentGateways:VNPay:HashSecret"] = Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VNPAY_PAYMENT_URL")))
+    configuration["PaymentGateways:VNPay:PaymentUrl"] = Environment.GetEnvironmentVariable("VNPAY_PAYMENT_URL");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VNPAY_API_URL")))
+    configuration["PaymentGateways:VNPay:ApiUrl"] = Environment.GetEnvironmentVariable("VNPAY_API_URL");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VNPAY_ENABLED")))
+    configuration["PaymentGateways:VNPay:IsEnabled"] = Environment.GetEnvironmentVariable("VNPAY_ENABLED");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VNPAY_SANDBOX")))
+    configuration["PaymentGateways:VNPay:IsSandbox"] = Environment.GetEnvironmentVariable("VNPAY_SANDBOX");
 
-// Google OAuth
-configuration["Authentication:Google:ClientId"] = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
-configuration["Authentication:Google:ClientSecret"] = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_PARTNER_CODE")))
+    configuration["PaymentGateways:MoMo:PartnerCode"] = Environment.GetEnvironmentVariable("MOMO_PARTNER_CODE");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_ACCESS_KEY")))
+    configuration["PaymentGateways:MoMo:AccessKey"] = Environment.GetEnvironmentVariable("MOMO_ACCESS_KEY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_SECRET_KEY")))
+    configuration["PaymentGateways:MoMo:SecretKey"] = Environment.GetEnvironmentVariable("MOMO_SECRET_KEY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_API_URL")))
+    configuration["PaymentGateways:MoMo:ApiUrl"] = Environment.GetEnvironmentVariable("MOMO_API_URL");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_PUBLIC_KEY")))
+    configuration["PaymentGateways:MoMo:PublicKey"] = Environment.GetEnvironmentVariable("MOMO_PUBLIC_KEY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_PRIVATE_KEY")))
+    configuration["PaymentGateways:MoMo:PrivateKey"] = Environment.GetEnvironmentVariable("MOMO_PRIVATE_KEY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_ENABLED")))
+    configuration["PaymentGateways:MoMo:IsEnabled"] = Environment.GetEnvironmentVariable("MOMO_ENABLED");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_SANDBOX")))
+    configuration["PaymentGateways:MoMo:IsSandbox"] = Environment.GetEnvironmentVariable("MOMO_SANDBOX");
 
-// Email Settings
-configuration["EmailSettings:SmtpServer"] = Environment.GetEnvironmentVariable("EMAIL_HOST");
-configuration["EmailSettings:SmtpPort"] = Environment.GetEnvironmentVariable("EMAIL_PORT");
-configuration["EmailSettings:UseSsl"] = Environment.GetEnvironmentVariable("EMAIL_USE_SSL");
-configuration["EmailSettings:Username"] = Environment.GetEnvironmentVariable("EMAIL_USER");
-configuration["EmailSettings:Password"] = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-configuration["EmailSettings:FromEmail"] = Environment.GetEnvironmentVariable("EMAIL_FROM");
-configuration["EmailSettings:FromName"] = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
-configuration["EmailSettings:BaseUrl"] = Environment.GetEnvironmentVariable("BASE_URL");
-
-// Site Settings
-configuration["SiteSettings:BaseUrl"] = Environment.GetEnvironmentVariable("BASE_URL");
-configuration["SiteSettings:SiteName"] = Environment.GetEnvironmentVariable("SITE_NAME");
-configuration["SiteSettings:CacheDurationMinutes"] = Environment.GetEnvironmentVariable("CACHE_DURATION_MINUTES");
-configuration["SiteSettings:EnableImageOptimization"] = Environment.GetEnvironmentVariable("ENABLE_IMAGE_OPTIMIZATION");
-configuration["SiteSettings:MaxImageWidth"] = Environment.GetEnvironmentVariable("MAX_IMAGE_WIDTH");
-configuration["SiteSettings:ImageQuality"] = Environment.GetEnvironmentVariable("IMAGE_QUALITY");
-
-// File Upload
-configuration["FileUpload:MaxFileSize"] = Environment.GetEnvironmentVariable("MAX_FILE_SIZE");
-configuration["FileUpload:UploadPath"] = Environment.GetEnvironmentVariable("UPLOAD_PATH");
-
-// Payment Gateways
-configuration["PaymentGateways:VNPay:TmnCode"] = Environment.GetEnvironmentVariable("VNPAY_TMN_CODE");
-configuration["PaymentGateways:VNPay:HashSecret"] = Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET");
-configuration["PaymentGateways:VNPay:PaymentUrl"] = Environment.GetEnvironmentVariable("VNPAY_PAYMENT_URL");
-configuration["PaymentGateways:VNPay:ApiUrl"] = Environment.GetEnvironmentVariable("VNPAY_API_URL");
-configuration["PaymentGateways:VNPay:IsEnabled"] = Environment.GetEnvironmentVariable("VNPAY_ENABLED");
-configuration["PaymentGateways:VNPay:IsSandbox"] = Environment.GetEnvironmentVariable("VNPAY_SANDBOX");
-
-configuration["PaymentGateways:MoMo:PartnerCode"] = Environment.GetEnvironmentVariable("MOMO_PARTNER_CODE");
-configuration["PaymentGateways:MoMo:AccessKey"] = Environment.GetEnvironmentVariable("MOMO_ACCESS_KEY");
-configuration["PaymentGateways:MoMo:SecretKey"] = Environment.GetEnvironmentVariable("MOMO_SECRET_KEY");
-configuration["PaymentGateways:MoMo:ApiUrl"] = Environment.GetEnvironmentVariable("MOMO_API_URL");
-configuration["PaymentGateways:MoMo:PublicKey"] = Environment.GetEnvironmentVariable("MOMO_PUBLIC_KEY");
-configuration["PaymentGateways:MoMo:PrivateKey"] = Environment.GetEnvironmentVariable("MOMO_PRIVATE_KEY");
-configuration["PaymentGateways:MoMo:IsEnabled"] = Environment.GetEnvironmentVariable("MOMO_ENABLED");
-configuration["PaymentGateways:MoMo:IsSandbox"] = Environment.GetEnvironmentVariable("MOMO_SANDBOX");
-
-configuration["PaymentGateways:Stripe:PublishableKey"] = Environment.GetEnvironmentVariable("STRIPE_PUBLISHABLE_KEY");
-configuration["PaymentGateways:Stripe:SecretKey"] = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
-configuration["PaymentGateways:Stripe:WebhookSecret"] = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET");
-configuration["PaymentGateways:Stripe:IsEnabled"] = Environment.GetEnvironmentVariable("STRIPE_ENABLED");
-configuration["PaymentGateways:Stripe:IsSandbox"] = Environment.GetEnvironmentVariable("STRIPE_SANDBOX");
-
-configuration["PaymentGateways:CashOnDelivery:IsEnabled"] = Environment.GetEnvironmentVariable("COD_ENABLED");
-configuration["PaymentGateways:CashOnDelivery:MaxOrderAmount"] = Environment.GetEnvironmentVariable("COD_MAX_AMOUNT");
-configuration["PaymentGateways:CashOnDelivery:ServiceFee"] = Environment.GetEnvironmentVariable("COD_SERVICE_FEE");
-
-configuration["PaymentGateways:BankTransfer:IsEnabled"] = Environment.GetEnvironmentVariable("BANK_TRANSFER_ENABLED");
-configuration["PaymentGateways:BankTransfer:BankAccounts:0:AccountNumber"] = Environment.GetEnvironmentVariable("BANK_VIETCOMBANK_ACCOUNT");
-configuration["PaymentGateways:BankTransfer:BankAccounts:0:AccountHolder"] = Environment.GetEnvironmentVariable("BANK_VIETCOMBANK_HOLDER");
-configuration["PaymentGateways:BankTransfer:BankAccounts:0:Branch"] = Environment.GetEnvironmentVariable("BANK_VIETCOMBANK_BRANCH");
-configuration["PaymentGateways:BankTransfer:BankAccounts:1:AccountNumber"] = Environment.GetEnvironmentVariable("BANK_TECHCOMBANK_ACCOUNT");
-configuration["PaymentGateways:BankTransfer:BankAccounts:1:AccountHolder"] = Environment.GetEnvironmentVariable("BANK_TECHCOMBANK_HOLDER");
-configuration["PaymentGateways:BankTransfer:BankAccounts:1:Branch"] = Environment.GetEnvironmentVariable("BANK_TECHCOMBANK_BRANCH");
-
-// Security Settings
-configuration["Security:PasswordPolicy:MinLength"] = Environment.GetEnvironmentVariable("PASSWORD_MIN_LENGTH");
-configuration["Security:PasswordPolicy:RequireDigit"] = Environment.GetEnvironmentVariable("PASSWORD_REQUIRE_DIGIT");
-configuration["Security:PasswordPolicy:RequireLowercase"] = Environment.GetEnvironmentVariable("PASSWORD_REQUIRE_LOWERCASE");
-configuration["Security:PasswordPolicy:RequireUppercase"] = Environment.GetEnvironmentVariable("PASSWORD_REQUIRE_UPPERCASE");
-configuration["Security:PasswordPolicy:RequireSpecialChar"] = Environment.GetEnvironmentVariable("PASSWORD_REQUIRE_SPECIAL_CHAR");
-configuration["Security:PasswordPolicy:MaxAgeDays"] = Environment.GetEnvironmentVariable("PASSWORD_MAX_AGE_DAYS");
-configuration["Security:MaxLoginAttempts"] = Environment.GetEnvironmentVariable("MAX_LOGIN_ATTEMPTS");
-configuration["Security:LockoutDurationMinutes"] = Environment.GetEnvironmentVariable("LOCKOUT_DURATION_MINUTES");
-configuration["Security:SessionTimeoutMinutes"] = Environment.GetEnvironmentVariable("SESSION_TIMEOUT_MINUTES");
-configuration["Security:RequireTwoFactorForAdmin"] = Environment.GetEnvironmentVariable("REQUIRE_2FA_FOR_ADMIN");
-configuration["Security:RequireEmailConfirmation"] = Environment.GetEnvironmentVariable("REQUIRE_EMAIL_CONFIRMATION");
-configuration["Security:RequireEmailConfirmationForGoogle"] = Environment.GetEnvironmentVariable("REQUIRE_EMAIL_CONFIRMATION_FOR_GOOGLE");
-configuration["Security:GoogleAutoConfirmEmail"] = Environment.GetEnvironmentVariable("GOOGLE_AUTO_CONFIRM_EMAIL");
-
-// Application Insights
-configuration["ApplicationInsights:ConnectionString"] = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_CONNECTION_STRING");
+// All other settings will use values from appsettings.json
+// Environment variables can still override them but won't set null values
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -121,6 +77,9 @@ builder.Host.UseSerilog();
 // Add Entity Framework and PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register BCrypt password hasher (replaces default PBKDF2)
+builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, JohnHenryFashionWeb.Services.BcryptPasswordHasher<ApplicationUser>>();
 
 // Add Identity with enhanced security settings
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -163,7 +122,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Cho phép HTTP trong development
     options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
     options.Cookie.IsEssential = true;
+    // Set AccessDeniedPath to redirect to our custom AccessDenied page
+    options.AccessDeniedPath = "/Account/AccessDenied";
     options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
     options.SlidingExpiration = true;
 });
@@ -252,6 +214,7 @@ builder.Services.AddScoped<JohnHenryFashionWeb.Services.IUserManagementService, 
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IAuditLogService, JohnHenryFashionWeb.Services.AuditLogService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.ILogService, JohnHenryFashionWeb.Services.LogService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.SeedDataService>();
+builder.Services.AddScoped<JohnHenryFashionWeb.Services.IVietnameseAddressService, JohnHenryFashionWeb.Services.VietnameseAddressService>();
 
 // Add Application Insights
 builder.Services.AddApplicationInsightsTelemetry();
@@ -332,6 +295,7 @@ builder.Services.AddAntiforgery(options =>
 
 // Add HttpClient for Payment Service
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<JohnHenryFashionWeb.Services.IVietnameseAddressService, JohnHenryFashionWeb.Services.VietnameseAddressService>();
 
 // Add API Explorer for Swagger
 builder.Services.AddEndpointsApiExplorer();
