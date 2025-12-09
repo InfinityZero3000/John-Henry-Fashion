@@ -78,12 +78,25 @@ namespace JohnHenryFashionWeb.Controllers
                     return Json(new { success = false, message = "Quantity must be greater than 0" });
                 }
 
-                // Check stock availability
-                if (cartItem.Product.StockQuantity < request.Quantity)
+                // Reload product from database to get latest stock (avoid stale data)
+                var product = await _context.Products
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == cartItem.ProductId);
+
+                if (product == null)
+                {
+                    return Json(new { success = false, message = "Product not found" });
+                }
+
+                // Check stock availability - only check actual stock in database
+                // Don't count other users' cart items as "reserved" since they haven't paid yet
+                if (product.StockQuantity < request.Quantity)
                 {
                     return Json(new { 
                         success = false, 
-                        message = $"Only {cartItem.Product.StockQuantity} items available in stock" 
+                        message = product.StockQuantity == 0 
+                            ? $"Sản phẩm hiện đã hết hàng" 
+                            : $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
                     });
                 }
 

@@ -107,14 +107,27 @@ namespace JohnHenryFashionWeb.Controllers
                 _logger.LogInformation("Product found - ID: {ProductId}, SKU: {SKU}, Name: {Name}, Stock: {Stock}, Price: {Price}", 
                     product.Id, product.SKU, product.Name, product.StockQuantity, product.Price);
 
-                // Check stock
-                if (product.StockQuantity < quantity)
+                // Check stock availability - only check actual stock in database
+                // Don't count other users' cart items as "reserved" since they haven't paid yet
+                if (quantity > product.StockQuantity)
                 {
-                    _logger.LogWarning("Insufficient stock - Requested: {Quantity}, Available: {Stock}", quantity, product.StockQuantity);
-                    return Json(new { 
-                        success = false, 
-                        message = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
-                    });
+                    _logger.LogWarning("Insufficient stock for BuyNow - Requested: {Quantity}, Stock: {Stock}", 
+                        quantity, product.StockQuantity);
+                    
+                    if (product.StockQuantity <= 0)
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = $"Sản phẩm {product.Name} hiện đã hết hàng" 
+                        });
+                    }
+                    else
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
+                        });
+                    }
                 }
 
                 // Get price (use sale price if available)
@@ -146,7 +159,7 @@ namespace JohnHenryFashionWeb.Controllers
                 return Json(new { 
                     success = true, 
                     message = "Chuyển đến trang thanh toán",
-                    redirectUrl = "/Checkout?mode=buynow"
+                    redirectUrl = "/Payment/Checkout?mode=buynow"
                 });
             }
             catch (Exception ex)
@@ -195,8 +208,9 @@ namespace JohnHenryFashionWeb.Controllers
                     return Json(new { success = false, message = "Số lượng không hợp lệ" });
                 }
 
-                // Find product by SKU
+                // Find product by SKU - use AsNoTracking to ensure fresh data
                 var product = await _context.Products
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(p => p.SKU == productId && p.IsActive);
 
                 // LOG 3: Product search result
@@ -256,35 +270,54 @@ namespace JohnHenryFashionWeb.Controllers
                 _logger.LogInformation("Product found - ID: {ProductId}, SKU: {SKU}, Name: {Name}, Stock: {Stock}, Price: {Price}", 
                     product.Id, product.SKU, product.Name, product.StockQuantity, product.Price);
 
-                // Check stock availability
-                if (product.StockQuantity < quantity)
-                {
-                    _logger.LogWarning("Insufficient stock - Product: {ProductId}, Requested: {Quantity}, Available: {Stock}", 
-                        product.Id, quantity, product.StockQuantity);
-                    return Json(new { 
-                        success = false, 
-                        message = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
-                    });
-                }
-
                 // Check if item already exists in cart
                 var existingCartItem = await _context.ShoppingCartItems
                     .FirstOrDefaultAsync(c => c.UserId == userId && c.ProductId == product.Id);
+
+                // Current quantity in THIS user's cart
+                var currentCartQuantity = existingCartItem?.Quantity ?? 0;
+                
+                // The new total quantity this user wants in their cart
+                var newTotalQuantity = currentCartQuantity + quantity;
+
+                _logger.LogInformation("Stock check - ProductId: {ProductId}, Stock: {Stock}, CurrentUserCartQty: {CurrentCartQty}, RequestedToAdd: {RequestedQty}, NewTotal: {NewTotal}", 
+                    product.Id, product.StockQuantity, currentCartQuantity, quantity, newTotalQuantity);
+
+                // Check if the new total quantity exceeds actual stock
+                // Don't count other users' cart items as "reserved" since they haven't paid yet
+                if (newTotalQuantity > product.StockQuantity)
+                {
+                    var maxCanAdd = Math.Max(0, product.StockQuantity - currentCartQuantity);
+                    _logger.LogWarning("Insufficient stock - Product: {ProductId}, RequestedTotal: {NewTotal}, Stock: {Stock}, CurrentInCart: {CurrentQty}, MaxCanAdd: {MaxCanAdd}", 
+                        product.Id, newTotalQuantity, product.StockQuantity, currentCartQuantity, maxCanAdd);
+                    
+                    if (product.StockQuantity == 0)
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = $"Sản phẩm {product.Name} hiện đã hết hàng" 
+                        });
+                    }
+                    else if (maxCanAdd <= 0)
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = $"Bạn đã có {currentCartQuantity} sản phẩm trong giỏ. Không thể thêm nữa (kho còn: {product.StockQuantity})" 
+                        });
+                    }
+                    else
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = $"Chỉ có thể thêm tối đa {maxCanAdd} sản phẩm nữa (bạn đã có {currentCartQuantity} trong giỏ, kho còn: {product.StockQuantity})" 
+                        });
+                    }
+                }
 
                 if (existingCartItem != null)
                 {
                     // Update quantity
                     var newQuantity = existingCartItem.Quantity + quantity;
-                    
-                    if (product.StockQuantity < newQuantity)
-                    {
-                        _logger.LogWarning("Insufficient stock for cart update - Product: {ProductId}, Current: {Current}, Adding: {Adding}, Available: {Stock}", 
-                            product.Id, existingCartItem.Quantity, quantity, product.StockQuantity);
-                        return Json(new { 
-                            success = false, 
-                            message = $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
-                        });
-                    }
 
                     existingCartItem.Quantity = newQuantity;
                     existingCartItem.UpdatedAt = DateTime.UtcNow;

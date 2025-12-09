@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using JohnHenryFashionWeb.Data;
 using JohnHenryFashionWeb.Models;
+using JohnHenryFashionWeb.Services;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -14,20 +15,26 @@ namespace JohnHenryFashionWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPaymentService _paymentService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<PaymentController> _logger;
 
         public PaymentController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
+            IPaymentService paymentService,
+            INotificationService notificationService,
             ILogger<PaymentController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _paymentService = paymentService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
         // GET: Payment/Checkout
-        public async Task<IActionResult> Checkout(string? couponCode = null)
+        public async Task<IActionResult> Checkout(string? couponCode = null, string? mode = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -35,10 +42,118 @@ namespace JohnHenryFashionWeb.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var cartItems = await _context.ShoppingCartItems
-                .Include(c => c.Product)
-                .Where(c => c.UserId == userId)
-                .ToListAsync();
+            List<ShoppingCartItem> cartItems;
+
+            // Handle BuyNow mode
+            if (mode == "buynow")
+            {
+                // Check if BuyNow data exists in TempData
+                var buyNowItemJson = TempData["BuyNowItem"] as string;
+                if (!string.IsNullOrEmpty(buyNowItemJson))
+                {
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(buyNowItemJson);
+                        var buyNowItem = doc.RootElement;
+                        
+                        var productIdString = buyNowItem.GetProperty("ProductId").GetString();
+                        if (Guid.TryParse(productIdString, out var productId))
+                        {
+                            // Get product and create a temporary cart item for display
+                            var product = await _context.Products
+                                .FirstOrDefaultAsync(p => p.Id == productId);
+                            
+                            if (product != null)
+                            {
+                                var quantity = buyNowItem.TryGetProperty("Quantity", out var qtyEl) ? qtyEl.GetInt32() : 1;
+                                var size = buyNowItem.TryGetProperty("Size", out var sizeEl) ? sizeEl.GetString() : null;
+                                var color = buyNowItem.TryGetProperty("Color", out var colorEl) ? colorEl.GetString() : null;
+                                
+                                // Create a temporary cart item (not saved to DB)
+                                cartItems = new List<ShoppingCartItem>
+                                {
+                                    new ShoppingCartItem
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        UserId = userId,
+                                        ProductId = productId,
+                                        Product = product,
+                                        Quantity = quantity,
+                                        Size = size,
+                                        Color = color,
+                                        Price = product.SalePrice ?? product.Price,
+                                        CreatedAt = DateTime.UtcNow
+                                    }
+                                };
+                                
+                                // Store BuyNow mode in ViewBag
+                                ViewBag.IsBuyNow = true;
+                                ViewBag.BuyNowData = buyNowItemJson;
+                            }
+                            else
+                            {
+                                TempData["Error"] = "Sản phẩm không tồn tại.";
+                                return RedirectToAction("Index", "Home");
+                            }
+                        }
+                        else
+                        {
+                            TempData["Error"] = "Mã sản phẩm không hợp lệ.";
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error parsing BuyNow item");
+                        TempData["Error"] = "Có lỗi xảy ra khi xử lý đơn hàng.";
+                        return RedirectToAction("Index", "Home");
+                    }
+                }
+                else
+                {
+                    TempData["Error"] = "Không tìm thấy thông tin sản phẩm.";
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            else
+            {
+                // Normal checkout from cart - get selected items from session
+                var selectedJson = HttpContext.Session.GetString("SelectedCartItems");
+                List<Guid> selectedIds;
+                
+                if (!string.IsNullOrEmpty(selectedJson))
+                {
+                    try
+                    {
+                        selectedIds = System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(selectedJson) ?? new List<Guid>();
+                        _logger.LogInformation("Checkout: Found {Count} selected items in session", selectedIds.Count);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error deserializing SelectedCartItems");
+                        selectedIds = new List<Guid>();
+                    }
+                }
+                else
+                {
+                    // If no selection in session, take all cart items as fallback
+                    selectedIds = await _context.ShoppingCartItems
+                        .Where(c => c.UserId == userId)
+                        .Select(c => c.Id)
+                        .ToListAsync();
+                    
+                    if (selectedIds.Any())
+                    {
+                        _logger.LogInformation("Checkout: No selection in session, using all {Count} cart items", selectedIds.Count);
+                    }
+                }
+
+                // Get only selected items from cart
+                cartItems = await _context.ShoppingCartItems
+                    .Include(c => c.Product)
+                    .Where(c => c.UserId == userId && selectedIds.Contains(c.Id))
+                    .ToListAsync();
+            }
 
             if (!cartItems.Any())
             {
@@ -120,26 +235,136 @@ namespace JohnHenryFashionWeb.Controllers
 
             ViewBag.Addresses = addresses;
 
+            // Get available shipping methods
+            var shippingMethods = await _context.ShippingMethods
+                .Where(sm => sm.IsActive)
+                .OrderBy(sm => sm.SortOrder)
+                .ToListAsync();
+            ViewBag.ShippingMethods = shippingMethods;
+
             return View();
         }
 
         // POST: Payment/ProcessPayment
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcessPayment(string paymentMethod, Guid? addressId, string? notes, string? couponCode)
+        public async Task<IActionResult> ProcessPayment(string paymentMethod, string? shippingMethod, Guid? addressId, string? notes, string? couponCode, string? mode = null)
         {
+            _logger.LogInformation("ProcessPayment called - PaymentMethod: {PaymentMethod}, ShippingMethod: {ShippingMethod}, AddressId: {AddressId}, Mode: {Mode}", 
+                paymentMethod, shippingMethod, addressId, mode);
+            
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Json(new { success = false, message = "User not authenticated" });
+                return Json(new { success = false, message = "Vui lòng đăng nhập để tiếp tục" });
             }
 
             try
             {
-                var cartItems = await _context.ShoppingCartItems
-                    .Include(c => c.Product)
-                    .Where(c => c.UserId == userId)
-                    .ToListAsync();
+                // Validate required fields
+                if (string.IsNullOrEmpty(paymentMethod))
+                {
+                    return Json(new { success = false, message = "Vui lòng chọn phương thức thanh toán" });
+                }
+                
+                if (!addressId.HasValue || addressId.Value == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "Vui lòng chọn địa chỉ giao hàng" });
+                }
+                
+                List<ShoppingCartItem> cartItems;
+                List<Guid> selectedIds = new List<Guid>();
+                bool isBuyNow = mode == "buynow";
+                
+                // Check if this is a BuyNow order
+                var buyNowItemJson = TempData["BuyNowItem"] as string;
+                if (isBuyNow && !string.IsNullOrEmpty(buyNowItemJson))
+                {
+                    isBuyNow = true;
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(buyNowItemJson);
+                        var buyNowItem = doc.RootElement;
+                        
+                        var productIdString = buyNowItem.GetProperty("ProductId").GetString();
+                        if (Guid.TryParse(productIdString, out var productId))
+                        {
+                            var product = await _context.Products
+                                .FirstOrDefaultAsync(p => p.Id == productId);
+                            
+                            if (product == null)
+                            {
+                                return Json(new { success = false, message = "Sản phẩm không tồn tại" });
+                            }
+                            
+                            var quantity = buyNowItem.TryGetProperty("Quantity", out var qtyEl) ? qtyEl.GetInt32() : 1;
+                            var size = buyNowItem.TryGetProperty("Size", out var sizeEl) ? sizeEl.GetString() : null;
+                            var color = buyNowItem.TryGetProperty("Color", out var colorEl) ? colorEl.GetString() : null;
+                            var price = buyNowItem.TryGetProperty("Price", out var priceEl) ? priceEl.GetDecimal() : (product.SalePrice ?? product.Price);
+                            
+                            // Create temporary cart item for BuyNow
+                            cartItems = new List<ShoppingCartItem>
+                            {
+                                new ShoppingCartItem
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = userId,
+                                    ProductId = productId,
+                                    Product = product,
+                                    Quantity = quantity,
+                                    Size = size,
+                                    Color = color,
+                                    Price = price,
+                                    CreatedAt = DateTime.UtcNow
+                                }
+                            };
+                        }
+                        else
+                        {
+                            return Json(new { success = false, message = "Mã sản phẩm không hợp lệ" });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error parsing BuyNow item in ProcessPayment");
+                        return Json(new { success = false, message = "Có lỗi xảy ra khi xử lý đơn hàng" });
+                    }
+                }
+                else
+                {
+                    // Normal checkout - get selected items from session
+                    var selectedJson = HttpContext.Session.GetString("SelectedCartItems");
+                    
+                    if (!string.IsNullOrEmpty(selectedJson))
+                    {
+                        try
+                        {
+                            selectedIds = System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(selectedJson) ?? new List<Guid>();
+                            _logger.LogInformation("ProcessPayment: Found {Count} selected items in session", selectedIds.Count);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error deserializing SelectedCartItems in ProcessPayment");
+                            selectedIds = new List<Guid>();
+                        }
+                    }
+                    else
+                    {
+                        // Fallback: use all cart items if no selection
+                        selectedIds = await _context.ShoppingCartItems
+                            .Where(c => c.UserId == userId)
+                            .Select(c => c.Id)
+                            .ToListAsync();
+                        
+                        _logger.LogWarning("ProcessPayment: No selection in session, using all {Count} cart items", selectedIds.Count);
+                    }
+
+                    // Get only selected items from cart
+                    cartItems = await _context.ShoppingCartItems
+                        .Include(c => c.Product)
+                        .Where(c => c.UserId == userId && selectedIds.Contains(c.Id))
+                        .ToListAsync();
+                }
 
                 if (!cartItems.Any())
                 {
@@ -149,30 +374,35 @@ namespace JohnHenryFashionWeb.Controllers
                 // Validate stock availability
                 foreach (var item in cartItems)
                 {
-                    if (item.Product.StockQuantity < item.Quantity)
+                    // Simply check if product stock is sufficient for the requested quantity
+                    // Don't count other users' cart items as "reserved" - they haven't paid yet
+                    var availableStock = item.Product.StockQuantity;
+                    
+                    if (availableStock < item.Quantity)
                     {
                         return Json(new { 
                             success = false, 
-                            message = $"Sản phẩm {item.Product.Name} chỉ còn {item.Product.StockQuantity} trong kho" 
+                            message = availableStock == 0
+                                ? $"Sản phẩm {item.Product.Name} hiện đã hết hàng"
+                                : $"Sản phẩm {item.Product.Name} chỉ còn {availableStock} sản phẩm trong kho" 
                         });
                     }
                 }
 
-                // Get shipping address
-                var shippingAddress = "";
-                if (addressId.HasValue)
+                // Get and validate shipping address
+                var address = await _context.Addresses
+                    .FirstOrDefaultAsync(a => a.Id == addressId.Value && a.UserId == userId);
+                    
+                if (address == null)
                 {
-                    var address = await _context.Addresses
-                        .FirstOrDefaultAsync(a => a.Id == addressId.Value && a.UserId == userId);
-                    if (address != null)
-                    {
-                        shippingAddress = $"{address.FirstName} {address.LastName}, {address.Address1}, {address.City}, {address.State}";
-                    }
+                    return Json(new { success = false, message = "Địa chỉ giao hàng không hợp lệ" });
                 }
+                
+                var shippingAddress = $"{address.FirstName} {address.LastName}, {address.Phone ?? ""}, {address.Address1}, {address.City}, {address.State}";
 
                 // Calculate amounts with coupon
                 var subtotal = cartItems.Sum(c => c.Price * c.Quantity);
-                var shippingFee = CalculateShippingFee(subtotal);
+                var shippingFee = await CalculateShippingFeeAsync(shippingMethod, subtotal);
                 var tax = CalculateTax(subtotal);
                 
                 // Apply coupon discount
@@ -223,7 +453,7 @@ namespace JohnHenryFashionWeb.Controllers
                     Tax = tax,
                     PaymentMethod = paymentMethod,
                     PaymentStatus = "pending",
-                    Notes = notes,
+                    Notes = notes + (shippingMethod != null ? $" [Vận chuyển: {shippingMethod}]" : ""),
                     ShippingAddress = shippingAddress,
                     BillingAddress = shippingAddress,
                     CouponCode = appliedCoupon?.Code,
@@ -252,34 +482,104 @@ namespace JohnHenryFashionWeb.Controllers
 
                     _context.OrderItems.Add(orderItem);
 
-                    // Update product stock
-                    cartItem.Product.StockQuantity -= cartItem.Quantity;
-                    if (cartItem.Product.StockQuantity <= 0)
-                    {
-                        cartItem.Product.InStock = false;
-                        cartItem.Product.Status = "out_of_stock";
-                    }
+                    // NOTE: Stock deduction removed from here to prevent double deduction
+                    // Stock will be deducted in CheckoutController.UpdateInventoryAsync when order is delivered
+                    // This ensures stock is only deducted once when the order is actually fulfilled
+                    
+                    // OLD CODE (REMOVED):
+                    // cartItem.Product.StockQuantity -= cartItem.Quantity;
+                    // if (cartItem.Product.StockQuantity <= 0)
+                    // {
+                    //     cartItem.Product.InStock = false;
+                    //     cartItem.Product.Status = "out_of_stock";
+                    // }
                 }
+
+                // Save order first (before payment processing)
+                await _context.SaveChangesAsync();
 
                 // Process payment based on method
                 var paymentResult = await ProcessPaymentMethod(order, paymentMethod);
                 
                 if (paymentResult.Success)
                 {
-                    // Update coupon usage count
+                    // For online payment methods (VNPay, MoMo), redirect directly to payment gateway
+                    if (paymentMethod.ToLower() == "vnpay" || paymentMethod.ToLower() == "momo")
+                    {
+                        if (!string.IsNullOrEmpty(paymentResult.RedirectUrl))
+                        {
+                            _logger.LogInformation("Redirecting to payment gateway: {RedirectUrl}", paymentResult.RedirectUrl);
+                            return Json(new { 
+                                success = true, 
+                                message = paymentResult.Message, 
+                                orderId = order.Id,
+                                redirectUrl = paymentResult.RedirectUrl,
+                                isPaymentGateway = true
+                            });
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Payment gateway URL is empty for {PaymentMethod}", paymentMethod);
+                            return Json(new { 
+                                success = false, 
+                                message = "Không thể tạo URL thanh toán. Vui lòng thử lại." 
+                            });
+                        }
+                    }
+                    
+                    // For COD and Bank Transfer, update coupon and clear cart
                     if (appliedCoupon != null)
                     {
                         appliedCoupon.UsageCount++;
                         _context.Coupons.Update(appliedCoupon);
                     }
                     
-                    // Clear cart
-                    _context.ShoppingCartItems.RemoveRange(cartItems);
+                    // Clear cart for non-gateway payments (only for normal checkout, not BuyNow)
+                    if (!isBuyNow && (paymentMethod.ToLower() == "cod" || paymentMethod.ToLower() == "bank_transfer"))
+                    {
+                        // Only remove selected items from cart (not all items)
+                        var selectedJson = HttpContext.Session.GetString("SelectedCartItems");
+                        if (!string.IsNullOrEmpty(selectedJson))
+                        {
+                            try
+                            {
+                                var selectedItemIds = System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(selectedJson) ?? new List<Guid>();
+                                var itemsToRemove = await _context.ShoppingCartItems
+                                    .Where(c => c.UserId == userId && selectedItemIds.Contains(c.Id))
+                                    .ToListAsync();
+                                
+                                if (itemsToRemove.Any())
+                                {
+                                    _context.ShoppingCartItems.RemoveRange(itemsToRemove);
+                                    // Clear selection from session
+                                    HttpContext.Session.Remove("SelectedCartItems");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error removing selected cart items after payment");
+                            }
+                        }
+                    }
+                    
                     await _context.SaveChangesAsync();
+
+                    // Send notifications (async, don't wait)
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _notificationService.SendOrderNotificationAsync(order);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send order notification for order {OrderId}", order.Id);
+                        }
+                    });
 
                     return Json(new { 
                         success = true, 
-                        message = "Đặt hàng thành công!", 
+                        message = paymentResult.Message, 
                         orderId = order.Id,
                         redirectUrl = Url.Action("OrderConfirmation", new { id = order.Id })
                     });
@@ -288,6 +588,7 @@ namespace JohnHenryFashionWeb.Controllers
                 {
                     // Remove the order if payment failed
                     _context.Orders.Remove(order);
+                    await _context.SaveChangesAsync();
                     return Json(new { success = false, message = paymentResult.Message });
                 }
             }
@@ -319,94 +620,233 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/VNPay/Return
         public async Task<IActionResult> VNPayReturn()
         {
-            // Handle VNPay return
-            var vnp_ResponseCode = Request.Query["vnp_ResponseCode"];
-            var vnp_TxnRef = Request.Query["vnp_TxnRef"];
-            var vnp_Amount = Request.Query["vnp_Amount"];
-            var vnp_OrderInfo = Request.Query["vnp_OrderInfo"];
-
-            if (vnp_ResponseCode == "00")
+            try
             {
-                // Payment successful
-                var orderId = Guid.Parse(vnp_TxnRef.ToString());
-                var order = await _context.Orders.FindAsync(orderId);
-                
-                if (order != null)
+                // Handle VNPay return
+                var vnp_ResponseCode = Request.Query["vnp_ResponseCode"].ToString();
+                var vnp_TxnRef = Request.Query["vnp_TxnRef"].ToString();
+                var vnp_Amount = Request.Query["vnp_Amount"].ToString();
+                var vnp_OrderInfo = Request.Query["vnp_OrderInfo"].ToString();
+                var vnp_TransactionNo = Request.Query["vnp_TransactionNo"].ToString();
+
+                _logger.LogInformation("VNPay Return - ResponseCode: {ResponseCode}, TxnRef: {TxnRef}", 
+                    vnp_ResponseCode, vnp_TxnRef);
+
+                if (vnp_ResponseCode == "00" && Guid.TryParse(vnp_TxnRef, out var orderId))
                 {
-                    order.PaymentStatus = "paid";
-                    order.Status = "processing";
-                    order.UpdatedAt = DateTime.UtcNow;
-
-                    // Create payment record
-                    var payment = new Payment
+                    var order = await _context.Orders
+                        .Include(o => o.OrderItems)
+                        .FirstOrDefaultAsync(o => o.Id == orderId);
+                    
+                    if (order != null && order.PaymentStatus != "paid")
                     {
-                        Id = Guid.NewGuid(),
-                        OrderId = orderId,
-                        PaymentMethod = "vnpay",
-                        Status = "completed",
-                        Amount = order.TotalAmount,
-                        TransactionId = Request.Query["vnp_TransactionNo"],
-                        GatewayResponse = JsonSerializer.Serialize(Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())),
-                        ProcessedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
+                        order.PaymentStatus = "paid";
+                        order.Status = "processing";
+                        order.UpdatedAt = DateTime.UtcNow;
 
-                    _context.Payments.Add(payment);
-                    await _context.SaveChangesAsync();
+                        // Create payment record
+                        var payment = new Payment
+                        {
+                            Id = Guid.NewGuid(),
+                            OrderId = orderId,
+                            PaymentMethod = "vnpay",
+                            Status = "completed",
+                            Amount = order.TotalAmount,
+                            TransactionId = vnp_TransactionNo,
+                            GatewayResponse = JsonSerializer.Serialize(Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())),
+                            ProcessedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
 
-                    return RedirectToAction("OrderConfirmation", new { id = orderId });
+                        _context.Payments.Add(payment);
+                        
+                        // Clear cart if not already cleared
+                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        if (!string.IsNullOrEmpty(userId))
+                        {
+                            var cartItems = await _context.ShoppingCartItems
+                                .Where(c => c.UserId == userId)
+                                .ToListAsync();
+                            if (cartItems.Any())
+                            {
+                                _context.ShoppingCartItems.RemoveRange(cartItems);
+                            }
+                        }
+                        
+                        await _context.SaveChangesAsync();
+
+                        return RedirectToAction("OrderConfirmation", new { id = orderId });
+                    }
+                    else if (order != null && order.PaymentStatus == "paid")
+                    {
+                        // Already paid, just redirect
+                        return RedirectToAction("OrderConfirmation", new { id = orderId });
+                    }
                 }
-            }
 
-            TempData["Error"] = "Thanh toán không thành công. Vui lòng thử lại.";
-            return RedirectToAction("Checkout");
+                TempData["Error"] = "Thanh toán không thành công. Vui lòng thử lại.";
+                return RedirectToAction("Checkout");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing VNPay return");
+                TempData["Error"] = "Có lỗi xảy ra khi xử lý thanh toán.";
+                return RedirectToAction("Checkout");
+            }
+        }
+
+        // POST: Payment/VNPay/IPN (IPN callback from VNPay)
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> VNPayIPN()
+        {
+            try
+            {
+                var vnp_ResponseCode = Request.Form["vnp_ResponseCode"].ToString();
+                var vnp_TxnRef = Request.Form["vnp_TxnRef"].ToString();
+                
+                _logger.LogInformation("VNPay IPN - ResponseCode: {ResponseCode}, TxnRef: {TxnRef}", 
+                    vnp_ResponseCode, vnp_TxnRef);
+
+                if (vnp_ResponseCode == "00" && Guid.TryParse(vnp_TxnRef, out var orderId))
+                {
+                    var order = await _context.Orders.FindAsync(orderId);
+                    if (order != null && order.PaymentStatus != "paid")
+                    {
+                        order.PaymentStatus = "paid";
+                        order.Status = "processing";
+                        order.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing VNPay IPN");
+                return BadRequest();
+            }
         }
 
         // GET: Payment/MoMo/Return
         public async Task<IActionResult> MoMoReturn()
         {
-            // Handle MoMo return
-            var resultCode = Request.Query["resultCode"];
-            var orderId = Request.Query["orderId"];
-            var transId = Request.Query["transId"];
-
-            if (resultCode == "0")
+            try
             {
-                // Payment successful
-                var orderGuid = Guid.Parse(orderId.ToString());
-                var order = await _context.Orders.FindAsync(orderGuid);
-                
-                if (order != null)
+                // Handle MoMo return
+                var resultCode = Request.Query["resultCode"].ToString();
+                var orderId = Request.Query["orderId"].ToString();
+                var transId = Request.Query["transId"].ToString();
+
+                _logger.LogInformation("MoMo Return - ResultCode: {ResultCode}, OrderId: {OrderId}", 
+                    resultCode, orderId);
+
+                if (resultCode == "0" && Guid.TryParse(orderId, out var orderGuid))
                 {
-                    order.PaymentStatus = "paid";
-                    order.Status = "processing";
-                    order.UpdatedAt = DateTime.UtcNow;
-
-                    // Create payment record
-                    var payment = new Payment
+                    var order = await _context.Orders
+                        .Include(o => o.OrderItems)
+                        .FirstOrDefaultAsync(o => o.Id == orderGuid);
+                    
+                    if (order != null && order.PaymentStatus != "paid")
                     {
-                        Id = Guid.NewGuid(),
-                        OrderId = orderGuid,
-                        PaymentMethod = "momo",
-                        Status = "completed",
-                        Amount = order.TotalAmount,
-                        TransactionId = transId,
-                        GatewayResponse = JsonSerializer.Serialize(Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())),
-                        ProcessedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
+                        order.PaymentStatus = "paid";
+                        order.Status = "processing";
+                        order.UpdatedAt = DateTime.UtcNow;
 
-                    _context.Payments.Add(payment);
-                    await _context.SaveChangesAsync();
+                        // Create payment record
+                        var payment = new Payment
+                        {
+                            Id = Guid.NewGuid(),
+                            OrderId = orderGuid,
+                            PaymentMethod = "momo",
+                            Status = "completed",
+                            Amount = order.TotalAmount,
+                            TransactionId = transId,
+                            GatewayResponse = JsonSerializer.Serialize(Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())),
+                            ProcessedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
 
-                    return RedirectToAction("OrderConfirmation", new { id = orderGuid });
+                        _context.Payments.Add(payment);
+                        
+                        // Clear cart if not already cleared
+                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        if (!string.IsNullOrEmpty(userId))
+                        {
+                            var cartItems = await _context.ShoppingCartItems
+                                .Where(c => c.UserId == userId)
+                                .ToListAsync();
+                            if (cartItems.Any())
+                            {
+                                _context.ShoppingCartItems.RemoveRange(cartItems);
+                            }
+                        }
+                        
+                        await _context.SaveChangesAsync();
+
+                        return RedirectToAction("OrderConfirmation", new { id = orderGuid });
+                    }
+                    else if (order != null && order.PaymentStatus == "paid")
+                    {
+                        // Already paid, just redirect
+                        return RedirectToAction("OrderConfirmation", new { id = orderGuid });
+                    }
                 }
-            }
 
-            TempData["Error"] = "Thanh toán không thành công. Vui lòng thử lại.";
-            return RedirectToAction("Checkout");
+                TempData["Error"] = "Thanh toán không thành công. Vui lòng thử lại.";
+                return RedirectToAction("Checkout");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing MoMo return");
+                TempData["Error"] = "Có lỗi xảy ra khi xử lý thanh toán.";
+                return RedirectToAction("Checkout");
+            }
+        }
+
+        // POST: Payment/MoMo/IPN (IPN callback from MoMo)
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> MoMoIPN()
+        {
+            try
+            {
+                using var reader = new StreamReader(Request.Body);
+                var body = await reader.ReadToEndAsync();
+                
+                _logger.LogInformation("MoMo IPN - Body: {Body}", body);
+
+                var data = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
+                if (data != null && data.TryGetValue("resultCode", out var resultCodeElement))
+                {
+                    var resultCode = resultCodeElement.GetInt32();
+                    if (resultCode == 0 && data.TryGetValue("orderId", out var orderIdElement))
+                    {
+                        var orderIdStr = orderIdElement.GetString();
+                        if (Guid.TryParse(orderIdStr, out var orderId))
+                        {
+                            var order = await _context.Orders.FindAsync(orderId);
+                            if (order != null && order.PaymentStatus != "paid")
+                            {
+                                order.PaymentStatus = "paid";
+                                order.Status = "processing";
+                                order.UpdatedAt = DateTime.UtcNow;
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing MoMo IPN");
+                return BadRequest();
+            }
         }
 
         private decimal CalculateShippingFee(decimal subtotal)
@@ -417,6 +857,39 @@ namespace JohnHenryFashionWeb.Controllers
             
             // Standard shipping fee
             return 30000;
+        }
+
+        private async Task<decimal> CalculateShippingFeeAsync(string? shippingMethodCode, decimal subtotal)
+        {
+            if (string.IsNullOrEmpty(shippingMethodCode))
+                return CalculateShippingFee(subtotal);
+
+            var method = await _context.ShippingMethods
+                .FirstOrDefaultAsync(sm => sm.Code == shippingMethodCode && sm.IsActive);
+
+            if (method == null)
+                return CalculateShippingFee(subtotal);
+
+            // Giảm giá theo tầng cho Giao hàng hỏa tốc (SUPER_EXPRESS)
+            if (shippingMethodCode == "SUPER_EXPRESS")
+            {
+                if (subtotal >= 2000000) // >= 2 triệu: Miễn phí 100%
+                    return 0;
+                else if (subtotal >= 1000000) // >= 1 triệu: Giảm 50%
+                    return method.Cost * 0.5m;
+                // < 1 triệu: Giá gốc
+                return method.Cost;
+            }
+
+            // Các phương thức khác: Miễn phí vận chuyển cho đơn hàng >= 500,000đ
+            if (subtotal >= 500000)
+                return 0;
+
+            // Check minimum order amount for free shipping (if specified in shipping method)
+            if (method.MinOrderAmount.HasValue && subtotal >= method.MinOrderAmount.Value)
+                return 0;
+
+            return method.Cost;
         }
 
         private decimal CalculateTax(decimal subtotal)
@@ -489,32 +962,134 @@ namespace JohnHenryFashionWeb.Controllers
             return Task.FromResult(new PaymentResult { Success = true, Message = "Đặt hàng thành công! Vui lòng chuyển khoản theo thông tin được cung cấp." });
         }
 
-        private Task<PaymentResult> ProcessVNPayPayment(Order order)
+        private async Task<PaymentResult> ProcessVNPayPayment(Order order)
         {
-            // For demo purposes, simulate VNPay integration
-            // In real implementation, you would redirect to VNPay gateway
-            order.PaymentStatus = "pending";
-            order.Status = "pending";
-            
-            return Task.FromResult(new PaymentResult { 
-                Success = true, 
-                Message = "Chuyển hướng đến VNPay...",
-                RedirectUrl = $"/Payment/VNPay/Return?vnp_ResponseCode=00&vnp_TxnRef={order.Id}"
-            });
+            try
+            {
+                order.PaymentStatus = "pending";
+                order.Status = "pending";
+                
+                // Build full URLs for VNPay (must be absolute URLs)
+                var scheme = Request.Scheme;
+                var host = Request.Host.Value;
+                
+                // Ensure http for localhost (VNPay sandbox may not accept https localhost)
+                if (!string.IsNullOrEmpty(host) && (host.Contains("localhost") || host.Contains("127.0.0.1")))
+                {
+                    scheme = "http";
+                }
+                
+                // Use the current scheme (http or https based on how the app is running)
+                var returnUrl = $"{scheme}://{host}{Url.Action("VNPayReturn", "Payment")}";
+                var notifyUrl = $"{scheme}://{host}{Url.Action("VNPayIPN", "Payment")}";
+                
+                _logger.LogInformation("VNPay URLs - Scheme: {Scheme}, Host: {Host}, ReturnUrl: {ReturnUrl}, NotifyUrl: {NotifyUrl}", 
+                    scheme, host, returnUrl, notifyUrl);
+                
+                // Use OrderNumber for VNPay TxnRef, but use OrderId (Guid) for validation
+                var paymentRequest = new PaymentRequest
+                {
+                    OrderId = order.Id.ToString(), // Use Guid for validation (matches database)
+                    UserId = order.UserId ?? string.Empty,
+                    Amount = order.TotalAmount,
+                    Currency = "VND",
+                    PaymentMethod = "vnpay",
+                    OrderInfo = $"Thanh toan don hang {order.OrderNumber ?? order.Id.ToString()}",
+                    ReturnUrl = returnUrl,
+                    NotifyUrl = notifyUrl,
+                    IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "",
+                    UserAgent = Request.Headers["User-Agent"].ToString()
+                };
+                
+                _logger.LogInformation("VNPay Payment Request - OrderId: {OrderId}, OrderNumber: {OrderNumber}, Amount: {Amount}",
+                    paymentRequest.OrderId, order.OrderNumber, paymentRequest.Amount);
+
+                var result = await _paymentService.ProcessPaymentAsync(paymentRequest);
+                
+                if (result.IsSuccess && !string.IsNullOrEmpty(result.PaymentUrl))
+                {
+                    return new PaymentResult
+                    {
+                        Success = true,
+                        Message = "Chuyển hướng đến VNPay...",
+                        RedirectUrl = result.PaymentUrl
+                    };
+                }
+                else
+                {
+                    _logger.LogError("VNPay payment failed: {Error}", result.ErrorMessage);
+                    return new PaymentResult
+                    {
+                        Success = false,
+                        Message = result.ErrorMessage ?? "Không thể kết nối đến VNPay"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing VNPay payment for order {OrderId}", order.Id);
+                return new PaymentResult
+                {
+                    Success = false,
+                    Message = "Có lỗi xảy ra khi xử lý thanh toán VNPay"
+                };
+            }
         }
 
-        private Task<PaymentResult> ProcessMoMoPayment(Order order)
+        private async Task<PaymentResult> ProcessMoMoPayment(Order order)
         {
-            // For demo purposes, simulate MoMo integration
-            // In real implementation, you would integrate with MoMo API
-            order.PaymentStatus = "pending";
-            order.Status = "pending";
-            
-            return Task.FromResult(new PaymentResult { 
-                Success = true, 
-                Message = "Chuyển hướng đến MoMo...",
-                RedirectUrl = $"/Payment/MoMo/Return?resultCode=0&orderId={order.Id}&transId=123456"
-            });
+            try
+            {
+                order.PaymentStatus = "pending";
+                order.Status = "pending";
+                
+                var returnUrl = Url.Action("MoMoReturn", "Payment", null, Request.Scheme) ?? string.Empty;
+                var notifyUrl = Url.Action("MoMoIPN", "Payment", null, Request.Scheme) ?? string.Empty;
+                
+                var paymentRequest = new PaymentRequest
+                {
+                    OrderId = order.Id.ToString(),
+                    UserId = order.UserId ?? string.Empty,
+                    Amount = order.TotalAmount,
+                    Currency = "VND",
+                    PaymentMethod = "momo",
+                    OrderInfo = $"Thanh toán đơn hàng #{order.OrderNumber}",
+                    ReturnUrl = returnUrl,
+                    NotifyUrl = notifyUrl,
+                    IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "",
+                    UserAgent = Request.Headers["User-Agent"].ToString()
+                };
+
+                var result = await _paymentService.ProcessPaymentAsync(paymentRequest);
+                
+                if (result.IsSuccess && !string.IsNullOrEmpty(result.PaymentUrl))
+                {
+                    return new PaymentResult
+                    {
+                        Success = true,
+                        Message = "Chuyển hướng đến MoMo...",
+                        RedirectUrl = result.PaymentUrl
+                    };
+                }
+                else
+                {
+                    _logger.LogError("MoMo payment failed: {Error}", result.ErrorMessage);
+                    return new PaymentResult
+                    {
+                        Success = false,
+                        Message = result.ErrorMessage ?? "Không thể kết nối đến MoMo"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing MoMo payment for order {OrderId}", order.Id);
+                return new PaymentResult
+                {
+                    Success = false,
+                    Message = "Có lỗi xảy ra khi xử lý thanh toán MoMo"
+                };
+            }
         }
 
         // POST: Payment/SaveAddress
@@ -632,6 +1207,108 @@ namespace JohnHenryFashionWeb.Controllers
         </div>
     </label>
 </div>";
+        }
+
+        // GET: Payment/PaymentQR
+        public async Task<IActionResult> PaymentQR(Guid orderId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+            {
+                TempData["Error"] = "Không tìm thấy đơn hàng.";
+                return RedirectToAction("Checkout");
+            }
+
+            return View(order);
+        }
+
+        // POST: Payment/GeneratePaymentQR
+        [HttpPost]
+        public async Task<IActionResult> GeneratePaymentQR(Guid orderId, string paymentMethod)
+        {
+            try
+            {
+                var order = await _context.Orders.FindAsync(orderId);
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                var returnUrl = Url.Action("VNPayReturn", "Payment", null, Request.Scheme) ?? string.Empty;
+                var notifyUrl = Url.Action("VNPayIPN", "Payment", null, Request.Scheme) ?? string.Empty;
+
+                var paymentRequest = new PaymentRequest
+                {
+                    OrderId = order.Id.ToString(),
+                    UserId = order.UserId ?? string.Empty,
+                    Amount = order.TotalAmount,
+                    Currency = "VND",
+                    PaymentMethod = paymentMethod,
+                    OrderInfo = $"Thanh toán đơn hàng #{order.OrderNumber}",
+                    ReturnUrl = returnUrl,
+                    NotifyUrl = notifyUrl,
+                    IpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "",
+                    UserAgent = Request.Headers["User-Agent"].ToString()
+                };
+
+                var result = await _paymentService.ProcessPaymentAsync(paymentRequest);
+
+                if (result.IsSuccess && !string.IsNullOrEmpty(result.PaymentUrl))
+                {
+                    // Return payment URL for redirect
+                    return Json(new
+                    {
+                        success = true,
+                        paymentUrl = result.PaymentUrl,
+                        expiresInSeconds = 900, // 15 minutes
+                        message = "Chuyển hướng đến cổng thanh toán..."
+                    });
+                }
+                else
+                {
+                    return Json(new { success = false, message = result.ErrorMessage ?? "Không thể kết nối đến cổng thanh toán" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating QR code for order {OrderId}", orderId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi tạo mã QR" });
+            }
+        }
+
+        // GET: Payment/CheckPaymentStatus
+        [HttpGet]
+        public async Task<IActionResult> CheckPaymentStatus(Guid orderId)
+        {
+            try
+            {
+                var order = await _context.Orders.FindAsync(orderId);
+                if (order == null)
+                {
+                    return Json(new { status = "error", message = "Không tìm thấy đơn hàng" });
+                }
+
+                if (order.PaymentStatus == "paid")
+                {
+                    return Json(new { status = "paid", message = "Thanh toán thành công" });
+                }
+
+                // Check if order is expired (created more than 15 minutes ago)
+                if (order.CreatedAt.AddMinutes(15) < DateTime.UtcNow)
+                {
+                    return Json(new { status = "expired", message = "Đơn hàng đã hết hạn" });
+                }
+
+                return Json(new { status = "pending", message = "Đang chờ thanh toán" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking payment status for order {OrderId}", orderId);
+                return Json(new { status = "error", message = "Có lỗi xảy ra" });
+            }
         }
     }
 
