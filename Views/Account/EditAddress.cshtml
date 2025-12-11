@@ -111,7 +111,7 @@
                         }
 
                         <div class="form-group pt-3">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
                                 <i class="fas fa-save mr-2"></i>Cập nhật địa chỉ
                             </button>
                             @{
@@ -152,7 +152,15 @@
                 const provinceCode = $(this).val();
                 const provinceName = $(this).find('option:selected').text();
                 
-                $('#cityHidden').val(provinceName);
+                console.log('Province selected:', provinceCode, provinceName);
+                
+                // Update City hidden field
+                if (provinceName && provinceName !== '-- Chọn tỉnh/thành --') {
+                    $('#cityHidden').val(provinceName);
+                } else {
+                    $('#cityHidden').val('');
+                }
+                
                 $('#district').empty().append('<option value="">-- Chọn quận/huyện --</option>').prop('disabled', !provinceCode);
                 $('#ward').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', true);
                 $('#stateHidden').val('');
@@ -165,6 +173,10 @@
             // District change event
             $('#district').on('change', function() {
                 const districtCode = $(this).val();
+                const districtName = $(this).find('option:selected').text();
+                
+                console.log('District selected:', districtCode, districtName);
+                
                 $('#ward').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', !districtCode);
                 
                 if (districtCode) {
@@ -177,9 +189,65 @@
                 const wardName = $(this).find('option:selected').text();
                 const districtName = $('#district option:selected').text();
                 
-                if (wardName && wardName !== '-- Chọn phường/xã --') {
+                console.log('Ward selected:', wardName, 'District:', districtName);
+                
+                // Update State hidden field with format: District, Ward
+                if (wardName && wardName !== '-- Chọn phường/xã --' && 
+                    districtName && districtName !== '-- Chọn quận/huyện --') {
                     $('#stateHidden').val(districtName + ', ' + wardName);
+                } else {
+                    $('#stateHidden').val('');
                 }
+            });
+            
+            // Form validation before submit
+            $('form').on('submit', function(e) {
+                let isValid = true;
+                
+                // Validate province selection
+                if (!$('#province').val()) {
+                    $('#province-error').text('Vui lòng chọn tỉnh/thành phố');
+                    isValid = false;
+                } else {
+                    $('#province-error').text('');
+                }
+                
+                // Validate district selection
+                if (!$('#district').val()) {
+                    $('#district-error').text('Vui lòng chọn quận/huyện');
+                    isValid = false;
+                } else {
+                    $('#district-error').text('');
+                }
+                
+                // Validate ward selection
+                if (!$('#ward').val()) {
+                    $('#ward-error').text('Vui lòng chọn phường/xã');
+                    isValid = false;
+                } else {
+                    $('#ward-error').text('');
+                }
+                
+                // Check hidden fields have values
+                if (!$('#cityHidden').val()) {
+                    alert('Lỗi: Chưa chọn tỉnh/thành phố. Vui lòng thử lại.');
+                    isValid = false;
+                }
+                
+                if (!$('#stateHidden').val()) {
+                    alert('Lỗi: Chưa chọn đầy đủ địa chỉ. Vui lòng chọn quận/huyện và phường/xã.');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                console.log('Submitting form with:', {
+                    City: $('#cityHidden').val(),
+                    State: $('#stateHidden').val()
+                });
             });
         });
         

@@ -250,6 +250,13 @@ namespace JohnHenryFashionWeb.ViewModels
         public int PageSize { get; set; } = 10;
         public string SearchTerm { get; set; } = string.Empty;
         public string Filter { get; set; } = string.Empty; // all, low_stock, out_of_stock
+        
+        // Statistics for all products (not just current page)
+        public int TotalProducts { get; set; }
+        public int TotalStockQuantity { get; set; }
+        public int LowStockProducts { get; set; }
+        public int OutOfStockProducts { get; set; }
+        public int InStockProducts { get; set; }
     }
 
     public class InventoryItemViewModel

@@ -11,6 +11,56 @@ namespace JohnHenryFashionWeb.Data
         {
         }
 
+        // Override SaveChangesAsync to automatically convert DateTime to UTC
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            // Get all entities being tracked
+            var entries = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+            foreach (var entry in entries)
+            {
+                // Loop through all properties of the entity
+                foreach (var property in entry.Properties)
+                {
+                    // Check if property is DateTime or DateTime?
+                    if (property.CurrentValue != null)
+                    {
+                        if (property.Metadata.ClrType == typeof(DateTime))
+                        {
+                            var dateTime = (DateTime)property.CurrentValue;
+                            // Convert to UTC if not already
+                            if (dateTime.Kind == DateTimeKind.Unspecified)
+                            {
+                                property.CurrentValue = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+                            }
+                            else if (dateTime.Kind == DateTimeKind.Local)
+                            {
+                                property.CurrentValue = dateTime.ToUniversalTime();
+                            }
+                        }
+                        else if (property.Metadata.ClrType == typeof(DateTime?))
+                        {
+                            var dateTime = (DateTime?)property.CurrentValue;
+                            if (dateTime.HasValue)
+                            {
+                                if (dateTime.Value.Kind == DateTimeKind.Unspecified)
+                                {
+                                    property.CurrentValue = DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+                                }
+                                else if (dateTime.Value.Kind == DateTimeKind.Local)
+                                {
+                                    property.CurrentValue = dateTime.Value.ToUniversalTime();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
         // DbSets cho các bảng chính
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }

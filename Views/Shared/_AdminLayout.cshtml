@@ -341,7 +341,11 @@
 
             // Update toggle icon based on sidebar state
             function updateToggleIcon() {
+                if (!sidebarClose) return; // Guard clause if element doesn't exist
+                
                 const icon = sidebarClose.querySelector('i');
+                if (!icon) return; // Guard clause if icon doesn't exist
+                
                 if (sidebar.classList.contains('active')) {
                     icon.setAttribute('data-lucide', 'x'); // X when open
                 } else {

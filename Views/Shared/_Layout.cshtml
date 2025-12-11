@@ -1204,6 +1204,8 @@
     <!-- Additional JSON-LD structured data already included in head section above -->
 </head>
 <body>
+    @Html.AntiForgeryToken()
+    
     <!-- Top Red Line -->
     <div class="top-red-line"></div>
 
@@ -1277,7 +1279,8 @@
             <!-- Authentication indicator for JavaScript -->
             @if (User?.Identity?.IsAuthenticated == true)
             {
-                <div class="user-authenticated" data-user-authenticated="true" style="display: none;"></div>
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+                <div class="user-authenticated" data-user-authenticated="true" data-user-id="@userId" style="display: none;"></div>
             }
             
             <!-- Navigation Menu trong header -->

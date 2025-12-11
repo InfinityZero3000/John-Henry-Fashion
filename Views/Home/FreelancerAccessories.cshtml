@@ -4,6 +4,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@Html.AntiForgeryToken()
+
 @section Styles {
     <link rel="stylesheet" href="~/css/freelancer-style.css" />
     <link rel="stylesheet" href="~/css/dropdown.css" />
@@ -625,19 +627,75 @@
             }, 1000);
         }
 
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 15px 20px; border-radius: 8px; z-index: 10000; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideInRight 0.3s ease-out;';
+            
+            if (type === 'success') toast.style.background = '#28a745';
+            else if (type === 'error') toast.style.background = '#dc3545';
+            else if (type === 'warning') toast.style.background = '#ffc107';
+            else toast.style.background = '#17a2b8';
+            
+            toast.style.color = 'white';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
         // Wishlist function
         function toggleWishlist(productId, button) {
             const icon = button.querySelector('i');
+            const isInWishlist = icon.classList.contains('fas');
             
-            if (icon.classList.contains('far')) {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                button.style.color = '#dc3545';
-            } else {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                button.style.color = '';
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
+            const endpoint = isInWishlist ? '/Wishlist/Remove' : '/Wishlist/Add';
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (token) {
+                headers['X-CSRF-TOKEN'] = token;
             }
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: headers,
+                body: `productId=${encodeURIComponent(productId)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (isInWishlist) {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        button.style.color = '';
+                    } else {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        button.style.color = '#dc3545';
+                    }
+                    showToast(data.message, 'success');
+                } else {
+                    if (data.message && data.message.includes('not authenticated')) {
+                        showToast('Vui lòng đăng nhập để thêm vào yêu thích', 'warning');
+                        setTimeout(() => {
+                            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        }, 1500);
+                    } else {
+                        showToast(data.message || 'Có lỗi xảy ra', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+            });
         }
     </script>
 }

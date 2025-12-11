@@ -1820,6 +1820,28 @@ namespace JohnHenryFashionWeb.Controllers
                 model.CreatedAt = DateTime.UtcNow;
                 model.UpdatedAt = DateTime.UtcNow;
                 
+                // Fix DateTime Kind for PostgreSQL - convert to UTC if needed
+                if (model.StartDate.Kind == DateTimeKind.Unspecified)
+                {
+                    model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+                }
+                else if (model.StartDate.Kind == DateTimeKind.Local)
+                {
+                    model.StartDate = model.StartDate.ToUniversalTime();
+                }
+                
+                if (model.EndDate.HasValue)
+                {
+                    if (model.EndDate.Value.Kind == DateTimeKind.Unspecified)
+                    {
+                        model.EndDate = DateTime.SpecifyKind(model.EndDate.Value, DateTimeKind.Utc);
+                    }
+                    else if (model.EndDate.Value.Kind == DateTimeKind.Local)
+                    {
+                        model.EndDate = model.EndDate.Value.ToUniversalTime();
+                    }
+                }
+                
                 // Store banner in storage (unassigned) by default
                 // User will assign it later to specific positions
                 if (string.IsNullOrEmpty(model.Position) || 
@@ -1859,9 +1881,26 @@ namespace JohnHenryFashionWeb.Controllers
                     return Json(new { success = false, message = "Không tìm thấy banner" });
                 }
 
-                // Handle image upload
+                // Handle image upload - DELETE OLD FILE FIRST
                 if (imageFile != null && imageFile.Length > 0)
                 {
+                    // Delete old image file if exists
+                    if (!string.IsNullOrEmpty(banner.ImageUrl))
+                    {
+                        var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, banner.ImageUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning($"Failed to delete old banner image: {ex.Message}");
+                            }
+                        }
+                    }
+                    
                     var fileName = $"banner_{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
                     var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "banners", fileName);
                     
@@ -1879,9 +1918,26 @@ namespace JohnHenryFashionWeb.Controllers
                     banner.ImageUrl = model.ImageUrl;
                 }
 
-                // Handle mobile image upload
+                // Handle mobile image upload - DELETE OLD FILE FIRST
                 if (mobileImageFile != null && mobileImageFile.Length > 0)
                 {
+                    // Delete old mobile image file if exists
+                    if (!string.IsNullOrEmpty(banner.MobileImageUrl))
+                    {
+                        var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, banner.MobileImageUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning($"Failed to delete old mobile banner image: {ex.Message}");
+                            }
+                        }
+                    }
+                    
                     var fileName = $"banner_mobile_{Guid.NewGuid()}{Path.GetExtension(mobileImageFile.FileName)}";
                     var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "banners", fileName);
                     
@@ -1899,28 +1955,41 @@ namespace JohnHenryFashionWeb.Controllers
                 banner.Position = model.Position;
                 banner.SortOrder = model.SortOrder;
                 banner.IsActive = model.IsActive;
-                // Normalize start/end dates to UTC before saving to PostgreSQL (Npgsql requires UTC for timestamptz)
-                var sd = model.StartDate;
-                if (sd.Kind == DateTimeKind.Unspecified)
+                
+                // Fix DateTime Kind for PostgreSQL - convert to UTC if needed
+                if (model.StartDate.Kind == DateTimeKind.Unspecified)
                 {
-                    // Treat unspecified as local and convert to UTC
-                    sd = DateTime.SpecifyKind(sd, DateTimeKind.Local);
+                    banner.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
                 }
-                banner.StartDate = sd.ToUniversalTime();
+                else if (model.StartDate.Kind == DateTimeKind.Local)
+                {
+                    banner.StartDate = model.StartDate.ToUniversalTime();
+                }
+                else
+                {
+                    banner.StartDate = model.StartDate;
+                }
 
                 if (model.EndDate.HasValue)
                 {
-                    var ed = model.EndDate.Value;
-                    if (ed.Kind == DateTimeKind.Unspecified)
+                    if (model.EndDate.Value.Kind == DateTimeKind.Unspecified)
                     {
-                        ed = DateTime.SpecifyKind(ed, DateTimeKind.Local);
+                        banner.EndDate = DateTime.SpecifyKind(model.EndDate.Value, DateTimeKind.Utc);
                     }
-                    banner.EndDate = ed.ToUniversalTime();
+                    else if (model.EndDate.Value.Kind == DateTimeKind.Local)
+                    {
+                        banner.EndDate = model.EndDate.Value.ToUniversalTime();
+                    }
+                    else
+                    {
+                        banner.EndDate = model.EndDate.Value;
+                    }
                 }
                 else
                 {
                     banner.EndDate = null;
                 }
+                
                 banner.OpenInNewTab = model.OpenInNewTab;
                 banner.TargetPage = model.TargetPage;
                 banner.UpdatedAt = DateTime.UtcNow;
@@ -2660,12 +2729,21 @@ namespace JohnHenryFashionWeb.Controllers
             }
             
             var totalItems = await query.CountAsync();
-            var products = await query
+            
+            // Calculate statistics for ALL products matching the query (before pagination)
+            var allProducts = await query.AsNoTracking().ToListAsync();
+            var totalStockQuantity = allProducts.Sum(p => p.StockQuantity);
+            var lowStockCount = allProducts.Count(p => p.StockQuantity > 0 && p.StockQuantity < 10);
+            var outOfStockCount = allProducts.Count(p => p.StockQuantity == 0);
+            var inStockCount = allProducts.Count(p => p.StockQuantity >= 10);
+            
+            // Get paginated products
+            var products = allProducts
                 .OrderBy(p => p.StockQuantity)
                 .ThenBy(p => p.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
             
             // Map to InventoryItemViewModel
             var inventoryItems = products.Select(p => new ViewModels.InventoryItemViewModel
@@ -2693,7 +2771,12 @@ namespace JohnHenryFashionWeb.Controllers
                 TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
                 PageSize = pageSize,
                 SearchTerm = search,
-                Filter = filter
+                Filter = filter,
+                TotalProducts = totalItems,
+                TotalStockQuantity = totalStockQuantity,
+                LowStockProducts = lowStockCount,
+                OutOfStockProducts = outOfStockCount,
+                InStockProducts = inStockCount
             };
                 
             return View(viewModel);

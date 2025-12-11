@@ -105,8 +105,8 @@
                                 }
                             </div>
                         </div>
-                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#sizeGuideModal">
-                            <i class="fas fa-ruler me-1"></i> Hướng dẫn tính size
+                        <a href="#sizeGuideModal" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#sizeGuideModal">
+                            <i class="fas fa-ruler me-1"></i> Hướng dẫn chọn size
                         </a>
                     </div>
 
@@ -197,8 +197,8 @@
                                     <div class="product-price-actions">
                                         <div class="product-price">@product.Price.ToString("N0")₫</div>
                                         <div class="product-actions">
-                                            <button class="action-btn wishlist-btn" title="Yêu thích" data-wishlist-product-id="@product.SKU">
-                                                <i class="far fa-heart"></i>
+                                            <button class="action-btn wishlist-btn" title="Yêu thích" data-wishlist-product-id="@product.Id" data-product-sku="@product.SKU">
+                                                <i class="far fa-heart wishlist-icon"></i>
                                             </button>
                                             <button class="action-btn cart-btn" title="Thêm vào giỏ" onclick="addToCartFromRelated('@product.SKU', this)">
                                                 <i class="fas fa-shopping-bag"></i>
@@ -212,21 +212,159 @@
                 </div>
             </div>
         }
+        
+        <!-- Product Reviews Section -->
+        <div class="product-reviews-section mt-5">
+            <div class="collection-header text-center mb-4">
+                <h2 class="collection-title mb-2">ĐÁNH GIÁ SẢN PHẨM</h2>
+                <div class="section-divider mx-auto"></div>
+            </div>
+            
+            <div class="row">
+                <!-- Rating Summary -->
+                <div class="col-lg-4 mb-4">
+                    <div class="rating-summary-card p-4 bg-light rounded">
+                        <div class="text-center mb-3">
+                            <div class="rating-score display-4 fw-bold text-danger">
+                                @(Model.Rating?.ToString("0.0") ?? "0.0")
+                            </div>
+                            <div class="rating-stars mb-2">
+                                @{
+                                    var avgRating = (double)(Model.Rating ?? 0);
+                                    for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= avgRating)
+                                        {
+                                            <i class="fas fa-star text-warning"></i>
+                                        }
+                                        else if (i - 0.5 <= avgRating)
+                                        {
+                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star text-warning"></i>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <div class="text-muted">@Model.ReviewCount đánh giá</div>
+                        </div>
+                        
+                        <!-- Rating Bars -->
+                        <div class="rating-bars">
+                            @for (int star = 5; star >= 1; star--)
+                            {
+                                var count = Model.RatingStats.ContainsKey(star) ? Model.RatingStats[star] : 0;
+                                var percentage = Model.ReviewCount > 0 ? (count * 100.0 / Model.ReviewCount) : 0;
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="rating-label me-2">@star <i class="fas fa-star text-warning small"></i></span>
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" style="width: @percentage%"></div>
+                                    </div>
+                                    <span class="rating-count ms-2 text-muted small">(@count)</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reviews List -->
+                <div class="col-lg-8">
+                    @if (Model.Reviews != null && Model.Reviews.Any())
+                    {
+                        <div class="reviews-list">
+                            @foreach (var review in Model.Reviews)
+                            {
+                                <div class="review-item border-bottom pb-4 mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <div class="review-avatar me-3">
+                                            @if (!string.IsNullOrEmpty(review.UserAvatar))
+                                            {
+                                                <img src="@review.UserAvatar" alt="@review.UserName" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                            }
+                                            else
+                                            {
+                                                <div class="avatar-placeholder rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                                    @(review.UserName.Length > 0 ? review.UserName[0].ToString().ToUpper() : "K")
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="review-content flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">@review.UserName</h6>
+                                                    <div class="review-stars mb-1">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= review.Rating)
+                                                            {
+                                                                <i class="fas fa-star text-warning small"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star text-warning small"></i>
+                                                            }
+                                                        }
+                                                        @if (review.IsVerifiedPurchase)
+                                                        {
+                                                            <span class="badge bg-success ms-2 small">
+                                                                <i class="fas fa-check-circle me-1"></i>Đã mua hàng
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(review.Title))
+                                            {
+                                                <h6 class="review-title fw-semibold">@review.Title</h6>
+                                            }
+                                            @if (!string.IsNullOrEmpty(review.Comment))
+                                            {
+                                                <p class="review-comment text-muted mb-0">@review.Comment</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (Model.ReviewCount > 10)
+                            {
+                                <div class="text-center">
+                                    <a href="/Review/Product/@Model.Id" class="btn btn-outline-danger">
+                                        <i class="fas fa-list me-2"></i>Xem tất cả @Model.ReviewCount đánh giá
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="far fa-comment-dots fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có đánh giá nào</h5>
+                            <p class="text-muted">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
 <!-- Size Guide Modal -->
-<div class="modal fade" id="sizeGuideModal" tabindex="-1" aria-labelledby="sizeGuideModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade" id="sizeGuideModal" tabindex="-1" role="dialog" aria-labelledby="sizeGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title text-uppercase fw-bold" id="sizeGuideModalLabel">
-                    <i class="fas fa-ruler me-2"></i>Hướng dẫn tính size
+                    <i class="fas fa-ruler me-2"></i>Hướng dẫn chọn size John Henry
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-0">
-                <img src="/images/size-chart.jpg" alt="Hướng dẫn chọn size John Henry" class="img-fluid w-100">
+            <div class="modal-body p-0 text-center bg-white" style="padding-top: 80px !important;">
+                <img src="/images/size-chart.jpg" alt="Hướng dẫn chọn size John Henry" class="img-fluid w-100" style="max-height: 80vh; object-fit: contain; margin-top: 20px;">
             </div>
         </div>
     </div>
@@ -239,6 +377,45 @@
         // Check if product is in wishlist on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkWishlistStatus();
+            
+            // Debug modal - ensure it's properly initialized
+            const sizeGuideModal = document.getElementById('sizeGuideModal');
+            if (sizeGuideModal) {
+                console.log('✅ Size Guide Modal found');
+                console.log('Modal HTML:', sizeGuideModal.outerHTML.substring(0, 200));
+                
+                // Add event listeners to debug
+                sizeGuideModal.addEventListener('show.bs.modal', function(e) {
+                    console.log('🔵 Modal is opening');
+                    console.log('Modal display:', window.getComputedStyle(this).display);
+                    console.log('Modal z-index:', window.getComputedStyle(this).zIndex);
+                });
+                
+                sizeGuideModal.addEventListener('shown.bs.modal', function() {
+                    console.log('✅ Modal is fully shown');
+                    console.log('Modal classes:', this.className);
+                    console.log('Modal position:', this.getBoundingClientRect());
+                    
+                    // Check if image loaded
+                    const img = this.querySelector('img');
+                    if (img) {
+                        console.log('Image src:', img.src);
+                        console.log('Image loaded:', img.complete);
+                    }
+                });
+                
+                sizeGuideModal.addEventListener('hide.bs.modal', function() {
+                    console.log('🔴 Modal is closing');
+                });
+                
+                // Check backdrop
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    console.log('Number of backdrops:', backdrops.length);
+                }, 100);
+            } else {
+                console.error('❌ Size Guide Modal NOT found!');
+            }
         });
 
         // Check if product is in wishlist
@@ -285,15 +462,19 @@
 
         // Add to wishlist
         function addToWishlist() {
-            const formData = new FormData();
-            formData.append('productId', productId);
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (token) {
+                headers['X-CSRF-TOKEN'] = token;
+            }
             
             fetch('/Wishlist/Add', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
+                headers: headers,
+                body: `productId=${encodeURIComponent(productId)}`
             })
             .then(response => response.json())
             .then(data => {
@@ -326,15 +507,19 @@
 
         // Remove from wishlist
         function removeFromWishlist() {
-            const formData = new FormData();
-            formData.append('productId', productId);
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (token) {
+                headers['X-CSRF-TOKEN'] = token;
+            }
             
             fetch('/Wishlist/Remove', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
+                headers: headers,
+                body: `productId=${encodeURIComponent(productId)}`
             })
             .then(response => response.json())
             .then(data => {
@@ -606,8 +791,11 @@
                     .then(data => {
                         if (data.isInWishlist) {
                             btn.classList.add('active');
-                            btn.querySelector('i').classList.remove('far');
-                            btn.querySelector('i').classList.add('fas');
+                            const icon = btn.querySelector('.wishlist-icon');
+                            if (icon) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                            }
                         }
                     })
                     .catch(error => console.error('Error:', error));
@@ -619,38 +807,45 @@
                 e.stopPropagation();
                 
                 const isActive = this.classList.contains('active');
-                const productSku = this.getAttribute('data-wishlist-product-id');
+                const productId = this.getAttribute('data-wishlist-product-id');
                 
                 if (isActive) {
                     // Remove from wishlist
-                    removeFromWishlistRelated(productSku, this);
+                    removeFromWishlistRelated(productId, this);
                 } else {
                     // Add to wishlist
-                    addToWishlistRelated(productSku, this);
+                    addToWishlistRelated(productId, this);
                 }
             });
         });
 
-        function addToWishlistRelated(productSku, buttonElement) {
-            const formData = new FormData();
-            formData.append('productId', productSku);
+        function addToWishlistRelated(productId, buttonElement) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (token) {
+                headers['X-CSRF-TOKEN'] = token;
+            }
             
             fetch('/Wishlist/Add', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
+                headers: headers,
+                body: `productId=${encodeURIComponent(productId)}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     buttonElement.classList.add('active');
-                    buttonElement.querySelector('i').classList.remove('far');
-                    buttonElement.querySelector('i').classList.add('fas');
+                    const icon = buttonElement.querySelector('.wishlist-icon');
+                    if (icon) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    }
                     showToast('Đã thêm vào danh sách yêu thích', 'success');
                 } else {
-                    if (data.message.includes('not authenticated')) {
+                    if (data.message && data.message.includes('not authenticated')) {
                         showToast('Vui lòng đăng nhập để thêm vào yêu thích', 'warning');
                         setTimeout(() => {
                             window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
@@ -666,23 +861,30 @@
             });
         }
 
-        function removeFromWishlistRelated(productSku, buttonElement) {
-            const formData = new FormData();
-            formData.append('productId', productSku);
+        function removeFromWishlistRelated(productId, buttonElement) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (token) {
+                headers['X-CSRF-TOKEN'] = token;
+            }
             
             fetch('/Wishlist/Remove', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
+                headers: headers,
+                body: `productId=${encodeURIComponent(productId)}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     buttonElement.classList.remove('active');
-                    buttonElement.querySelector('i').classList.remove('fas');
-                    buttonElement.querySelector('i').classList.add('far');
+                    const icon = buttonElement.querySelector('.wishlist-icon');
+                    if (icon) {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
                     showToast('Đã xóa khỏi danh sách yêu thích', 'success');
                 } else {
                     showToast(data.message || 'Không thể xóa khỏi yêu thích', 'error');
@@ -698,6 +900,31 @@
 
 @section Styles {
     <style>
+        /* HIDE modal backdrop completely - no black overlay */
+        .modal-backdrop {
+            display: none !important;
+        }
+        
+        /* Fix Size Guide Modal Display */
+        #sizeGuideModal {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            z-index: 9999 !important;
+        }
+        
+        #sizeGuideModal .modal-dialog {
+            z-index: 10000 !important;
+            position: relative;
+        }
+        
+        #sizeGuideModal .modal-content {
+            z-index: 10001 !important;
+            position: relative;
+        }
+        
+        #sizeGuideModal.show {
+            display: block !important;
+        }
+        
         .product-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -969,6 +1196,66 @@
             font-weight: 900;
         }
 
+        /* Product Reviews Section Styles */
+        .product-reviews-section {
+            padding-top: 3rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .rating-summary-card {
+            position: sticky;
+            top: 100px;
+        }
+
+        .rating-score {
+            font-size: 3.5rem;
+            line-height: 1;
+        }
+
+        .rating-label {
+            min-width: 50px;
+            font-size: 0.85rem;
+        }
+
+        .rating-count {
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .review-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .review-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: -1rem;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-placeholder {
+            font-weight: 600;
+        }
+
+        .review-title {
+            color: #333;
+        }
+
+        .review-comment {
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        /* Star Rating Input */
+        .star-rating-input .rating-star {
+            transition: transform 0.2s ease;
+        }
+
+        .star-rating-input .rating-star:hover {
+            transform: scale(1.2);
+        }
+
         @@media (max-width: 768px) {
             .product-images-wrapper {
                 flex-direction: column;
@@ -986,6 +1273,14 @@
 
             .collection-title {
                 font-size: 1.5rem;
+            }
+            
+            .rating-summary-card {
+                position: static;
+            }
+            
+            .rating-score {
+                font-size: 2.5rem;
             }
         }
     </style>

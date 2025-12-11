@@ -216,9 +216,21 @@
             </div>
         </div>
         
-        <div class="alert alert-light mb-0">
-            <strong>Mô tả:</strong><br/>
-            @Model.Description
+        <!-- Ticket Description Card -->
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-primary">
+                    <i class="fas fa-file-alt me-2"></i>Chi tiết yêu cầu
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTicketModal">
+                    <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                </button>
+            </div>
+            <div class="card-body" style="background: #f8f9fa;">
+                <div class="ticket-description" style="white-space: pre-wrap; line-height: 1.8; color: #333;">
+                    @Model.Description
+                </div>
+            </div>
         </div>
 
         @if (!string.IsNullOrEmpty(Model.AttachmentUrls))
@@ -463,3 +475,72 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Ticket Modal -->
+<div class="modal fade" id="editTicketModal" tabindex="-1" aria-labelledby="editTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title" id="editTicketModalLabel">
+                    <i class="fas fa-edit me-2"></i>Chỉnh sửa Ticket #@Model.TicketNumber
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-action="EditTicket" asp-route-id="@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="subject" class="form-label fw-bold">
+                            <i class="fas fa-heading me-2 text-primary"></i>Tiêu đề
+                        </label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="@Model.Subject" required maxlength="500">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label fw-bold">
+                            <i class="fas fa-tag me-2 text-info"></i>Danh mục
+                        </label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="general" selected="@(Model.Category == "general")">Chung</option>
+                            <option value="order" selected="@(Model.Category == "order")">Đơn hàng</option>
+                            <option value="product" selected="@(Model.Category == "product")">Sản phẩm</option>
+                            <option value="payment" selected="@(Model.Category == "payment")">Thanh toán</option>
+                            <option value="technical" selected="@(Model.Category == "technical")">Kỹ thuật</option>
+                            <option value="account" selected="@(Model.Category == "account")">Tài khoản</option>
+                            <option value="other" selected="@(Model.Category == "other")">Khác</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-bold">
+                            <i class="fas fa-align-left me-2 text-success"></i>Mô tả chi tiết
+                        </label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="8" required>@Model.Description</textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Mô tả chi tiết vấn đề của khách hàng
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Đóng
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-resize textarea
+    document.getElementById('description').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+</script>

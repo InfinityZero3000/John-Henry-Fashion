@@ -19,6 +19,22 @@ public class ProductViewModel
     public bool IsNew { get; set; }
     public bool IsFeatured { get; set; }
     public string? Collection { get; set; }
+    
+    // Review details
+    public List<ProductReviewViewModel> Reviews { get; set; } = new();
+    public Dictionary<int, int> RatingStats { get; set; } = new(); // Rating (1-5) -> Count
+}
+
+public class ProductReviewViewModel
+{
+    public Guid Id { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string? UserAvatar { get; set; }
+    public int Rating { get; set; }
+    public string? Title { get; set; }
+    public string? Comment { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsVerifiedPurchase { get; set; }
 }
 
 public class ProductDetailViewModel

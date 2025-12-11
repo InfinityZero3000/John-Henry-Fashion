@@ -68,6 +68,28 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
             border-color: #000000 !important;
         }
+        
+        /* CRITICAL FIX: Force remove any blocking overlays */
+        .modal-backdrop {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        
+        body.modal-open {
+            overflow: auto !important;
+            padding-right: 0 !important;
+        }
+        
+        /* Ensure admin content is always clickable */
+        .admin-wrapper,
+        .admin-content,
+        .admin-main {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -378,6 +400,21 @@
         }, 100);
 
         // ===== FIX GRAY OVERLAY / MODAL BACKDROP ISSUE =====
+        // IMMEDIATE cleanup - run before DOMContentLoaded
+        (function() {
+            // Immediately remove modal-open class and reset body styles
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Remove any existing backdrops immediately
+            var backdrops = document.querySelectorAll('.modal-backdrop');
+            for (var i = 0; i < backdrops.length; i++) {
+                backdrops[i].parentNode.removeChild(backdrops[i]);
+            }
+            console.log('⚡ Immediate modal cleanup executed');
+        })();
+        
         // Clean up any leftover modal backdrops or modal-open class
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔧 Checking for modal backdrop cleanup...');

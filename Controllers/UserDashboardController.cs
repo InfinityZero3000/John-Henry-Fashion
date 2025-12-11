@@ -130,7 +130,19 @@ namespace JohnHenryFashionWeb.Controllers
             user.LastName = model.LastName;
             user.PhoneNumber = model.PhoneNumber;
             user.Gender = model.Gender;
-            user.DateOfBirth = model.DateOfBirth;
+            
+            // Convert DateOfBirth to UTC if it has a value
+            if (model.DateOfBirth.HasValue)
+            {
+                user.DateOfBirth = model.DateOfBirth.Value.Kind == DateTimeKind.Unspecified 
+                    ? DateTime.SpecifyKind(model.DateOfBirth.Value, DateTimeKind.Utc)
+                    : model.DateOfBirth.Value.ToUniversalTime();
+            }
+            else
+            {
+                user.DateOfBirth = null;
+            }
+            
             user.UpdatedAt = DateTime.UtcNow;
 
             var result = await _userManager.UpdateAsync(user);
@@ -380,6 +392,88 @@ namespace JohnHenryFashionWeb.Controllers
                 TempData["Error"] = "Có lỗi xảy ra khi cập nhật ảnh đại diện. Vui lòng thử lại.";
                 return RedirectToAction(nameof(Profile));
             }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CancelOrder([FromBody] CancelOrderRequest request)
+        {
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (userId == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập" });
+                }
+
+                var order = await _context.Orders
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                    .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == userId);
+
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                // Check if order can be cancelled
+                if (order.Status == "delivered")
+                {
+                    return Json(new { success = false, message = "Không thể hủy đơn hàng đã giao" });
+                }
+
+                if (order.Status == "cancelled")
+                {
+                    return Json(new { success = false, message = "Đơn hàng đã được hủy trước đó" });
+                }
+
+                if (order.Status == "shipped")
+                {
+                    return Json(new { success = false, message = "Không thể hủy đơn hàng đã gửi đi. Vui lòng liên hệ hỗ trợ." });
+                }
+
+                // Update order status
+                order.Status = "cancelled";
+                order.UpdatedAt = DateTime.UtcNow;
+
+                // Add cancellation note
+                var cancelNote = $"[{DateTime.UtcNow:dd/MM/yyyy HH:mm}] Khách hàng đã hủy đơn hàng";
+                if (!string.IsNullOrEmpty(request.Reason))
+                {
+                    cancelNote += $" - Lý do: {request.Reason}";
+                }
+
+                order.Notes = string.IsNullOrEmpty(order.Notes) 
+                    ? cancelNote
+                    : $"{order.Notes}\n{cancelNote}";
+
+                // Restore product stock
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.Product != null && item.Product.ManageStock)
+                    {
+                        item.Product.StockQuantity += item.Quantity;
+                        _logger.LogInformation($"Restored stock for product {item.Product.SKU}: +{item.Quantity} (new stock: {item.Product.StockQuantity})");
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"User {userId} cancelled order {order.OrderNumber}. Reason: {request.Reason}");
+
+                return Json(new { success = true, message = "Đơn hàng đã được hủy thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling order");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi hủy đơn hàng. Vui lòng thử lại." });
+            }
+        }
+
+        public class CancelOrderRequest
+        {
+            public Guid OrderId { get; set; }
+            public string? Reason { get; set; }
         }
     }
 }

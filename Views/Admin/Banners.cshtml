@@ -672,9 +672,13 @@
                                                 {
                                                     <span class="admin-badge admin-badge-info text-nowrap">Đã lên lịch</span>
                                                 }
-                                                else
+                                                else if (banner.StartDate <= DateTime.UtcNow && (!banner.EndDate.HasValue || banner.EndDate.Value >= DateTime.UtcNow))
                                                 {
                                                     <span class="admin-badge admin-badge-success text-nowrap">Hoạt động</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="admin-badge admin-badge-secondary text-nowrap">Không xác định</span>
                                                 }
                                             }
                                             else
@@ -687,6 +691,9 @@
                                                 </button>
                                                 <button class="admin-btn admin-btn-sm admin-btn-ghost" onclick="editBanner('@banner.Id')" title="Chỉnh sửa">
                                                     <i data-lucide="edit"></i>
+                                                </button>
+                                                <button class="admin-btn admin-btn-sm admin-btn-ghost text-danger" onclick="deleteBanner('@banner.Id')" title="Xóa">
+                                                    <i data-lucide="trash-2"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -1279,6 +1286,34 @@
         } catch (error) {
             console.error('Error:', error);
             showAlert('danger', 'Có lỗi xảy ra khi cập nhật trạng thái banner');
+        }
+    }
+
+    async function deleteBanner(bannerId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa banner này?\n\nLưu ý: Chỉ xóa trong database, file ảnh sẽ được giữ lại.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/api/banners/${bannerId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert('success', result.message);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('danger', 'Có lỗi xảy ra: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('danger', 'Có lỗi xảy ra khi xóa banner');
         }
     }
 

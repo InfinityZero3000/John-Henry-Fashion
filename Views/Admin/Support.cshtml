@@ -271,10 +271,10 @@
                                         <div style="font-size: 0.8125rem; color: var(--admin-text-light);">@ticket.CreatedAt.ToString("HH:mm")</div>
                                     </td>
                                     <td class="actions">
-                                        <a href="/admin/support/ticket/@ticket.Id" class="admin-btn admin-btn-sm admin-btn-primary">
+                                        <button onclick="viewTicketDetails('@ticket.Id')" class="admin-btn admin-btn-sm admin-btn-primary">
                                             <i data-lucide="eye"></i>
                                             Xem
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -296,6 +296,34 @@
     }
 </div>
 
+<!-- Ticket Details Modal -->
+<div class="modal fade" id="ticketDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-lucide="ticket"></i>
+                    Chi tiết ticket <span id="ticketNumberDisplay"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="ticketDetailsContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="admin-btn admin-btn-secondary" data-bs-dismiss="modal">
+                    <i data-lucide="x"></i>
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // Initialize Lucide icons
@@ -312,5 +340,264 @@
                 }, 500);
             });
         }, 5000);
+
+        // View ticket details in modal
+        function viewTicketDetails(ticketId) {
+            const modal = new bootstrap.Modal(document.getElementById('ticketDetailsModal'));
+            
+            // Show loading state
+            document.getElementById('ticketDetailsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            `;
+            
+            modal.show();
+            
+            // Fetch ticket details
+            fetch(`/admin/support/ticket/details/${ticketId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderTicketDetails(data.ticket, data.admins);
+                    } else {
+                        showError('Không thể tải thông tin ticket');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Có lỗi xảy ra khi tải thông tin ticket');
+                });
+        }
+
+        // Render ticket details
+        function renderTicketDetails(ticket, admins) {
+            document.getElementById('ticketNumberDisplay').textContent = `#${ticket.ticketNumber}`;
+            
+            const statusBadge = getStatusBadgeHtml(ticket.status);
+            const priorityBadge = getPriorityBadgeHtml(ticket.priority);
+            const categoryBadge = getCategoryBadgeHtml(ticket.category);
+            
+            let repliesHtml = '';
+            if (ticket.replies && ticket.replies.length > 0) {
+                ticket.replies.forEach(reply => {
+                    const replyDate = new Date(reply.createdAt);
+                    repliesHtml += `
+                        <div class="reply-item ${reply.isInternal ? 'internal-reply' : ''}" style="background: ${reply.isInternal ? '#fff3cd' : '#f8f9fa'}; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid ${reply.isInternal ? '#ffc107' : '#0d6efd'};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <strong style="color: var(--admin-text);">
+                                    ${reply.user ? reply.user.fullName : 'N/A'}
+                                    ${reply.isInternal ? '<span class="admin-badge admin-badge-warning" style="margin-left: 0.5rem; font-size: 0.75rem;">Internal</span>' : ''}
+                                </strong>
+                                <small style="color: var(--admin-text-light);">${replyDate.toLocaleString('vi-VN')}</small>
+                            </div>
+                            <div style="color: var(--admin-text);">${escapeHtml(reply.message)}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                repliesHtml = '<p style="color: var(--admin-text-light); text-align: center; padding: 2rem;">Chưa có phản hồi nào</p>';
+            }
+
+            const createdDate = new Date(ticket.createdAt);
+            const updatedDate = new Date(ticket.updatedAt);
+
+            const content = `
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-8">
+                        <!-- Ticket Info -->
+                        <div class="admin-card" style="margin-bottom: 1.5rem;">
+                            <div class="admin-card-header">
+                                <h4 style="margin: 0; font-size: 1.25rem;">Thông tin ticket</h4>
+                            </div>
+                            <div class="admin-card-body">
+                                <div style="margin-bottom: 1rem;">
+                                    <strong style="color: var(--admin-text-light); font-size: 0.875rem;">Tiêu đề:</strong>
+                                    <div style="font-size: 1.125rem; font-weight: 600; color: var(--admin-text); margin-top: 0.25rem;">
+                                        ${escapeHtml(ticket.subject)}
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <strong style="color: var(--admin-text-light); font-size: 0.875rem;">Mô tả:</strong>
+                                    <div style="color: var(--admin-text); margin-top: 0.25rem; white-space: pre-wrap;">
+                                        ${escapeHtml(ticket.description)}
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                                    <div>
+                                        <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block; margin-bottom: 0.5rem;">Danh mục:</strong>
+                                        ${categoryBadge}
+                                    </div>
+                                    <div>
+                                        <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block; margin-bottom: 0.5rem;">Ưu tiên:</strong>
+                                        ${priorityBadge}
+                                    </div>
+                                    <div>
+                                        <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block; margin-bottom: 0.5rem;">Trạng thái:</strong>
+                                        ${statusBadge}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Replies -->
+                        <div class="admin-card">
+                            <div class="admin-card-header">
+                                <h4 style="margin: 0; font-size: 1.25rem;">Lịch sử phản hồi</h4>
+                            </div>
+                            <div class="admin-card-body">
+                                ${repliesHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-4">
+                        <!-- Customer Info -->
+                        <div class="admin-card" style="margin-bottom: 1.5rem;">
+                            <div class="admin-card-header">
+                                <h4 style="margin: 0; font-size: 1rem;">Khách hàng</h4>
+                            </div>
+                            <div class="admin-card-body">
+                                ${ticket.user ? `
+                                    <div style="margin-bottom: 0.5rem;">
+                                        <strong style="color: var(--admin-text);">${escapeHtml(ticket.user.fullName)}</strong>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--admin-text-light);">
+                                        ${escapeHtml(ticket.user.email)}
+                                    </div>
+                                ` : '<span class="admin-badge admin-badge-secondary">N/A</span>'}
+                            </div>
+                        </div>
+
+                        <!-- Assignment -->
+                        <div class="admin-card" style="margin-bottom: 1.5rem;">
+                            <div class="admin-card-header">
+                                <h4 style="margin: 0; font-size: 1rem;">Phân công</h4>
+                            </div>
+                            <div class="admin-card-body">
+                                ${ticket.assignedAdmin ? `
+                                    <div style="margin-bottom: 0.5rem;">
+                                        <strong style="color: var(--admin-text);">${escapeHtml(ticket.assignedAdmin.fullName)}</strong>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--admin-text-light);">
+                                        ${escapeHtml(ticket.assignedAdmin.email)}
+                                    </div>
+                                ` : '<span class="admin-badge admin-badge-secondary">Chưa phân công</span>'}
+                            </div>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="admin-card">
+                            <div class="admin-card-header">
+                                <h4 style="margin: 0; font-size: 1rem;">Thời gian</h4>
+                            </div>
+                            <div class="admin-card-body">
+                                <div style="margin-bottom: 0.75rem;">
+                                    <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block;">Ngày tạo:</strong>
+                                    <span style="color: var(--admin-text);">${createdDate.toLocaleString('vi-VN')}</span>
+                                </div>
+                                <div style="margin-bottom: 0.75rem;">
+                                    <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block;">Cập nhật:</strong>
+                                    <span style="color: var(--admin-text);">${updatedDate.toLocaleString('vi-VN')}</span>
+                                </div>
+                                ${ticket.resolvedAt ? `
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block;">Giải quyết:</strong>
+                                        <span style="color: var(--admin-text);">${new Date(ticket.resolvedAt).toLocaleString('vi-VN')}</span>
+                                    </div>
+                                ` : ''}
+                                ${ticket.closedAt ? `
+                                    <div>
+                                        <strong style="color: var(--admin-text-light); font-size: 0.875rem; display: block;">Đóng:</strong>
+                                        <span style="color: var(--admin-text);">${new Date(ticket.closedAt).toLocaleString('vi-VN')}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('ticketDetailsContent').innerHTML = content;
+            
+            // Reinitialize Lucide icons
+            setTimeout(() => lucide.createIcons(), 100);
+        }
+
+        // Helper functions for badges
+        function getStatusBadgeHtml(status) {
+            const statusLower = status?.toLowerCase();
+            switch (statusLower) {
+                case 'open':
+                    return '<span class="admin-badge admin-badge-warning"><i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i> Chờ xử lý</span>';
+                case 'in_progress':
+                case 'inprogress':
+                    return '<span class="admin-badge admin-badge-info"><i data-lucide="clock" style="width: 12px; height: 12px;"></i> Đang xử lý</span>';
+                case 'resolved':
+                    return '<span class="admin-badge admin-badge-success"><i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> Đã giải quyết</span>';
+                case 'closed':
+                    return '<span class="admin-badge admin-badge-secondary"><i data-lucide="x-circle" style="width: 12px; height: 12px;"></i> Đã đóng</span>';
+                default:
+                    return `<span class="admin-badge admin-badge-secondary">${status || 'N/A'}</span>`;
+            }
+        }
+
+        function getPriorityBadgeHtml(priority) {
+            const priorityLower = priority?.toLowerCase();
+            switch (priorityLower) {
+                case 'high':
+                    return '<span class="admin-badge admin-badge-danger"><i data-lucide="chevrons-up" style="width: 12px; height: 12px;"></i> Cao</span>';
+                case 'medium':
+                    return '<span class="admin-badge admin-badge-warning"><i data-lucide="minus" style="width: 12px; height: 12px;"></i> Trung bình</span>';
+                case 'low':
+                    return '<span class="admin-badge admin-badge-info"><i data-lucide="chevrons-down" style="width: 12px; height: 12px;"></i> Thấp</span>';
+                default:
+                    return `<span class="admin-badge admin-badge-secondary">${priority || 'N/A'}</span>`;
+            }
+        }
+
+        function getCategoryBadgeHtml(category) {
+            const categoryLower = category?.toLowerCase();
+            switch (categoryLower) {
+                case 'order':
+                    return '<span class="admin-badge admin-badge-info"><i data-lucide="shopping-bag" style="width: 12px; height: 12px;"></i> Đơn hàng</span>';
+                case 'product':
+                    return '<span class="admin-badge admin-badge-primary" style="background: var(--admin-primary); color: white;"><i data-lucide="box" style="width: 12px; height: 12px;"></i> Sản phẩm</span>';
+                case 'payment':
+                    return '<span class="admin-badge admin-badge-success"><i data-lucide="credit-card" style="width: 12px; height: 12px;"></i> Thanh toán</span>';
+                case 'technical':
+                    return '<span class="admin-badge admin-badge-warning"><i data-lucide="settings" style="width: 12px; height: 12px;"></i> Kỹ thuật</span>';
+                default:
+                    return `<span class="admin-badge admin-badge-secondary">${category || 'Khác'}</span>`;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            document.getElementById('ticketDetailsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: var(--admin-danger); margin-bottom: 1rem;"></i>
+                    <h4 style="color: var(--admin-danger);">${message}</h4>
+                </div>
+            `;
+            setTimeout(() => lucide.createIcons(), 100);
+        }
+
+        // Reinitialize Lucide icons when modal is shown
+        document.getElementById('ticketDetailsModal')?.addEventListener('shown.bs.modal', function () {
+            lucide.createIcons();
+        });
     </script>
 }

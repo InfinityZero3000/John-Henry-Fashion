@@ -64,7 +64,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <form asp-action="Logout" asp-controller="Account" method="post" class="w-100">
+                <form asp-action="Logout" asp-controller="Account" method="post" class="w-100" onsubmit="clearUserSession()">
                     <button type="submit" class="nav-link w-100 text-start logout-btn">
                         <i data-lucide="log-out" class="me-2"></i>
                         Đăng xuất

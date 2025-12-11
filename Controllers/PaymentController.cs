@@ -48,7 +48,7 @@ namespace JohnHenryFashionWeb.Controllers
             if (mode == "buynow")
             {
                 // Check if BuyNow data exists in TempData
-                var buyNowItemJson = TempData["BuyNowItem"] as string;
+                var buyNowItemJson = TempData.Peek("BuyNowItem") as string;
                 if (!string.IsNullOrEmpty(buyNowItemJson))
                 {
                     try
@@ -276,8 +276,8 @@ namespace JohnHenryFashionWeb.Controllers
                 List<Guid> selectedIds = new List<Guid>();
                 bool isBuyNow = mode == "buynow";
                 
-                // Check if this is a BuyNow order
-                var buyNowItemJson = TempData["BuyNowItem"] as string;
+                // Check if this is a BuyNow order - use Peek to preserve TempData
+                var buyNowItemJson = TempData.Peek("BuyNowItem") as string;
                 if (isBuyNow && !string.IsNullOrEmpty(buyNowItemJson))
                 {
                     isBuyNow = true;
@@ -289,7 +289,10 @@ namespace JohnHenryFashionWeb.Controllers
                         var productIdString = buyNowItem.GetProperty("ProductId").GetString();
                         if (Guid.TryParse(productIdString, out var productId))
                         {
+                            // CRITICAL: Use AsNoTracking() to get fresh stock data from database
+                            // This prevents using stale cached data from EF context
                             var product = await _context.Products
+                                .AsNoTracking()
                                 .FirstOrDefaultAsync(p => p.Id == productId);
                             
                             if (product == null)
@@ -301,6 +304,20 @@ namespace JohnHenryFashionWeb.Controllers
                             var size = buyNowItem.TryGetProperty("Size", out var sizeEl) ? sizeEl.GetString() : null;
                             var color = buyNowItem.TryGetProperty("Color", out var colorEl) ? colorEl.GetString() : null;
                             var price = buyNowItem.TryGetProperty("Price", out var priceEl) ? priceEl.GetDecimal() : (product.SalePrice ?? product.Price);
+                            
+                            // IMPORTANT: For BuyNow, validate stock IMMEDIATELY before creating cart item
+                            // Don't wait until later - check right now with fresh data
+                            if (product.StockQuantity < quantity)
+                            {
+                                var errorMsg = product.StockQuantity == 0
+                                    ? $"Sản phẩm {product.Name} hiện đã hết hàng"
+                                    : $"Sản phẩm {product.Name} chỉ còn {product.StockQuantity} sản phẩm, không đủ cho số lượng bạn đặt ({quantity})";
+                                
+                                _logger.LogWarning("BuyNow stock validation failed - ProductId: {ProductId}, Stock: {Stock}, RequestedQty: {Quantity}", 
+                                    productId, product.StockQuantity, quantity);
+                                
+                                return Json(new { success = false, message = errorMsg });
+                            }
                             
                             // Create temporary cart item for BuyNow
                             cartItems = new List<ShoppingCartItem>
@@ -318,6 +335,9 @@ namespace JohnHenryFashionWeb.Controllers
                                     CreatedAt = DateTime.UtcNow
                                 }
                             };
+                            
+                            _logger.LogInformation("BuyNow cart item created - ProductId: {ProductId}, Quantity: {Quantity}, Stock: {Stock}", 
+                                productId, quantity, product.StockQuantity);
                         }
                         else
                         {
@@ -371,22 +391,56 @@ namespace JohnHenryFashionWeb.Controllers
                     return Json(new { success = false, message = "Giỏ hàng trống" });
                 }
 
-                // Validate stock availability
-                foreach (var item in cartItems)
+                // Validate stock availability - MUST reload from database to get fresh data
+                // Entity Framework tracking cache can return stale data
+                // IMPORTANT: Skip this check for BuyNow since we already validated stock above
+                if (!isBuyNow)
                 {
-                    // Simply check if product stock is sufficient for the requested quantity
-                    // Don't count other users' cart items as "reserved" - they haven't paid yet
-                    var availableStock = item.Product.StockQuantity;
+                    _logger.LogInformation("ProcessPayment: Validating stock for {Count} cart items (Normal checkout mode)", cartItems.Count);
                     
-                    if (availableStock < item.Quantity)
+                    foreach (var item in cartItems)
                     {
-                        return Json(new { 
-                            success = false, 
-                            message = availableStock == 0
-                                ? $"Sản phẩm {item.Product.Name} hiện đã hết hàng"
-                                : $"Sản phẩm {item.Product.Name} chỉ còn {availableStock} sản phẩm trong kho" 
-                        });
+                        // Reload product from database with AsNoTracking to bypass EF cache
+                        var freshProduct = await _context.Products
+                            .AsNoTracking()
+                            .Where(p => p.Id == item.ProductId)
+                            .Select(p => new { p.StockQuantity, p.Name })
+                            .FirstOrDefaultAsync();
+                        
+                        if (freshProduct == null)
+                        {
+                            return Json(new { 
+                                success = false, 
+                                message = $"Sản phẩm {item.Product?.Name ?? "không xác định"} không tồn tại trong hệ thống" 
+                            });
+                        }
+                        
+                        var availableStock = freshProduct.StockQuantity;
+                        
+                        _logger.LogInformation("Stock check - Product: {ProductId}, Name: {Name}, Stock: {Stock}, RequestedQty: {Qty}", 
+                            item.ProductId, freshProduct.Name, availableStock, item.Quantity);
+                        
+                        // Only show error if stock is insufficient
+                        if (availableStock < item.Quantity)
+                        {
+                            // Only show detailed stock message if there IS some stock but not enough
+                            // If completely out of stock, show simple "hết hàng" message
+                            _logger.LogWarning("Insufficient stock - Product: {Name}, Stock: {Stock}, Requested: {Qty}", 
+                                freshProduct.Name, availableStock, item.Quantity);
+                            
+                            return Json(new { 
+                                success = false, 
+                                message = availableStock == 0
+                                    ? $"Sản phẩm {freshProduct.Name} hiện đã hết hàng"
+                                    : $"Sản phẩm {freshProduct.Name} chỉ còn {availableStock} sản phẩm, không đủ cho số lượng bạn đặt ({item.Quantity})" 
+                            });
+                        }
+                        // If stock is sufficient, continue without any message (no need to notify user)
                     }
+                }
+                else
+                {
+                    _logger.LogInformation("ProcessPayment: Skipping stock validation for BuyNow mode (already validated)");
                 }
 
                 // Get and validate shipping address
@@ -503,6 +557,14 @@ namespace JohnHenryFashionWeb.Controllers
                 
                 if (paymentResult.Success)
                 {
+                    // Clear BuyNow TempData after order is created successfully
+                    if (isBuyNow)
+                    {
+                        TempData.Remove("BuyNowItem");
+                        TempData.Remove("IsBuyNow");
+                        _logger.LogInformation("Cleared BuyNow TempData after order creation");
+                    }
+                    
                     // For online payment methods (VNPay, MoMo), redirect directly to payment gateway
                     if (paymentMethod.ToLower() == "vnpay" || paymentMethod.ToLower() == "momo")
                     {

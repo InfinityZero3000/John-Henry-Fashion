@@ -61,6 +61,44 @@ if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_ENABLED"
 if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MOMO_SANDBOX")))
     configuration["PaymentGateways:MoMo:IsSandbox"] = Environment.GetEnvironmentVariable("MOMO_SANDBOX");
 
+// Stripe Configuration
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_PUBLISHABLE_KEY")))
+    configuration["PaymentGateways:Stripe:PublishableKey"] = Environment.GetEnvironmentVariable("STRIPE_PUBLISHABLE_KEY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY")))
+    configuration["PaymentGateways:Stripe:SecretKey"] = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET")))
+    configuration["PaymentGateways:Stripe:WebhookSecret"] = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_API_URL")))
+    configuration["PaymentGateways:Stripe:ApiUrl"] = Environment.GetEnvironmentVariable("STRIPE_API_URL");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_CURRENCY")))
+    configuration["PaymentGateways:Stripe:Currency"] = Environment.GetEnvironmentVariable("STRIPE_CURRENCY");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_ENABLED")))
+    configuration["PaymentGateways:Stripe:IsEnabled"] = Environment.GetEnvironmentVariable("STRIPE_ENABLED");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STRIPE_SANDBOX")))
+    configuration["PaymentGateways:Stripe:IsSandbox"] = Environment.GetEnvironmentVariable("STRIPE_SANDBOX");
+
+// Google OAuth Configuration
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")))
+    configuration["Authentication:Google:ClientId"] = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")))
+    configuration["Authentication:Google:ClientSecret"] = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+
+// Email Configuration
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_HOST")))
+    configuration["EmailSettings:SmtpServer"] = Environment.GetEnvironmentVariable("EMAIL_HOST");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_PORT")))
+    configuration["EmailSettings:SmtpPort"] = Environment.GetEnvironmentVariable("EMAIL_PORT");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_USE_SSL")))
+    configuration["EmailSettings:UseSsl"] = Environment.GetEnvironmentVariable("EMAIL_USE_SSL");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_USER")))
+    configuration["EmailSettings:Username"] = Environment.GetEnvironmentVariable("EMAIL_USER");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_PASSWORD")))
+    configuration["EmailSettings:Password"] = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_FROM")))
+    configuration["EmailSettings:FromEmail"] = Environment.GetEnvironmentVariable("EMAIL_FROM");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_FROM_NAME")))
+    configuration["EmailSettings:FromName"] = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+
 // All other settings will use values from appsettings.json
 // Environment variables can still override them but won't set null values
 
@@ -215,6 +253,7 @@ builder.Services.AddScoped<JohnHenryFashionWeb.Services.IAuditLogService, JohnHe
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.ILogService, JohnHenryFashionWeb.Services.LogService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.SeedDataService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IVietnameseAddressService, JohnHenryFashionWeb.Services.VietnameseAddressService>();
+builder.Services.AddScoped<JohnHenryFashionWeb.Services.IContentModerationService, JohnHenryFashionWeb.Services.ContentModerationService>();
 
 // Add Application Insights
 builder.Services.AddApplicationInsightsTelemetry();

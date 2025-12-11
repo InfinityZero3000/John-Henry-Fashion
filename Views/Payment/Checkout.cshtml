@@ -612,8 +612,33 @@
             const selectedShipping = $('input[name="shippingMethod"]:checked');
             const shippingCost = parseFloat(selectedShipping.data('cost')) || 0;
             
-            // You can add logic here to update the total display if needed
-            console.log('Shipping cost updated:', shippingCost);
+            // Get subtotal from ViewBag (passed from server)
+            const subtotal = @ViewBag.Subtotal;
+            const currentDiscount = @(ViewBag.DiscountAmount ?? 0);
+            
+            // Calculate tax (10% of subtotal)
+            const tax = Math.round(subtotal * 0.1);
+            
+            // Calculate total
+            const total = subtotal + shippingCost + tax - currentDiscount;
+            
+            // Update shipping fee display
+            const shippingDisplay = $('.d-flex.justify-content-between.mb-2:has(span:contains("Phí vận chuyển")) span:last-child');
+            if (shippingCost === 0) {
+                shippingDisplay.html('<span class="text-success">Miễn phí</span>');
+            } else {
+                shippingDisplay.text(shippingCost.toLocaleString('vi-VN') + '₫');
+            }
+            
+            // Update tax display
+            const taxDisplay = $('.d-flex.justify-content-between.mb-2:has(span:contains("Thuế VAT")) span:last-child');
+            taxDisplay.text(tax.toLocaleString('vi-VN') + '₫');
+            
+            // Update total display
+            const totalDisplay = $('.d-flex.justify-content-between.mb-3:has(strong:contains("Tổng cộng")) strong.text-danger');
+            totalDisplay.text(total.toLocaleString('vi-VN') + '₫');
+            
+            console.log('Order summary updated - Shipping:', shippingCost, 'Tax:', tax, 'Total:', total);
         }
 
         function processPayment() {

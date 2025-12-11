@@ -159,6 +159,79 @@ namespace JohnHenryFashionWeb.Controllers
             return View(ticket);
         }
 
+        // GET: admin/support/ticket/details/{id} - API endpoint for modal
+        [HttpGet("ticket/details/{id}")]
+        public async Task<IActionResult> GetTicketDetailsJson(Guid id)
+        {
+            var ticket = await _context.SupportTickets
+                .Include(t => t.User)
+                .Include(t => t.AssignedAdmin)
+                .Include(t => t.Replies)
+                    .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (ticket == null)
+            {
+                return Json(new { success = false, message = "Ticket không tồn tại" });
+            }
+
+            // Get available admins for assignment
+            var adminRoleId = await _context.Roles
+                .Where(r => r.Name == "Admin")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            var admins = await _context.UserRoles
+                .Where(ur => ur.RoleId == adminRoleId)
+                .Join(_context.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => new { u.Id, u.Email, u.FullName })
+                .OrderBy(u => u.Email)
+                .ToListAsync();
+
+            var ticketData = new
+            {
+                id = ticket.Id,
+                ticketNumber = ticket.TicketNumber,
+                subject = ticket.Subject,
+                description = ticket.Description,
+                category = ticket.Category,
+                priority = ticket.Priority,
+                status = ticket.Status,
+                createdAt = ticket.CreatedAt,
+                updatedAt = ticket.UpdatedAt,
+                resolvedAt = ticket.ResolvedAt,
+                closedAt = ticket.ClosedAt,
+                user = ticket.User != null ? new
+                {
+                    id = ticket.User.Id,
+                    fullName = ticket.User.FullName,
+                    email = ticket.User.Email
+                } : null,
+                assignedAdmin = ticket.AssignedAdmin != null ? new
+                {
+                    id = ticket.AssignedAdmin.Id,
+                    fullName = ticket.AssignedAdmin.FullName,
+                    email = ticket.AssignedAdmin.Email
+                } : null,
+                replies = ticket.Replies?.OrderBy(r => r.CreatedAt).Select(r => new
+                {
+                    id = r.Id,
+                    message = r.Message,
+                    isInternal = r.IsInternal,
+                    createdAt = r.CreatedAt,
+                    user = r.User != null ? new
+                    {
+                        fullName = r.User.FullName,
+                        email = r.User.Email
+                    } : null
+                }).ToList()
+            };
+
+            return Json(new { success = true, ticket = ticketData, admins });
+        }
+
         // POST: admin/support/ticket/{id}/assign
         [HttpPost("ticket/{id}/assign")]
         [ValidateAntiForgeryToken]
@@ -291,6 +364,51 @@ namespace JohnHenryFashionWeb.Controllers
             _logger.LogInformation($"Ticket {ticket.TicketNumber} priority changed to {priority} by {User.Identity!.Name}");
 
             TempData["SuccessMessage"] = $"Độ ưu tiên đã được cập nhật thành {priority}!";
+            return RedirectToAction(nameof(TicketDetails), new { id });
+        }
+
+        // POST: admin/support/ticket/{id}/edit
+        [HttpPost("ticket/{id}/edit")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTicket(Guid id, string subject, string category, string description)
+        {
+            var ticket = await _context.SupportTickets.FindAsync(id);
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(description))
+            {
+                TempData["ErrorMessage"] = "Tiêu đề và mô tả không được để trống!";
+                return RedirectToAction(nameof(TicketDetails), new { id });
+            }
+
+            var validCategories = new[] { "general", "order", "product", "payment", "technical", "account", "other" };
+            if (!validCategories.Contains(category.ToLower()))
+            {
+                TempData["ErrorMessage"] = "Danh mục không hợp lệ!";
+                return RedirectToAction(nameof(TicketDetails), new { id });
+            }
+
+            // Save old values for logging
+            var oldSubject = ticket.Subject;
+            var oldDescription = ticket.Description;
+            var oldCategory = ticket.Category;
+
+            // Update ticket
+            ticket.Subject = subject.Trim();
+            ticket.Category = category.ToLower();
+            ticket.Description = description.Trim();
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Ticket {ticket.TicketNumber} updated by {User.Identity!.Name}. " +
+                $"Subject: '{oldSubject}' -> '{ticket.Subject}', " +
+                $"Category: '{oldCategory}' -> '{ticket.Category}'");
+
+            TempData["SuccessMessage"] = "Ticket đã được cập nhật thành công!";
             return RedirectToAction(nameof(TicketDetails), new { id });
         }
 

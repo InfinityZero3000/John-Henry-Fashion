@@ -13,11 +13,13 @@ namespace JohnHenryFashionWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<WishlistController> _logger;
 
-        public WishlistController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public WishlistController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<WishlistController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
         // GET: Wishlist
@@ -52,11 +54,26 @@ namespace JohnHenryFashionWeb.Controllers
         // POST: Wishlist/Add
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(string productId)
+        public async Task<IActionResult> Add([FromForm] string productId)
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                _logger.LogInformation("=== WISHLIST ADD START ===");
+                _logger.LogInformation($"ProductId: {productId}");
+                _logger.LogInformation($"User: {User?.Identity?.Name}");
+                _logger.LogInformation($"IsAuthenticated: {User?.Identity?.IsAuthenticated}");
+                _logger.LogInformation($"Request Content-Type: {Request.ContentType}");
+                _logger.LogInformation($"Request Method: {Request.Method}");
+                
+                // Log all headers
+                foreach (var header in Request.Headers)
+                {
+                    _logger.LogInformation($"Header: {header.Key} = {header.Value}");
+                }
+                
+                var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                _logger.LogInformation($"UserId from claims: {userId}");
+                
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Json(new { success = false, message = "User not authenticated" });
@@ -123,7 +140,7 @@ namespace JohnHenryFashionWeb.Controllers
         // POST: Wishlist/Remove
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Remove([FromBody] string productId)
+        public async Task<IActionResult> Remove([FromForm] string productId)
         {
             try
             {

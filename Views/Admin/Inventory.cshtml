@@ -23,7 +23,7 @@
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Tổng sản phẩm</h3>
-                    <p class="value">@Model.Items.Count()</p>
+                    <p class="value">@Model.TotalStockQuantity.ToString("N0")</p>
                     <p class="change">Trong kho</p>
                 </div>
                 <div class="admin-stat-card-icon primary">
@@ -36,7 +36,7 @@
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Sắp hết hàng</h3>
-                    <p class="value">@Model.Items.Count(i => i.IsLowStock && !i.IsOutOfStock)</p>
+                    <p class="value">@Model.LowStockProducts</p>
                     <p class="change">Cần nhập thêm</p>
                 </div>
                 <div class="admin-stat-card-icon warning">
@@ -49,7 +49,7 @@
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Hết hàng</h3>
-                    <p class="value">@Model.Items.Count(i => i.IsOutOfStock)</p>
+                    <p class="value">@Model.OutOfStockProducts</p>
                     <p class="change">Cần nhập ngay</p>
                 </div>
                 <div class="admin-stat-card-icon primary">
@@ -62,7 +62,7 @@
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Còn hàng tốt</h3>
-                    <p class="value">@Model.Items.Count(i => !i.IsLowStock && !i.IsOutOfStock)</p>
+                    <p class="value">@Model.InStockProducts</p>
                     <p class="change">Đủ hàng</p>
                 </div>
                 <div class="admin-stat-card-icon success">

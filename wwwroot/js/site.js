@@ -3,11 +3,22 @@
 
 // Product interaction functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user has switched accounts
+    checkAccountSwitch();
+    
     // Initialize cart count on page load
     updateCartCount();
     
     // Initialize wishlist states for products on the page
     initializeWishlistStates();
+    
+    // Clear the refreshed flag after initialization
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('refreshed')) {
+        // Remove the refreshed parameter from URL without reloading
+        const newUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+    }
 });
 
 // Add to Wishlist functionality
@@ -24,12 +35,23 @@ function addToWishlist(productId, buttonElement) {
     // Create FormData to send productId as form parameter
     const formData = new FormData();
     formData.append('productId', productId);
+    
+    // Add AntiForgery token
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    if (token) {
+        formData.append('__RequestVerificationToken', token);
+    }
 
     fetch('/Wishlist/Add', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             buttonElement.innerHTML = '<i class="fas fa-heart text-danger"></i>';
@@ -64,12 +86,23 @@ function removeFromWishlist(productId, buttonElement) {
     // Create FormData to send productId as form parameter
     const formData = new FormData();
     formData.append('productId', productId);
+    
+    // Add AntiForgery token
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    if (token) {
+        formData.append('__RequestVerificationToken', token);
+    }
 
     fetch('/Wishlist/Remove', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             buttonElement.innerHTML = '<i class="far fa-heart"></i>';
@@ -178,10 +211,69 @@ function updateCartCountDisplay(count) {
     });
 }
 
+// Check if user has switched accounts and force refresh if needed
+function checkAccountSwitch() {
+    const currentUserId = getUserId();
+    const storedUserId = sessionStorage.getItem('currentUserId');
+    
+    // If user ID changed (login/logout/account switch), force full reload once
+    if (currentUserId !== storedUserId) {
+        console.log('Account switch detected, updating wishlist states...');
+        sessionStorage.setItem('currentUserId', currentUserId || '');
+        
+        // Check if we've already refreshed to prevent infinite loop
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('refreshed')) {
+            // Add refreshed flag and reload
+            const separator = window.location.search ? '&' : '?';
+            window.location.href = window.location.href + separator + 'refreshed=1';
+            return;
+        }
+    } else {
+        // Update stored user ID
+        sessionStorage.setItem('currentUserId', currentUserId || '');
+    }
+}
+
+// Get current user ID from DOM or cookie
+function getUserId() {
+    // Try to get from data attribute in layout
+    const userElement = document.querySelector('[data-user-id]');
+    if (userElement) {
+        return userElement.getAttribute('data-user-id');
+    }
+    
+    // Fallback: check if user is authenticated
+    if (isUserAuthenticated()) {
+        // Get from cookie if available
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'userId') {
+                return value;
+            }
+        }
+        return 'authenticated'; // Generic authenticated user
+    }
+    
+    return null; // Not authenticated
+}
+
 // Initialize wishlist states for products on current page
 function initializeWishlistStates() {
     const wishlistButtons = document.querySelectorAll('[data-wishlist-product-id]');
     
+    // If user is not authenticated, set all buttons to empty heart
+    if (!isUserAuthenticated()) {
+        wishlistButtons.forEach(button => {
+            const productId = button.getAttribute('data-wishlist-product-id');
+            button.innerHTML = '<i class="far fa-heart"></i>';
+            button.onclick = () => addToWishlist(productId, button);
+        });
+        return;
+    }
+    
+    // For authenticated users, check each product's wishlist status
     wishlistButtons.forEach(button => {
         const productId = button.getAttribute('data-wishlist-product-id');
         
@@ -501,6 +593,12 @@ function selectQuickColor(button) {
 // Change quantity in quick add modal
 function changeQuickQuantity(change) {
     const qtyInput = document.getElementById('quickQty');
+
+// Clear user session on logout
+function clearUserSession() {
+    sessionStorage.removeItem('currentUserId');
+    return true; // Allow form submission to continue
+}
     const newValue = parseInt(qtyInput.value) + change;
     const max = parseInt(qtyInput.max);
     

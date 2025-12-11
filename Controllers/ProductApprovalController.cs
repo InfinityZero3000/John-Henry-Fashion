@@ -33,6 +33,18 @@ namespace JohnHenryFashionWeb.Controllers
             var totalReviewsCount = await _context.ProductReviews.CountAsync();
             var approvedReviewsCount = await _context.ProductReviews.CountAsync(r => r.IsApproved);
             
+            // Thống kê auto-moderation hôm nay
+            var today = DateTime.UtcNow.Date;
+            var reviewsToday = await _context.ProductReviews
+                .Where(r => r.CreatedAt >= today)
+                .ToListAsync();
+            
+            var autoApprovedToday = reviewsToday.Count(r => r.IsApproved && r.CreatedAt == r.UpdatedAt);
+            var manualReviewToday = reviewsToday.Count(r => !r.IsApproved);
+            
+            ViewBag.AutoApprovedToday = autoApprovedToday;
+            ViewBag.ManualReviewToday = manualReviewToday;
+            
             // Lấy reviews chờ duyệt mới nhất (10 items)
             var recentPendingReviews = await _context.ProductReviews
                 .Include(r => r.Product)

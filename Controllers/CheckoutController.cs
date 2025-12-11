@@ -663,23 +663,30 @@ namespace JohnHenryFashionWeb.Controllers
         {
             // IMPORTANT: Validate stock availability BEFORE creating order
             // This prevents overselling when multiple users checkout simultaneously
+            // MUST reload from database with AsNoTracking to bypass EF cache and get fresh data
             foreach (var item in session.Items)
             {
-                var product = await _context.Products
+                var freshProduct = await _context.Products
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.Id == item.ProductId);
+                    .Where(p => p.Id == item.ProductId)
+                    .Select(p => new { p.StockQuantity, p.Name })
+                    .FirstOrDefaultAsync();
                 
-                if (product == null)
+                if (freshProduct == null)
                 {
                     throw new InvalidOperationException($"Sản phẩm {item.ProductName} không tồn tại");
                 }
                 
-                if (product.StockQuantity < item.Quantity)
+                if (freshProduct.StockQuantity < item.Quantity)
                 {
-                    throw new InvalidOperationException(
-                        $"Sản phẩm {item.ProductName} chỉ còn {product.StockQuantity} sản phẩm trong kho, " +
-                        $"không đủ cho {item.Quantity} sản phẩm bạn đặt. Vui lòng cập nhật giỏ hàng.");
+                    // Only show detailed message if there IS some stock but not enough
+                    var message = freshProduct.StockQuantity == 0
+                        ? $"Sản phẩm {freshProduct.Name} hiện đã hết hàng. Vui lòng cập nhật giỏ hàng."
+                        : $"Sản phẩm {freshProduct.Name} chỉ còn {freshProduct.StockQuantity} sản phẩm, " +
+                          $"không đủ cho số lượng bạn đặt ({item.Quantity}). Vui lòng cập nhật giỏ hàng.";
+                    throw new InvalidOperationException(message);
                 }
+                // If stock is sufficient, continue without any message (no need to notify user)
             }
             
             var order = new Order

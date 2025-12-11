@@ -95,6 +95,7 @@ public class HomeController : Controller
 
         // Load active marketing banners for homepage
         var now = DateTime.UtcNow;
+        _logger.LogInformation($"Loading banners at {now:yyyy-MM-dd HH:mm:ss} UTC");
         
         // Hero carousel banners (main full-width banners)
         var heroCarouselBanners = await _context.MarketingBanners
@@ -105,6 +106,8 @@ public class HomeController : Controller
             .OrderBy(b => b.SortOrder)
             .ToListAsync();
 
+        _logger.LogInformation($"Found {heroCarouselBanners.Count} hero carousel banners for home_main");
+        
         ViewBag.HeroCarouselBanners = heroCarouselBanners;
 
         // Small banners (3 columns below hero carousel)

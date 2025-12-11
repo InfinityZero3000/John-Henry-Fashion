@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using JohnHenryFashionWeb.Data;
 using JohnHenryFashionWeb.Models;
+using JohnHenryFashionWeb.Services;
 using System.Security.Claims;
 
 namespace JohnHenryFashionWeb.Controllers
@@ -12,11 +13,19 @@ namespace JohnHenryFashionWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IContentModerationService _moderationService;
+        private readonly ILogger<ReviewController> _logger;
 
-        public ReviewController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ReviewController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager,
+            IContentModerationService moderationService,
+            ILogger<ReviewController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _moderationService = moderationService;
+            _logger = logger;
         }
 
         // GET: Review/Product/5
@@ -130,6 +139,37 @@ namespace JohnHenryFashionWeb.Controllers
                     return Json(new { success = false, message = "Rating phải từ 1 đến 5 sao" });
                 }
 
+                // Auto-moderate content - kiểm tra từ ngữ xúc phạm
+                var shouldAutoApprove = await _moderationService.ShouldAutoApproveReviewAsync(title, comment);
+                
+                // Lấy chi tiết moderation để log
+                string moderationReason = "Clean content";
+                if (!shouldAutoApprove)
+                {
+                    // Kiểm tra chi tiết lý do
+                    var titleResult = !string.IsNullOrWhiteSpace(title) 
+                        ? await _moderationService.ModerateContentAsync(title) 
+                        : null;
+                    var commentResult = !string.IsNullOrWhiteSpace(comment) 
+                        ? await _moderationService.ModerateContentAsync(comment) 
+                        : null;
+
+                    if (titleResult != null && !titleResult.ShouldAutoApprove)
+                    {
+                        moderationReason = $"Title: {titleResult.Reason}";
+                    }
+                    else if (commentResult != null && !commentResult.ShouldAutoApprove)
+                    {
+                        moderationReason = $"Comment: {commentResult.Reason}";
+                    }
+
+                    _logger.LogWarning($"Review from user {userId} for product {productId} flagged for manual review. Reason: {moderationReason}");
+                }
+                else
+                {
+                    _logger.LogInformation($"Review from user {userId} for product {productId} auto-approved (no offensive content detected)");
+                }
+
                 // Create review
                 var review = new ProductReview
                 {
@@ -139,21 +179,29 @@ namespace JohnHenryFashionWeb.Controllers
                     Rating = rating,
                     Title = title?.Trim(),
                     Comment = comment?.Trim(),
-                    IsApproved = true, // Auto-approve for now
+                    IsApproved = shouldAutoApprove, // Tự động duyệt nếu không có từ ngữ xúc phạm
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
 
                 _context.ProductReviews.Add(review);
 
-                // Update product rating
-                await UpdateProductRating(productId);
+                // Update product rating (chỉ cập nhật nếu review được duyệt)
+                if (shouldAutoApprove)
+                {
+                    await UpdateProductRating(productId);
+                }
 
                 await _context.SaveChangesAsync();
 
+                var message = shouldAutoApprove 
+                    ? "Đánh giá của bạn đã được gửi và hiển thị thành công!"
+                    : "Đánh giá của bạn đã được gửi và đang chờ kiểm duyệt. Cảm ơn bạn đã đánh giá!";
+
                 return Json(new { 
                     success = true, 
-                    message = "Đánh giá của bạn đã được gửi thành công!",
+                    message = message,
+                    isApproved = shouldAutoApprove,
                     review = new {
                         id = review.Id,
                         rating = review.Rating,

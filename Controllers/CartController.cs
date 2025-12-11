@@ -92,11 +92,12 @@ namespace JohnHenryFashionWeb.Controllers
                 // Don't count other users' cart items as "reserved" since they haven't paid yet
                 if (product.StockQuantity < request.Quantity)
                 {
+                    // Only show detailed stock message if there's some stock but not enough
                     return Json(new { 
                         success = false, 
                         message = product.StockQuantity == 0 
                             ? $"Sản phẩm hiện đã hết hàng" 
-                            : $"Chỉ còn {product.StockQuantity} sản phẩm trong kho" 
+                            : $"Sản phẩm chỉ còn {product.StockQuantity} sản phẩm, không đủ cho số lượng bạn đặt ({request.Quantity})" 
                     });
                 }
 

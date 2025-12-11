@@ -132,6 +132,13 @@ namespace JohnHenryFashionWeb.Services
                 var vnp_HashSecret = vnpayConfig["HashSecret"];
                 var vnp_Url = vnpayConfig["PaymentUrl"] ?? vnpayConfig["Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
+                // Debug log for configuration values
+                _logger.LogInformation("VNPay Config Loaded - TmnCode: {TmnCode}, HashSecret: '{HashSecret}' (Length: {Length}), URL: {Url}", 
+                    vnp_TmnCode, 
+                    vnp_HashSecret,
+                    vnp_HashSecret?.Length ?? 0,
+                    vnp_Url);
+
                 // Validate credentials
                 if (string.IsNullOrWhiteSpace(vnp_TmnCode) || string.IsNullOrWhiteSpace(vnp_HashSecret))
                 {
@@ -240,8 +247,8 @@ namespace JohnHenryFashionWeb.Services
                 // Sort parameters alphabetically (required by VNPay)
                 var sortedParams = vnp_Params.OrderBy(x => x.Key).ToList();
                 
-                // Create query string (URL encode values)
-                var query = string.Join("&", sortedParams.Select(x => $"{x.Key}={Uri.EscapeDataString(x.Value)}"));
+                // Create query string (URL encode values theo chuẩn VNPay)
+                var query = string.Join("&", sortedParams.Select(x => $"{x.Key}={UrlEncodeVNPay(x.Value)}"));
 
                 // Create signature (HMAC SHA512)
                 var signature = CreateVNPaySignature(query, vnp_HashSecret);
@@ -320,14 +327,17 @@ namespace JohnHenryFashionWeb.Services
                 var orderInfo = request.OrderInfo;
                 var redirectUrl = request.ReturnUrl;
                 var ipnUrl = request.NotifyUrl;
-                var extraData = "";
+                var requestType = "captureWallet"; // Changed from payWithATM to captureWallet (default payment method)
+                var extraData = ""; // Must be empty string, not null
 
-                // Create signature - amount must be string in signature calculation
-                var rawHash = $"accessKey={accessKey}&amount={amount}&extraData={extraData}&ipnUrl={ipnUrl}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&redirectUrl={redirectUrl}&requestId={requestId}&requestType=payWithATM";
+                // Create signature - IMPORTANT: Parameters must be in alphabetical order
+                // Format: accessKey=...&amount=...&extraData=...&ipnUrl=...&orderId=...&orderInfo=...&partnerCode=...&redirectUrl=...&requestId=...&requestType=...
+                var rawHash = $"accessKey={accessKey}&amount={amount}&extraData={extraData}&ipnUrl={ipnUrl}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&redirectUrl={redirectUrl}&requestId={requestId}&requestType={requestType}";
                 var signature = CreateMoMoSignature(rawHash, secretKey!);
 
-                _logger.LogInformation("MoMo Request - OrderId: {OrderId}, Amount: {Amount}, Signature Hash: {RawHash}", 
-                    orderId, amount, rawHash);
+                _logger.LogInformation("MoMo Request - OrderId: {OrderId}, Amount: {Amount}, RequestType: {RequestType}, Signature Hash: {RawHash}", 
+                    orderId, amount, requestType, rawHash);
+                _logger.LogInformation("MoMo Signature: {Signature}", signature);
 
                 var requestData = new
                 {
@@ -342,7 +352,7 @@ namespace JohnHenryFashionWeb.Services
                     ipnUrl,
                     lang = "vi",
                     extraData,
-                    requestType = "payWithATM",
+                    requestType, // Use variable instead of hardcoded
                     signature
                 };
 
@@ -662,6 +672,40 @@ namespace JohnHenryFashionWeb.Services
             using var hmac = new HMACSHA512(keyBytes);
             var hashBytes = hmac.ComputeHash(dataBytes);
             return Convert.ToHexString(hashBytes).ToLower();
+        }
+
+        /// <summary>
+        /// URL encode theo chuẩn VNPay - giống như HttpUtility.UrlEncode trong VNPay SDK
+        /// </summary>
+        private string UrlEncodeVNPay(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            // VNPay sử dụng encoding tương tự HttpUtility.UrlEncode
+            // Space -> '+', các ký tự đặc biệt -> %XX
+            var bytes = Encoding.UTF8.GetBytes(value);
+            var encoded = new StringBuilder();
+            
+            foreach (var b in bytes)
+            {
+                // Unreserved characters theo RFC 3986
+                if ((b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') ||
+                    b == '-' || b == '_' || b == '.' || b == '~')
+                {
+                    encoded.Append((char)b);
+                }
+                else if (b == ' ')
+                {
+                    encoded.Append('+'); // VNPay dùng + cho space
+                }
+                else
+                {
+                    encoded.Append('%').Append(b.ToString("X2"));
+                }
+            }
+            
+            return encoded.ToString();
         }
 
         private string CreateMoMoSignature(string data, string secretKey)

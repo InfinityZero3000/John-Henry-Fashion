@@ -51,6 +51,68 @@ namespace JohnHenryFashionWeb.Controllers
 
                 // Map to ProductViewModel for consistent display
                 var productViewModel = MapToProductViewModel(product);
+                
+                // Load reviews for the product
+                var reviews = await _context.ProductReviews
+                    .Include(r => r.User)
+                    .Where(r => r.ProductId == id && r.IsApproved)
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Take(10) // Load first 10 reviews
+                    .Select(r => new ProductReviewViewModel
+                    {
+                        Id = r.Id,
+                        UserName = r.User != null ? (r.User.FirstName + " " + r.User.LastName).Trim() : "Khách hàng",
+                        UserAvatar = r.User != null ? r.User.Avatar : null,
+                        Rating = r.Rating,
+                        Title = r.Title,
+                        Comment = r.Comment,
+                        CreatedAt = r.CreatedAt,
+                        IsVerifiedPurchase = true // All approved reviews are from verified purchases
+                    })
+                    .ToListAsync();
+                
+                productViewModel.Reviews = reviews;
+                
+                // Calculate rating statistics
+                var ratingStats = await _context.ProductReviews
+                    .Where(r => r.ProductId == id && r.IsApproved)
+                    .GroupBy(r => r.Rating)
+                    .Select(g => new { Rating = g.Key, Count = g.Count() })
+                    .ToListAsync();
+                
+                productViewModel.RatingStats = ratingStats.ToDictionary(r => r.Rating, r => r.Count);
+                
+                // Update review count from actual data
+                var totalReviews = ratingStats.Sum(r => r.Count);
+                productViewModel.ReviewCount = totalReviews;
+                
+                // Calculate average rating
+                if (totalReviews > 0)
+                {
+                    productViewModel.Rating = (decimal)ratingStats.Sum(r => r.Rating * r.Count) / totalReviews;
+                }
+                
+                // Check if current user can leave a review
+                ViewBag.CanReview = false;
+                ViewBag.HasReviewed = false;
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+                    
+                    // Check if user has purchased this product
+                    var hasPurchased = await _context.OrderItems
+                        .Include(oi => oi.Order)
+                        .AnyAsync(oi => oi.ProductId == id && 
+                                       oi.Order.UserId == userId && 
+                                       oi.Order.Status == "delivered");
+
+                    // Check if user has already reviewed this product
+                    var hasReviewed = await _context.ProductReviews
+                        .AnyAsync(r => r.ProductId == id && r.UserId == userId);
+
+                    ViewBag.CanReview = hasPurchased && !hasReviewed;
+                    ViewBag.HasReviewed = hasReviewed;
+                }
 
                 return View(productViewModel);
             }

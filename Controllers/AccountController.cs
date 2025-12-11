@@ -144,53 +144,203 @@ namespace JohnHenryFashionWeb.Controllers
             
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser
+                // Check if email already exists
+                var existingUser = await _userManager.FindByEmailAsync(model.Email);
+                if (existingUser != null)
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    PhoneNumber = model.PhoneNumber,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                var result = await _userManager.CreateAsync(user, model.Password);
+                    ModelState.AddModelError("Email", "Email này đã được sử dụng.");
+                    return View(model);
+                }
                 
-                if (result.Succeeded)
+                // Check if email verification is required
+                if (model.RequireEmailVerification)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    _logger.LogInformation("Starting registration with email verification for {Email}", model.Email);
                     
-                    // Check if email verification is required
-                    if (model.RequireEmailVerification)
+                    // Generate 6-digit verification code
+                    var verificationCode = new Random().Next(100000, 999999).ToString();
+                    
+                    // Store BOTH verification code AND registration data in cache (for 10 minutes)
+                    var verificationCacheKey = $"email_verification_{model.Email}";
+                    var registrationCacheKey = $"pending_registration_{model.Email}";
+                    
+                    await _cacheService.SetAsync(verificationCacheKey, verificationCode, TimeSpan.FromMinutes(10));
+                    await _cacheService.SetAsync(registrationCacheKey, model, TimeSpan.FromMinutes(10));
+                    
+                    _logger.LogInformation("Stored registration data in cache for {Email}", model.Email);
+                    
+                    // Send verification code email with promotional content
+                    var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                    var emailSent = await _emailService.SendEmailAsync(model.Email, "Xác thực tài khoản John Henry - Chào mừng bạn đến với thời trang hiện đại!",
+                        $@"
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset='utf-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <style>
+                                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }}
+                                .container {{ max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                                .header {{ background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 30px 20px; text-align: center; }}
+                                .header h1 {{ margin: 0; font-size: 28px; font-weight: bold; }}
+                                .content {{ padding: 30px 20px; }}
+                                .verification-box {{ background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-left: 4px solid #dc3545; padding: 20px; margin: 25px 0; border-radius: 8px; text-align: center; }}
+                                .verification-code {{ font-size: 36px; font-weight: bold; color: #dc3545; letter-spacing: 8px; margin: 15px 0; font-family: 'Courier New', monospace; }}
+                                .promo-section {{ margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%); border-radius: 8px; }}
+                                .promo-image {{ width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }}
+                                .promo-title {{ color: #dc3545; font-size: 22px; font-weight: bold; margin: 15px 0; text-align: center; }}
+                                .promo-text {{ color: #666; font-size: 15px; line-height: 1.8; margin: 10px 0; }}
+                                .cta-button {{ display: inline-block; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 50px; font-weight: bold; margin: 20px 0; text-align: center; box-shadow: 0 4px 6px rgba(220,53,69,0.3); transition: transform 0.2s; }}
+                                .cta-button:hover {{ transform: translateY(-2px); box-shadow: 0 6px 8px rgba(220,53,69,0.4); }}
+                                .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }}
+                                .feature {{ background: white; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: center; }}
+                                .feature-icon {{ font-size: 32px; margin-bottom: 10px; }}
+                                .feature-text {{ color: #666; font-size: 14px; }}
+                                .footer {{ background-color: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 13px; border-top: 1px solid #e9ecef; }}
+                                .social-links {{ margin: 15px 0; }}
+                                .social-links a {{ display: inline-block; margin: 0 10px; color: #dc3545; text-decoration: none; font-weight: bold; }}
+                                .divider {{ height: 1px; background: linear-gradient(90deg, transparent, #e9ecef, transparent); margin: 25px 0; }}
+                                @media only screen and (max-width: 600px) {{
+                                    .container {{ margin: 0; border-radius: 0; }}
+                                    .features {{ grid-template-columns: 1fr; }}
+                                }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <!-- Header -->
+                                <div class='header'>
+                                    <h1>🎉 CHÀO MỪNG BẠN ĐÃ ĐĂNG KÝ!</h1>
+                                    <p style='margin: 10px 0 0 0; font-size: 16px; opacity: 0.95;'>John Henry Fashion - Phong cách hiện đại, tự tin vượt trội</p>
+                                </div>
+
+                                <!-- Content -->
+                                <div class='content'>
+                                    <p style='font-size: 16px; color: #333;'>Xin chào <strong>{model.FirstName} {model.LastName}</strong>,</p>
+                                    <p style='color: #666;'>Cảm ơn bạn đã đăng ký tài khoản tại <strong>John Henry Fashion</strong>! Chúng tôi rất vui mừng được chào đón bạn đến với cộng đồng những người yêu thích thời trang hiện đại.</p>
+                                    
+                                    <!-- Verification Code -->
+                                    <div class='verification-box'>
+                                        <p style='margin: 0 0 10px 0; color: #666; font-size: 15px;'>Mã xác thực của bạn là:</p>
+                                        <div class='verification-code'>{verificationCode}</div>
+                                        <p style='margin: 10px 0 0 0; color: #999; font-size: 13px;'>⏰ Mã này có hiệu lực trong <strong>10 phút</strong></p>
+                                    </div>
+
+                                    <div class='divider'></div>
+
+                                    <!-- Promotional Section -->
+                                    <div class='promo-section'>
+                                        <div class='promo-title'>✨ JOHN HENRY SHOPPING IN MODERN SPACE</div>
+                                        
+                                        <!-- Banner Image -->
+                                        <div style='text-align: center; margin: 20px 0; background: white; padding: 10px; border-radius: 8px;'>
+                                            <img src='https://drive.google.com/uc?export=view&id=14yqLo1QxNgFdGDRPbwHvozo5BsSJOuJg' alt='John Henry Shopping in Modern Space' class='promo-image' style='width: 100%; max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);' />
+                                            <p style='margin: 10px 0 0 0; font-size: 12px; color: #999; font-style: italic;'>Trải nghiệm mua sắm thời trang hiện đại tại John Henry</p>
+                                        </div>
+                                        
+                                        <p class='promo-text'>Khám phá bộ sưu tập thời trang nam nữ hiện đại với chất liệu cao cấp, thiết kế tinh tế và phong cách độc đáo. Từ áo sơ mi lịch lãm đến quần kaki thanh lịch, chúng tôi mang đến cho bạn những sản phẩm hoàn hảo cho mọi dịp.</p>
+                                        
+                                        <div style='text-align: center; margin: 20px 0;'>
+                                            <a href='{baseUrl}/products' class='cta-button' style='color: white; text-decoration: none;'>🛍️ Khám phá ngay</a>
+                                        </div>
+
+                                        <!-- Features -->
+                                        <div class='features'>
+                                            <div class='feature'>
+                                                <div class='feature-icon'>🎨</div>
+                                                <div class='feature-text'><strong>Thiết kế độc đáo</strong><br>Phong cách hiện đại</div>
+                                            </div>
+                                            <div class='feature'>
+                                                <div class='feature-icon'>✨</div>
+                                                <div class='feature-text'><strong>Chất liệu cao cấp</strong><br>Thoải mái tối đa</div>
+                                            </div>
+                                            <div class='feature'>
+                                                <div class='feature-icon'>🚚</div>
+                                                <div class='feature-text'><strong>Giao hàng nhanh</strong><br>Toàn quốc 24-48h</div>
+                                            </div>
+                                            <div class='feature'>
+                                                <div class='feature-icon'>💯</div>
+                                                <div class='feature-text'><strong>Đổi trả dễ dàng</strong><br>Trong vòng 7 ngày</div>
+                                            </div>
+                                        </div>
+
+                                        <div class='divider'></div>
+
+                                        <p style='text-align: center; color: #dc3545; font-weight: bold; font-size: 16px; margin: 15px 0;'>
+                                            🎁 Ưu đãi đặc biệt dành cho thành viên mới!
+                                        </p>
+                                        <p style='text-align: center; color: #666; font-size: 14px; margin: 10px 0;'>
+                                            Nhận ngay <strong style='color: #dc3545;'>VOUCHER GIẢM 10%</strong> cho đơn hàng đầu tiên<br>
+                                            <span style='font-size: 12px; color: #999;'>(Áp dụng cho đơn hàng từ 500.000đ)</span>
+                                        </p>
+                                    </div>
+
+                                    <div class='divider'></div>
+
+                                    <p style='color: #666; font-size: 14px; margin-top: 25px;'>
+                                        Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.
+                                    </p>
+                                    
+                                    <p style='margin-top: 25px; color: #666;'>
+                                        Trân trọng,<br>
+                                        <strong style='color: #dc3545;'>Đội ngũ John Henry Fashion</strong>
+                                    </p>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class='footer'>
+                                    <p style='margin: 0 0 10px 0; font-weight: bold; color: #333;'>JOHN HENRY FASHION</p>
+                                    <p style='margin: 5px 0;'>Thời trang nam nữ cao cấp - Phong cách hiện đại</p>
+                                    <div class='social-links'>
+                                        <a href='{baseUrl}' style='color: #dc3545;'>🌐 Website</a>
+                                        <a href='{baseUrl}/products' style='color: #dc3545;'>🛍️ Sản phẩm</a>
+                                        <a href='{baseUrl}/contact' style='color: #dc3545;'>📧 Liên hệ</a>
+                                    </div>
+                                    <p style='margin: 15px 0 5px 0; font-size: 12px;'>
+                                        Email này được gửi tự động, vui lòng không trả lời trực tiếp.
+                                    </p>
+                                    <p style='margin: 5px 0; font-size: 11px; color: #999;'>
+                                        © 2025 John Henry Fashion. All rights reserved.
+                                    </p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        ", isHtml: true);
+
+                    if (!emailSent)
                     {
-                        // Generate 6-digit verification code
-                        var verificationCode = new Random().Next(100000, 999999).ToString();
-                        
-                        // Store verification code in cache or database (for 10 minutes)
-                        var cacheKey = $"email_verification_{user.Email}";
-                        await _cacheService.SetAsync(cacheKey, verificationCode, TimeSpan.FromMinutes(10));
-                        
-                        // Send verification code email
-                        await _emailService.SendEmailAsync(user.Email, "Mã xác thực tài khoản John Henry",
-                            $@"
-                            <h2>Xác thực tài khoản</h2>
-                            <p>Chào {user.FirstName} {user.LastName},</p>
-                            <p>Mã xác thực của bạn là: <strong style='font-size: 24px; color: #007bff;'>{verificationCode}</strong></p>
-                            <p>Mã này sẽ hết hiệu lực sau 10 phút.</p>
-                            <p>Trân trọng,<br>Đội ngũ John Henry</p>
-                            ", isHtml: true);
-
-                        // Add user to default role but keep email unconfirmed
-                        await _userManager.AddToRoleAsync(user, "Customer");
-
-                        // Redirect to email verification page
-                        return RedirectToAction("EmailVerification", new { email = user.Email, returnUrl });
+                        _logger.LogError("Failed to send verification email to {Email}", model.Email);
+                        ModelState.AddModelError("", "Không thể gửi email xác thực. Vui lòng thử lại sau.");
+                        return View(model);
                     }
-                    else
+                    
+                    _logger.LogInformation("Verification email sent to {Email}", model.Email);
+
+                    // Redirect to email verification page (user NOT created yet)
+                    return RedirectToAction("EmailVerification", new { email = model.Email, returnUrl });
+                }
+                else
+                {
+                    // Original flow with email confirmation link - create user immediately
+                    var user = new ApplicationUser
                     {
-                        // Original flow with email confirmation link
+                        UserName = model.Email,
+                        Email = model.Email,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        PhoneNumber = model.PhoneNumber,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    var result = await _userManager.CreateAsync(user, model.Password);
+                    
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("User created a new account with password.");
+                        
                         var code = await _authService.GenerateEmailConfirmationTokenAsync(user);
                         var callbackUrl = Url.Action("ConfirmEmail", "Account",
                             new { userId = user.Id, code }, Request.Scheme);
@@ -203,9 +353,9 @@ namespace JohnHenryFashionWeb.Controllers
                         ViewBag.Message = "Tài khoản đã được tạo thành công. Vui lòng kiểm tra email để xác nhận tài khoản.";
                         return View("RegisterConfirmation");
                     }
+                    
+                    AddErrors(result);
                 }
-                
-                AddErrors(result);
             }
 
             return View(model);
@@ -982,6 +1132,12 @@ namespace JohnHenryFashionWeb.Controllers
             ModelState.Remove("User");
             ModelState.Remove("UserId");
             
+            // Remove validation for optional fields
+            ModelState.Remove("PostalCode");
+            ModelState.Remove("Company");
+            ModelState.Remove("Address2");
+            ModelState.Remove("Phone");
+            
             // Log ModelState errors for debugging
             if (!ModelState.IsValid)
             {
@@ -991,6 +1147,24 @@ namespace JohnHenryFashionWeb.Controllers
                 _logger.LogWarning("EditAddress ModelState invalid: {@Errors}", errors);
                 
                 // Return view with model to show validation errors
+                ViewData["ReturnUrl"] = returnUrl;
+                return View(model);
+            }
+            
+            // Manual validation for required fields
+            if (string.IsNullOrWhiteSpace(model.City))
+            {
+                ModelState.AddModelError("City", "Vui lòng chọn tỉnh/thành phố");
+            }
+            
+            if (string.IsNullOrWhiteSpace(model.State))
+            {
+                ModelState.AddModelError("State", "Vui lòng chọn quận/huyện và phường/xã");
+            }
+            
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("EditAddress manual validation failed");
                 ViewData["ReturnUrl"] = returnUrl;
                 return View(model);
             }
@@ -1010,7 +1184,7 @@ namespace JohnHenryFashionWeb.Controllers
             address.Address2 = model.Address2;
             address.City = model.City;
             address.State = model.State;
-            address.PostalCode = model.PostalCode;
+            address.PostalCode = string.IsNullOrWhiteSpace(model.PostalCode) ? "00000" : model.PostalCode;
             address.Country = model.Country;
             address.Phone = model.Phone;
             address.UpdatedAt = DateTime.UtcNow;
@@ -1259,8 +1433,8 @@ namespace JohnHenryFashionWeb.Controllers
             }
 
             // Get stored verification code from cache
-            var cacheKey = $"email_verification_{model.Email}";
-            var storedCode = await _cacheService.GetAsync<string>(cacheKey);
+            var verificationCacheKey = $"email_verification_{model.Email}";
+            var storedCode = await _cacheService.GetAsync<string>(verificationCacheKey);
 
             if (string.IsNullOrEmpty(storedCode))
             {
@@ -1274,22 +1448,43 @@ namespace JohnHenryFashionWeb.Controllers
                 return View(model);
             }
 
-            // Find user and confirm email
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
+            // Get registration data from cache
+            var registrationCacheKey = $"pending_registration_{model.Email}";
+            var registrationData = await _cacheService.GetAsync<RegisterViewModel>(registrationCacheKey);
+
+            if (registrationData == null)
             {
-                ModelState.AddModelError("", "Không tìm thấy người dùng.");
+                _logger.LogError("Registration data not found in cache for {Email}", model.Email);
+                ModelState.AddModelError("", "Thông tin đăng ký đã hết hạn. Vui lòng đăng ký lại.");
                 return View(model);
             }
 
-            // Confirm email
-            user.EmailConfirmed = true;
-            var result = await _userManager.UpdateAsync(user);
+            // NOW create the user after successful verification
+            var user = new ApplicationUser
+            {
+                UserName = registrationData.Email,
+                Email = registrationData.Email,
+                FirstName = registrationData.FirstName,
+                LastName = registrationData.LastName,
+                PhoneNumber = registrationData.PhoneNumber,
+                EmailConfirmed = true, // Already verified!
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var result = await _userManager.CreateAsync(user, registrationData.Password);
 
             if (result.Succeeded)
             {
-                // Remove code from cache
-                await _cacheService.RemoveAsync(cacheKey);
+                _logger.LogInformation("User {Email} created successfully after email verification", model.Email);
+                
+                // Add user to Customer role
+                await _userManager.AddToRoleAsync(user, "Customer");
+                
+                // Remove both codes from cache
+                await _cacheService.RemoveAsync(verificationCacheKey);
+                await _cacheService.RemoveAsync(registrationCacheKey);
 
                 // Sign in user
                 await _signInManager.SignInAsync(user, isPersistent: false);
@@ -1304,7 +1499,13 @@ namespace JohnHenryFashionWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ModelState.AddModelError("", "Có lỗi xảy ra khi xác thực email.");
+            // If user creation failed, log errors
+            foreach (var error in result.Errors)
+            {
+                _logger.LogError("Error creating user {Email}: {Error}", model.Email, error.Description);
+                ModelState.AddModelError("", error.Description);
+            }
+            
             return View(model);
         }
 
@@ -1313,24 +1514,52 @@ namespace JohnHenryFashionWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResendEmailVerificationCode(string email)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
+            // Check if registration data exists in cache (user not created yet)
+            var registrationCacheKey = $"pending_registration_{email}";
+            var registrationData = await _cacheService.GetAsync<RegisterViewModel>(registrationCacheKey);
+            
+            if (registrationData == null)
             {
-                return Json(new { success = false, message = "Không tìm thấy người dùng." });
+                // Maybe user already created, try to find in database
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin đăng ký. Vui lòng đăng ký lại." });
+                }
+                
+                // User exists but not confirmed - should not happen with new flow
+                // Generate code for legacy users
+                var legacyCode = new Random().Next(100000, 999999).ToString();
+                var cacheKey = $"email_verification_{email}";
+                await _cacheService.SetAsync(cacheKey, legacyCode, TimeSpan.FromMinutes(10));
+                
+                await _emailService.SendEmailAsync(email, "Mã xác thực tài khoản John Henry",
+                    $@"
+                    <h2>Xác thực tài khoản</h2>
+                    <p>Chào {user.FirstName} {user.LastName},</p>
+                    <p>Mã xác thực mới của bạn là: <strong style='font-size: 24px; color: #007bff;'>{legacyCode}</strong></p>
+                    <p>Mã này sẽ hết hiệu lực sau 10 phút.</p>
+                    <p>Trân trọng,<br>Đội ngũ John Henry</p>
+                    ", isHtml: true);
+                    
+                return Json(new { success = true, message = "Mã xác thực đã được gửi lại thành công." });
             }
 
-            // Generate new verification code
+            // User not created yet - resend code with registration data
             var verificationCode = new Random().Next(100000, 999999).ToString();
             
-            // Store in cache
-            var cacheKey = $"email_verification_{email}";
-            await _cacheService.SetAsync(cacheKey, verificationCode, TimeSpan.FromMinutes(10));
+            // Store new code in cache
+            var verificationCacheKey = $"email_verification_{email}";
+            await _cacheService.SetAsync(verificationCacheKey, verificationCode, TimeSpan.FromMinutes(10));
+            
+            // Extend registration data expiration
+            await _cacheService.SetAsync(registrationCacheKey, registrationData, TimeSpan.FromMinutes(10));
             
             // Send new code
             await _emailService.SendEmailAsync(email, "Mã xác thực tài khoản John Henry",
                 $@"
                 <h2>Xác thực tài khoản</h2>
-                <p>Chào {user.FirstName} {user.LastName},</p>
+                <p>Chào {registrationData.FirstName} {registrationData.LastName},</p>
                 <p>Mã xác thực mới của bạn là: <strong style='font-size: 24px; color: #007bff;'>{verificationCode}</strong></p>
                 <p>Mã này sẽ hết hiệu lực sau 10 phút.</p>
                 <p>Trân trọng,<br>Đội ngũ John Henry</p>
