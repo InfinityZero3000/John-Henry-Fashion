@@ -11,6 +11,7 @@ namespace JohnHenryFashionWeb.Controllers
     {
         #region Orders Management
         // GET: Admin/Orders
+        [HttpGet]
         [Route("orders")]
         public async Task<IActionResult> Orders(int page = 1, int pageSize = 20, string? search = null, string? status = null)
         {

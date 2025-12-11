@@ -338,7 +338,24 @@ builder.Services.AddHttpClient<JohnHenryFashionWeb.Services.IVietnameseAddressSe
 
 // Add API Explorer for Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+    { 
+        Title = "John Henry Fashion API", 
+        Version = "v1",
+        Description = "API for John Henry Fashion E-commerce Platform"
+    });
+    
+    // Only include API controllers (those in Api namespace or with [ApiController])
+    c.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        // Include only actions from controllers in Api folder or with ApiController attribute
+        var controllerName = apiDesc.ActionDescriptor.RouteValues["controller"];
+        return controllerName?.StartsWith("Api") == true || 
+               apiDesc.ActionDescriptor.EndpointMetadata.Any(m => m.GetType().Name == "ApiControllerAttribute");
+    });
+});
 
 var app = builder.Build();
 
@@ -372,6 +389,13 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    // Enable Swagger in Production for testing/documentation (remove in real production)
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "John Henry Fashion API V1");
+    });
+    
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
     
