@@ -124,7 +124,7 @@
                     <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
                         <a href="/admin/approvals" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Approvals" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
                             <i data-lucide="check-circle" style="margin-right: 1rem; width: 20px;"></i>
-                            <span>Duyệt sản phẩm</span>
+                            <span>Quản lý phê duyệt</span>
                         </a>
                     </li>
 
@@ -519,6 +519,141 @@
                         sidebarToggle.style.pointerEvents = 'auto';
                     }
                 });
+            }
+        });
+    </script>
+
+    <!-- Admin Notification Helper -->
+    <script>
+        // Global Admin Notification Helper
+        const AdminNotification = {
+            // Success notification
+            success: function(title, text = '', timer = 1500) {
+                return Swal.fire({
+                    icon: 'success',
+                    title: title,
+                    text: text,
+                    showConfirmButton: false,
+                    timer: timer,
+                    toast: false,
+                    position: 'center'
+                });
+            },
+
+            // Error notification
+            error: function(title, text = '') {
+                return Swal.fire({
+                    icon: 'error',
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
+            },
+
+            // Warning notification
+            warning: function(title, text = '') {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ffc107'
+                });
+            },
+
+            // Info notification
+            info: function(title, text = '') {
+                return Swal.fire({
+                    icon: 'info',
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#0d6efd'
+                });
+            },
+
+            // Confirm dialog
+            confirm: function(title, text, confirmText = 'Xác nhận', cancelText = 'Hủy') {
+                return Swal.fire({
+                    title: title,
+                    html: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0d6efd',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText
+                });
+            },
+
+            // Delete confirmation
+            confirmDelete: function(itemName = '', itemType = 'mục này') {
+                const message = itemName 
+                    ? `Bạn có chắc chắn muốn xóa ${itemType} <strong>${itemName}</strong>?<br><small class="text-muted">Không thể hoàn tác sau khi xóa</small>`
+                    : `Bạn có chắc chắn muốn xóa ${itemType}?<br><small class="text-muted">Không thể hoàn tác sau khi xóa</small>`;
+                
+                return Swal.fire({
+                    title: 'Xóa ' + itemType + '?',
+                    html: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                });
+            },
+
+            // Toast notification (small notification at corner)
+            toast: function(type, message) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+
+                return Toast.fire({
+                    icon: type,
+                    title: message
+                });
+            }
+        };
+
+        // Auto-show notifications from TempData
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                AdminNotification.success('@Html.Raw(TempData["SuccessMessage"])');
+                </text>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                AdminNotification.error('Lỗi', '@Html.Raw(TempData["ErrorMessage"])');
+                </text>
+            }
+
+            @if (TempData["WarningMessage"] != null)
+            {
+                <text>
+                AdminNotification.warning('Cảnh báo', '@Html.Raw(TempData["WarningMessage"])');
+                </text>
+            }
+
+            @if (TempData["InfoMessage"] != null)
+            {
+                <text>
+                AdminNotification.info('Thông báo', '@Html.Raw(TempData["InfoMessage"])');
+                </text>
             }
         });
     </script>
