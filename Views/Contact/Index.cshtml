@@ -143,27 +143,85 @@
             color: #dc3545;
         }
         
+        /* Force equal height columns */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .row > [class*='col-'] {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 600px; /* Ensure minimum height */
+        }
+        
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        /* Make form take up available space */
+        .card-body form {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        /* Contact info should fill available space */
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly; /* Changed from space-between to space-evenly */
+            flex: 1;
+            min-height: 400px; /* Ensure contact items are well-spaced */
+        }
+        
         .contact-item {
-            padding: 1rem 0;
+            padding: 1.5rem 0; /* Increased padding for better spacing */
             border-bottom: 1px solid #eee;
+        }
+        
+        .contact-item:first-child {
+            padding-top: 0;
         }
         
         .contact-item:last-child {
             border-bottom: none;
+            padding-bottom: 0;
         }
         
         .contact-item h6 {
             font-weight: 600;
             color: #333;
+            margin-bottom: 0.5rem;
         }
         
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .contact-item p {
+            margin-bottom: 0;
+            line-height: 1.6;
         }
         
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 767px) {
+            .card {
+                min-height: auto;
+            }
+            .contact-info {
+                min-height: auto;
+            }
         }
     </style>
 }
@@ -200,13 +258,13 @@
             updateCounter(); // Initial call
         }
         
-        // GSAP animations
+        // GSAP animations - only fade in, no vertical movement to maintain layout
         gsap.from(".card", { 
-            duration: 1, 
-            y: 50, 
+            duration: 0.8, 
             opacity: 0, 
             ease: "power2.out",
-            stagger: 0.2
+            stagger: 0.15,
+            clearProps: "all" // Clear all props after animation to prevent layout issues
         });
     </script>
 }
