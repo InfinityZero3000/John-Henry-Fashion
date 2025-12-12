@@ -1,91 +1,100 @@
 @model JohnHenryFashionWeb.Models.PushNotificationCampaign
 @{
-    ViewData["Title"] = "Create Push Notification";
+    ViewData["Title"] = "Tạo Push Notification";
+    ViewData["Breadcrumbs"] = new[] { "Marketing", "Push Notifications", "Tạo mới" };
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        min-height: calc(100vh - 80px);
-    }
+<div class="admin-layout-container">
+    <div class="admin-content-header">
+        <div>
+            <h1 class="admin-page-title">
+                <i data-lucide="bell-plus"></i> Tạo Push Notification Campaign
+            </h1>
+            <p class="admin-page-description">Tạo campaign thông báo đẩy mới</p>
+        </div>
+    </div>
 
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        max-width: 800px;
-        margin: 0 auto;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-control, .form-select { border-radius: 10px; padding: 0.75rem; }
-    .btn-submit { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; padding: 0.75rem 2rem; border-radius: 10px; }
-</style>
-
-<div class="marketing-container">
-    <div class="form-card">
-        <h2 class="mb-4">🔔 Create Push Notification</h2>
-        
-        <form method="post" action="/admin/marketing/push/create">
-            @Html.AntiForgeryToken()
-            
-            <div class="mb-3">
-                <label class="form-label">Title *</label>
-                <input type="text" class="form-control" name="Title" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Message *</label>
-                <textarea class="form-control" name="Message" rows="4" required></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Image URL</label>
-                <input type="url" class="form-control" name="ImageUrl" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Action URL</label>
-                <input type="url" class="form-control" name="ActionUrl" />
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Target Audience</label>
-                    <select class="form-select" name="TargetAudience">
-                        <option value="all">All Users</option>
-                        <option value="customers">Customers Only</option>
-                        <option value="custom">Custom Segment</option>
-                    </select>
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <form method="post" action="/admin/marketing/push/create">
+                @Html.AntiForgeryToken()
+                
+                <div class="admin-form-section">
+                    <div class="admin-form-section-title">
+                        <i data-lucide="info"></i> Thông tin cơ bản
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Tiêu đề *</label>
+                            <input type="text" class="form-control" name="Title" required placeholder="Ví dụ: Khuyến mãi đặc biệt" />
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Nội dung thông báo *</label>
+                            <textarea class="form-control" name="Message" rows="3" required placeholder="Nội dung thông báo..."></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">URL hình ảnh</label>
+                            <input type="url" class="form-control" name="ImageUrl" placeholder="https://example.com/image.jpg" />
+                            <small class="text-muted">Hình ảnh hiển thị trong thông báo</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">URL hành động</label>
+                            <input type="url" class="form-control" name="ActionUrl" placeholder="/products/123" />
+                            <small class="text-muted">Link đến khi người dùng nhấn vào</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" name="Status">
-                        <option value="draft">Draft</option>
-                        <option value="scheduled">Scheduled</option>
-                    </select>
+
+                <div class="admin-form-section">
+                    <div class="admin-form-section-title">
+                        <i data-lucide="users"></i> Đối tượng & Lịch trình
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Đối tượng nhận</label>
+                            <select class="form-select" name="TargetAudience">
+                                <option value="all">Tất cả người dùng</option>
+                                <option value="customers">Khách hàng</option>
+                                <option value="sellers">Người bán</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" name="Status">
+                                <option value="draft">Nháp</option>
+                                <option value="scheduled">Đã lên lịch</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Thời gian gửi</label>
+                            <input type="datetime-local" class="form-control" name="ScheduledAt" />
+                            <small class="text-muted">Để trống để gửi ngay lập tức</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">IDs người dùng cụ thể</label>
+                            <input type="text" class="form-control" name="TargetUserIds" placeholder="user1,user2,user3" />
+                            <small class="text-muted">Ngăn cách bằng dấu phẩy (nếu có)</small>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">Scheduled Time</label>
-                <input type="datetime-local" class="form-control" name="ScheduledAt" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Target User IDs (comma-separated)</label>
-                <input type="text" class="form-control" name="TargetUserIds" placeholder="user1,user2,user3" />
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> Create
-                </button>
-                <a href="/admin/marketing/pushes" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+                <div class="admin-form-actions">
+                    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+                        <i data-lucide="save"></i> Tạo Campaign
+                    </button>
+                    <a href="/admin/marketing/pushes" class="admin-btn admin-btn-secondary admin-btn-lg">
+                        <i data-lucide="x"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}
+

@@ -1,108 +1,270 @@
 @model List<JohnHenryFashionWeb.Models.EmailCampaign>
 @{
-    ViewData["Title"] = "Email Marketing Campaigns";
+    ViewData["Title"] = "Quản lý Email";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item active\">Email Campaigns</li>";
+    
+    var sentCampaigns = Model.Count(c => c.Status == "sent");
+    var totalSent = Model.Sum(c => c.SentCount);
+    var totalOpens = Model.Sum(c => c.OpenCount);
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass, .campaign-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .campaign-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-primary-glass {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-        border: none;
-        padding: 0.5rem 1.5rem;
-        border-radius: 10px;
-    }
-</style>
-
-<div class="marketing-container">
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="mb-1">📧 Email Marketing Campaigns</h2>
-                <p class="text-muted mb-0">Quản lý chiến dịch email marketing</p>
-            </div>
-            <a href="/admin/marketing/email/create" class="btn btn-primary-glass">
-                <i class="fas fa-plus"></i> Tạo Campaign
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="mail"></i>
+                Quản lý Email
+            </h1>
+            <a href="/admin/marketing/email/create" class="admin-btn admin-btn-primary">
+                <i data-lucide="plus"></i>
+                Tạo Mail
             </a>
         </div>
     </div>
 
+    <!-- Alert Messages -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="admin-alert admin-alert-success">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
         </div>
     }
 
+    <!-- Statistics -->
+    <div class="admin-stats-grid" style="margin-bottom: var(--spacing-lg);">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng Campaigns</h3>
+                    <p class="value">@Model.Count</p>
+                    <p class="change">@sentCampaigns đã gửi</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="mail"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Email đã gửi</h3>
+                    <p class="value">@totalSent.ToString("N0")</p>
+                    <p class="change">Tổng số email</p>
+                </div>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="send"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tỷ lệ mở</h3>
+                    <p class="value">@((totalSent > 0 ? (totalOpens * 100.0 / totalSent).ToString("F1") : "0"))%</p>
+                    <p class="change">@totalOpens lượt mở</p>
+                </div>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="eye"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaigns List -->
     @if (Model == null || !Model.Any())
     {
-        <div class="campaign-card text-center">
-            <p class="text-muted mb-0">Chưa có campaign nào.</p>
+        <div class="admin-card">
+            <div class="admin-card-body admin-text-center" style="padding: 3rem;">
+                <i data-lucide="mail" style="width: 64px; height: 64px; color: var(--admin-text-muted); margin-bottom: 1rem;"></i>
+                <h3 style="margin-bottom: 0.5rem;">Chưa có Email Campaign</h3>
+                <p style="color: var(--admin-text-light); margin-bottom: 1.5rem;">Tạo chiến dịch email marketing đầu tiên</p>
+                <a href="/admin/marketing/email/create" class="admin-btn admin-btn-primary">
+                    <i data-lucide="plus"></i>
+                    Tạo Mail
+                </a>
+            </div>
         </div>
     }
     else
     {
-        @foreach (var campaign in Model)
-        {
-            <div class="campaign-card">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h5 class="mb-1">@campaign.Name</h5>
-                        <p class="text-muted mb-2"><strong>Subject:</strong> @campaign.Subject</p>
-                        <div class="d-flex gap-3">
-                            <span class="badge bg-@(campaign.Status == "sent" ? "success" : campaign.Status == "sending" ? "warning" : "secondary")">
-                                @campaign.Status
-                            </span>
-                            <span><strong>Audience:</strong> @campaign.TargetAudience</span>
-                            @if (campaign.SentCount > 0)
+        <div class="admin-card">
+            <div class="admin-card-body" style="padding: 0;">
+                <div class="admin-table-wrapper" style="border: none; border-radius: 0;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tên & Subject</th>
+                                <th>Đối tượng</th>
+                                <th>Thống kê</th>
+                                <th>Lên lịch</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 150px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var campaign in Model)
                             {
-                                <span><strong>Sent:</strong> @campaign.SentCount / @campaign.TotalRecipients</span>
-                                <span><strong>Opens:</strong> @campaign.OpenCount</span>
-                                <span><strong>Clicks:</strong> @campaign.ClickCount</span>
+                                var openRate = campaign.SentCount > 0 ? (campaign.OpenCount * 100.0 / campaign.SentCount) : 0;
+                                var clickRate = campaign.SentCount > 0 ? (campaign.ClickCount * 100.0 / campaign.SentCount) : 0;
+                                
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">
+                                            @campaign.Name
+                                        </div>
+                                        <div style="font-size: 0.875rem; color: var(--admin-text-light);">
+                                            <i data-lucide="at-sign" style="width: 12px; height: 12px;"></i>
+                                            @campaign.Subject
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 500;">@campaign.TargetAudience</div>
+                                        @if (campaign.TotalRecipients > 0)
+                                        {
+                                            <div style="font-size: 0.8125rem; color: var(--admin-text-light);">
+                                                @campaign.TotalRecipients người nhận
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.SentCount > 0)
+                                        {
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <div style="font-size: 0.875rem;">
+                                                    <i data-lucide="send" style="width: 12px; height: 12px;"></i>
+                                                    Đã gửi: <strong>@campaign.SentCount</strong>/@campaign.TotalRecipients
+                                                </div>
+                                                <div style="font-size: 0.875rem;">
+                                                    <i data-lucide="eye" style="width: 12px; height: 12px;"></i>
+                                                    Mở: <strong>@campaign.OpenCount</strong> (@openRate.ToString("F1")%)
+                                                </div>
+                                                <div style="font-size: 0.875rem;">
+                                                    <i data-lucide="mouse-pointer" style="width: 12px; height: 12px;"></i>
+                                                    Click: <strong>@campaign.ClickCount</strong> (@clickRate.ToString("F1")%)
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-badge admin-badge-secondary">Chưa gửi</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.ScheduledAt.HasValue)
+                                        {
+                                            <div style="font-size: 0.875rem;">
+                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                                @campaign.ScheduledAt.Value.ToString("dd/MM/yyyy")
+                                            </div>
+                                            <div style="font-size: 0.875rem; color: var(--admin-text-light);">
+                                                @campaign.ScheduledAt.Value.ToString("HH:mm")
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: var(--admin-text-muted); font-size: 0.875rem;">Không lên lịch</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.Status == "sent")
+                                        {
+                                            <span class="admin-badge admin-badge-success">
+                                                <i data-lucide="check" style="width: 12px; height: 12px;"></i>
+                                                Đã gửi
+                                            </span>
+                                        }
+                                        else if (campaign.Status == "sending")
+                                        {
+                                            <span class="admin-badge admin-badge-warning">
+                                                <i data-lucide="loader" style="width: 12px; height: 12px;"></i>
+                                                Đang gửi
+                                            </span>
+                                        }
+                                        else if (campaign.Status == "scheduled")
+                                        {
+                                            <span class="admin-badge admin-badge-info">
+                                                <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+                                                Đã lên lịch
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-badge admin-badge-secondary">
+                                                <i data-lucide="file-text" style="width: 12px; height: 12px;"></i>
+                                                Nháp
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="actions">
+                                        <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
+                                            <a href="/admin/marketing/email/@campaign.Id" class="admin-btn admin-btn-sm admin-btn-primary" title="Sửa">
+                                                <i data-lucide="edit"></i>
+                                            </a>
+                                            <button onclick="deleteEmailCampaign('@campaign.Id')" class="admin-btn admin-btn-sm admin-btn-danger" title="Xóa">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             }
-                        </div>
-                        @if (campaign.ScheduledAt.HasValue)
-                        {
-                            <p class="mt-2 mb-0"><small><i class="fas fa-clock"></i> Scheduled: @campaign.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")</small></p>
-                        }
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="/admin/marketing/email/@campaign.Id" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <form method="post" action="/admin/marketing/email/@campaign.Id/delete" style="display:inline;" onsubmit="return confirm('Delete?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        }
+        </div>
     }
 </div>
+
+<!-- Hidden form for antiforgery token -->
+<form id="antiforgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function deleteEmailCampaign(campaignId) {
+            if (!confirm('Xác nhận xóa Email Campaign này? Hành động này không thể hoàn tác!')) {
+                return;
+            }
+
+            const form = new FormData();
+            form.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            fetch(`/admin/marketing/email/${campaignId}/delete`, {
+                method: 'POST',
+                body: form
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi xóa Email Campaign');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa Email Campaign');
+            });
+        }
+
+        // Auto-hide success messages
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.admin-alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
+}

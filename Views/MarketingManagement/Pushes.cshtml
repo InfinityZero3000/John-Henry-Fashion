@@ -1,50 +1,50 @@
 @model List<JohnHenryFashionWeb.Models.PushNotificationCampaign>
 @{
     ViewData["Title"] = "Push Notification Campaigns";
+    ViewData["Breadcrumbs"] = new[] { "Marketing", "Push Notifications" };
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        min-height: calc(100vh - 80px);
-    }
+<div class="admin-layout-container">
+    <div class="admin-content-header">
+        <div>
+            <h1 class="admin-page-title">
+                <i data-lucide="bell"></i> Push Notification Campaigns
+            </h1>
+            <p class="admin-page-description">Quản lý chiến dịch push notification</p>
+        </div>
+        <a href="/admin/marketing/push/create" class="admin-btn admin-btn-primary">
+            <i data-lucide="plus"></i> Tạo Campaign
+        </a>
+    </div>
 
-    .page-header-glass, .push-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .push-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-primary-glass {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        color: white;
-        border: none;
-        padding: 0.5rem 1.5rem;
-        border-radius: 10px;
-    }
-</style>
-
-<div class="marketing-container">
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="mb-1">🔔 Push Notification Campaigns</h2>
-                <p class="text-muted mb-0">Quản lý chiến dịch push notification</p>
+    <div class="admin-stats-row">
+        <div class="admin-stat-card admin-stat-primary">
+            <div class="admin-stat-icon">
+                <i data-lucide="bell"></i>
             </div>
-            <a href="/admin/marketing/push/create" class="btn btn-primary-glass">
-                <i class="fas fa-plus"></i> Tạo Campaign
-            </a>
+            <div class="admin-stat-content">
+                <div class="admin-stat-label">Tổng Campaigns</div>
+                <div class="admin-stat-value">@Model.Count</div>
+            </div>
+        </div>
+        <div class="admin-stat-card admin-stat-success">
+            <div class="admin-stat-icon">
+                <i data-lucide="send"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-label">Thông báo đã gửi</div>
+                <div class="admin-stat-value">@Model.Sum(p => p.SentCount)</div>
+            </div>
+        </div>
+        <div class="admin-stat-card admin-stat-info">
+            <div class="admin-stat-icon">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-label">Tổng người nhận</div>
+                <div class="admin-stat-value">@Model.Sum(p => p.TotalRecipients)</div>
+            </div>
         </div>
     </div>
 
@@ -56,51 +56,127 @@
         </div>
     }
 
-    @if (Model == null || !Model.Any())
-    {
-        <div class="push-card text-center">
-            <p class="text-muted mb-0">Chưa có campaign nào.</p>
-        </div>
-    }
-    else
-    {
-        @foreach (var push in Model)
-        {
-            <div class="push-card">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h5 class="mb-1">@push.Title</h5>
-                        <p class="text-muted mb-2">@push.Message</p>
-                        <div class="d-flex gap-3">
-                            <span class="badge bg-@(push.Status == "sent" ? "success" : push.Status == "sending" ? "warning" : "secondary")">
-                                @push.Status
-                            </span>
-                            <span><strong>Audience:</strong> @push.TargetAudience</span>
-                            @if (push.SentCount > 0)
-                            {
-                                <span><strong>Sent:</strong> @push.SentCount / @push.TotalRecipients</span>
-                            }
-                        </div>
-                        @if (push.ScheduledAt.HasValue)
-                        {
-                            <p class="mt-2 mb-0"><small><i class="fas fa-clock"></i> @push.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")</small></p>
-                        }
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="/admin/marketing/push/@push.Id" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <form method="post" action="/admin/marketing/push/@push.Id/delete" style="display:inline;" onsubmit="return confirm('Delete?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+    <div class="admin-card">
+        <div class="admin-card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i data-lucide="inbox" style="width: 64px; height: 64px; color: var(--admin-text-secondary); margin-bottom: 1rem;"></i>
+                    <p class="text-muted mb-0">Chưa có campaign nào.</p>
                 </div>
-            </div>
-        }
-    }
+            }
+            else
+            {
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề & Nội dung</th>
+                                <th>Đối tượng</th>
+                                <th>Thống kê</th>
+                                <th>Lịch gửi</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 140px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var push in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 500; color: var(--admin-text-primary); margin-bottom: 0.25rem;">
+                                            @push.Title
+                                        </div>
+                                        <div style="color: var(--admin-text-secondary); font-size: 0.875rem;">
+                                            @(push.Message.Length > 60 ? push.Message.Substring(0, 60) + "..." : push.Message)
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="admin-badge admin-badge-secondary">
+                                            <i data-lucide="users"></i> @push.TargetAudience
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (push.SentCount > 0)
+                                        {
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem;">
+                                                <span><i data-lucide="send" style="width: 14px; height: 14px;"></i> @push.SentCount / @push.TotalRecipients gửi</span>
+                                                <span><i data-lucide="eye" style="width: 14px; height: 14px;"></i> @push.OpenCount mở</span>
+                                                <span><i data-lucide="mouse-pointer-click" style="width: 14px; height: 14px;"></i> @push.ClickCount clicks</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: var(--admin-text-secondary); font-size: 0.875rem;">Chưa gửi</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (push.ScheduledAt.HasValue)
+                                        {
+                                            <span style="font-size: 0.875rem;">
+                                                <i data-lucide="clock"></i> @push.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                            </span>
+                                        }
+                                        else if (push.SentAt.HasValue)
+                                        {
+                                            <span style="font-size: 0.875rem; color: var(--admin-success-color);">
+                                                <i data-lucide="check-circle"></i> @push.SentAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: var(--admin-text-secondary); font-size: 0.875rem;">Chưa định</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var badgeClass = push.Status switch
+                                            {
+                                                "sent" => "admin-badge-success",
+                                                "sending" => "admin-badge-warning",
+                                                "scheduled" => "admin-badge-info",
+                                                _ => "admin-badge-secondary"
+                                            };
+                                        }
+                                        <span class="admin-badge @badgeClass">@push.Status</span>
+                                    </td>
+                                    <td>
+                                        <div class="admin-table-actions">
+                                            <a href="/admin/marketing/push/@push.Id" class="admin-btn admin-btn-sm admin-btn-secondary" title="Chỉnh sửa">
+                                                <i data-lucide="edit-2"></i>
+                                            </a>
+                                            <button onclick="deletePushCampaign('@push.Id')" class="admin-btn admin-btn-sm admin-btn-danger" title="Xóa">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+<form id="antiforgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+
+        function deletePushCampaign(id) {
+            if (!confirm('Xác nhận xóa Push Campaign này?')) return;
+            const form = new FormData();
+            form.append('__RequestVerificationToken', document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]').value);
+            fetch(`/admin/marketing/push/${id}/delete`, {
+                method: 'POST',
+                body: form
+            }).then(r => r.ok ? window.location.reload() : alert('Lỗi khi xóa'));
+        }
+    </script>
+}
+

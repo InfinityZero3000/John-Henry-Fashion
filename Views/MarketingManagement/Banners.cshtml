@@ -1,185 +1,118 @@
 @model List<JohnHenryFashionWeb.Models.MarketingBanner>
 @{
     ViewData["Title"] = "Quản lý Banner Marketing";
+    ViewData["CurrentSection"] = "MarketingManagement";
+    ViewData["Breadcrumb"] = new List<(string Text, string Url)>
+    {
+        ("Marketing", "/admin/marketing"),
+        ("Quản lý Banner", "")
+    };
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .banner-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-    }
-
-    .banner-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
     .banner-image {
         max-width: 200px;
         max-height: 100px;
         object-fit: cover;
         border-radius: 8px;
     }
-
-    .badge-active {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-    }
-
-    .badge-inactive {
-        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-    }
-
-    .btn-glass {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #333;
-        padding: 0.5rem 1.5rem;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-glass:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-primary-glass {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-    }
-
-    .btn-danger-glass {
-        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        color: white;
-        border: none;
-    }
 </style>
 
-<div class="marketing-container">
-    <!-- Page Header -->
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
+<div class="admin-content">
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
             <div>
-                <h2 class="mb-1">Quản lý Banner Marketing</h2>
+                <h1>Quản lý Banner Marketing</h1>
             </div>
-            <a href="/admin/marketing/banner/create" class="btn btn-primary-glass">
-                <i class="fas fa-plus"></i> Tạo Banner Mới
+            <a href="/admin/marketing/banner/create" class="admin-btn admin-btn-primary">
+                <i data-lucide="plus"></i>
+                Tạo Banner Mới
             </a>
         </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="admin-alert admin-alert-success" style="margin-bottom: 1.5rem;">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
         </div>
     }
 
     <!-- Banners List -->
     @if (Model == null || !Model.Any())
     {
-        <div class="banner-card text-center">
-            <p class="text-muted mb-0">Chưa có banner nào. Hãy tạo banner đầu tiên!</p>
+        <div class="admin-card" style="padding: 4rem 2rem; text-align: center;">
+            <i data-lucide="image" style="width: 48px; height: 48px; margin: 0 auto 1rem; color: #d1d5db;"></i>
+            <p style="color: #9ca3af; margin: 0;">Chưa có banner nào. Hãy tạo banner đầu tiên!</p>
         </div>
     }
     else
     {
-        <div class="row">
-            @foreach (var banner in Model)
-            {
-                <div class="col-12">
-                    <div class="banner-card">
-                        <div class="row align-items-center">
-                            <div class="col-md-2">
-                                @if (!string.IsNullOrEmpty(banner.ImageUrl))
-                                {
-                                    <img src="@banner.ImageUrl" alt="@banner.Title" class="banner-image" />
-                                }
-                                else
-                                {
-                                    <div class="banner-image bg-secondary d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-image text-white"></i>
-                                    </div>
-                                }
+        @foreach (var banner in Model)
+        {
+            <div class="admin-card" style="margin-bottom: 1.5rem;">
+                <div style="display: grid; grid-template-columns: 200px 1fr auto; gap: 1.5rem; align-items: center;">
+                    <div>
+                        @if (!string.IsNullOrEmpty(banner.ImageUrl))
+                        {
+                            <img src="@banner.ImageUrl" alt="@banner.Title" class="banner-image" />
+                        }
+                        else
+                        {
+                            <div class="banner-image" style="background-color: #e5e7eb; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="image" style="width: 32px; height: 32px; color: #9ca3af;"></i>
                             </div>
-                            <div class="col-md-7">
-                                <h5 class="mb-1">@banner.Title</h5>
-                                <p class="text-muted mb-2">@banner.Description</p>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <span class="badge bg-info">@banner.Position</span>
-                                    <span class="badge bg-secondary">Vị trí: @banner.SortOrder</span>
-                                    @if (banner.EndDate.HasValue)
-                                    {
-                                        <span class="badge bg-warning text-dark">
-                                            @banner.StartDate.ToString("dd/MM/yyyy") - @banner.EndDate.Value.ToString("dd/MM/yyyy")
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <div class="mb-2">
-                                    @if (banner.IsActive)
-                                    {
-                                        <span class="badge-active">Đang hoạt động</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge-inactive">Tạm ngưng</span>
-                                    }
-                                </div>
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <a href="/admin/marketing/banner/@banner.Id" class="btn btn-sm btn-glass">
-                                        <i class="fas fa-edit"></i> Sửa
-                                    </a>
-                                    <form method="post" action="/admin/marketing/banner/@banner.Id/delete" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa banner này?');">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-danger-glass">
-                                            <i class="fas fa-trash"></i> Xóa
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                        }
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem;">@banner.Title</h3>
+                        <p style="color: #6b7280; margin-bottom: 1rem;">@banner.Description</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="admin-badge" style="background-color: #dbeafe; color: #1e40af;">@banner.Position</span>
+                            <span class="admin-badge" style="background-color: #e5e7eb; color: #374151;">Vị trí: @banner.SortOrder</span>
+                            @if (banner.EndDate.HasValue)
+                            {
+                                <span class="admin-badge" style="background-color: #fef3c7; color: #92400e;">
+                                    @banner.StartDate.ToString("dd/MM/yyyy") - @banner.EndDate.Value.ToString("dd/MM/yyyy")
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="margin-bottom: 1rem;">
+                            @if (banner.IsActive)
+                            {
+                                <span class="admin-badge" style="background-color: #d1fae5; color: #065f46;">
+                                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                                    Đang hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="admin-badge" style="background-color: #fee2e2; color: #991b1b;">
+                                    <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+                                    Tạm ngưng
+                                </span>
+                            }
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <a href="/admin/marketing/banner/@banner.Id" class="admin-btn admin-btn-sm admin-btn-primary">
+                                <i data-lucide="edit"></i>
+                                Sửa
+                            </a>
+                            <form method="post" action="/admin/marketing/banner/@banner.Id/delete" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa banner này?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="admin-btn admin-btn-sm admin-btn-danger">
+                                    <i data-lucide="trash-2"></i>
+                                    Xóa
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     }
 </div>

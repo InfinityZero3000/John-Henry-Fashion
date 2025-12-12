@@ -1,95 +1,176 @@
 @model JohnHenryFashionWeb.Models.FlashSale
 @{
-    ViewData["Title"] = "Create Flash Sale";
+    ViewData["Title"] = "Tạo Flash Sale mới";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item\"><a href=\"/admin/marketing/flashsales\">Flash Sales</a></li><li class=\"breadcrumb-item active\">Tạo mới</li>";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        min-height: calc(100vh - 80px);
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <h1 class="admin-page-title">
+            <i data-lucide="zap"></i>
+            Tạo Flash Sale mới
+        </h1>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-danger">
+            <i data-lucide="alert-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
     }
 
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        max-width: 800px;
-        margin: 0 auto;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <form method="post" action="/admin/marketing/flashsale/create">
+                @Html.AntiForgeryToken()
+                
+                <!-- Basic Information -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="info"></i>
+                        Thông tin cơ bản
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Tên Flash Sale <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="Name" name="Name" placeholder="VD: Flash Sale cuối tuần" required />
+                    </div>
 
-    .form-control, .form-select { border-radius: 10px; padding: 0.75rem; }
-    .btn-submit { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white; border: none; padding: 0.75rem 2rem; border-radius: 10px; }
-</style>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3" placeholder="Mô tả chi tiết về chương trình Flash Sale"></textarea>
+                    </div>
 
-<div class="marketing-container">
-    <div class="form-card">
-        <h2 class="mb-4">⚡ Create Flash Sale</h2>
-        
-        <form method="post" action="/admin/marketing/flashsale/create">
-            @Html.AntiForgeryToken()
-            
-            <div class="mb-3">
-                <label class="form-label">Flash Sale Name *</label>
-                <input type="text" class="form-control" name="Name" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea class="form-control" name="Description" rows="3"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Banner Image URL</label>
-                <input type="url" class="form-control" name="BannerImageUrl" />
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Start Date *</label>
-                    <input type="datetime-local" class="form-control" name="StartDate" required />
+                    <div class="mb-3">
+                        <label for="BannerImageUrl" class="form-label">
+                            <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+                            URL Banner
+                        </label>
+                        <input type="url" class="form-control" id="BannerImageUrl" name="BannerImageUrl" placeholder="https://example.com/banner.jpg" />
+                        <small class="form-text text-muted">Hình ảnh hiển thị cho chương trình Flash Sale</small>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">End Date *</label>
-                    <input type="datetime-local" class="form-control" name="EndDate" required />
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Discount % *</label>
-                    <input type="number" class="form-control" name="DiscountPercentage" min="0" max="100" required />
+                <!-- Discount & Stock -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="percent"></i>
+                        Giảm giá & Kho hàng
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="DiscountPercentage" class="form-label">Phần trăm giảm giá <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="DiscountPercentage" name="DiscountPercentage" min="0" max="100" placeholder="50" required />
+                            <small class="form-text text-muted">Từ 0 đến 100%</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="StockLimit" class="form-label">Giới hạn kho</label>
+                            <input type="number" class="form-control" id="StockLimit" name="StockLimit" min="0" placeholder="Không giới hạn" />
+                            <small class="form-text text-muted">Để trống = không giới hạn</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="SoldCount" class="form-label">Đã bán</label>
+                            <input type="number" class="form-control" id="SoldCount" name="SoldCount" value="0" readonly style="background-color: #f8f9fa;" />
+                            <small class="form-text text-muted">Tự động cập nhật</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Stock Limit</label>
-                    <input type="number" class="form-control" name="StockLimit" />
+
+                <!-- Time Period -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="calendar"></i>
+                        Thời gian áp dụng
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="StartDate" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="StartDate" name="StartDate" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="EndDate" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="EndDate" name="EndDate" required />
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Sold Count</label>
-                    <input type="number" class="form-control" name="SoldCount" value="0" readonly />
+
+                <!-- Product IDs -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="package"></i>
+                        Sản phẩm áp dụng
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="ProductIds" class="form-label">Product IDs (JSON array)</label>
+                        <textarea class="form-control" id="ProductIds" name="ProductIds" rows="4" placeholder='["id1","id2","id3"]' style="font-family: 'Courier New', monospace;"></textarea>
+                        <small class="form-text text-muted">Nhập danh sách ID sản phẩm dạng JSON array. Để trống để áp dụng cho tất cả sản phẩm.</small>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">Product IDs (JSON array)</label>
-                <textarea class="form-control" name="ProductIds" rows="3" placeholder='["id1","id2","id3"]'></textarea>
-                <small class="text-muted">Enter product IDs as JSON array</small>
-            </div>
+                <!-- Activation -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="settings"></i>
+                        Cài đặt kích hoạt
+                    </h3>
+                    
+                    <div class="form-check" style="padding-left: 1.5rem;">
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" value="true" checked style="width: 1.25rem; height: 1.25rem; margin-top: 0.125rem;" />
+                        <label class="form-check-label" for="IsActive" style="font-weight: 500; margin-left: 0.5rem;">
+                            Kích hoạt Flash Sale ngay sau khi tạo
+                        </label>
+                    </div>
+                </div>
 
-            <div class="form-check mb-4">
-                <input type="checkbox" class="form-check-input" name="IsActive" value="true" checked />
-                <label class="form-check-label">Activate Now</label>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> Create Flash Sale
-                </button>
-                <a href="/admin/marketing/flashsales" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+                <!-- Action Buttons -->
+                <div class="admin-form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-border-color);">
+                    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+                        <i data-lucide="zap"></i>
+                        Tạo Flash Sale
+                    </button>
+                    <a href="/admin/marketing/flashsales" class="admin-btn admin-btn-secondary admin-btn-lg">
+                        <i data-lucide="x"></i>
+                        Hủy bỏ
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Auto-hide alert messages
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.admin-alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        // Validate end date is after start date
+        document.getElementById('EndDate').addEventListener('change', function() {
+            const startDate = new Date(document.getElementById('StartDate').value);
+            const endDate = new Date(this.value);
+            
+            if (endDate <= startDate) {
+                alert('Ngày kết thúc phải sau ngày bắt đầu!');
+                this.value = '';
+            }
+        });
+    </script>
+}

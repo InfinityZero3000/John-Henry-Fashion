@@ -1,159 +1,208 @@
 @model JohnHenryFashionWeb.Models.SystemPromotion
 @{
-    ViewData["Title"] = "Tạo Khuyến mãi";
+    ViewData["Title"] = "Tạo khuyến mãi mới";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item\"><a href=\"/admin/marketing/promotions\">Khuyến mãi</a></li><li class=\"breadcrumb-item active\">Tạo mới</li>";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        min-height: calc(100vh - 80px);
-    }
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <h1 class="admin-page-title">
+            <i data-lucide="plus-circle"></i>
+            Tạo khuyến mãi mới
+        </h1>
+    </div>
 
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control, .form-select {
-        border: 2px solid rgba(240, 147, 251, 0.2);
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #f093fb;
-        box-shadow: 0 0 0 0.2rem rgba(240, 147, 251, 0.25);
-    }
-
-    .btn-submit {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-cancel {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #333;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-    }
-</style>
-
-<div class="marketing-container">
-    <div class="form-card">
-        <div class="mb-4">
-            <h2>🎁 Tạo Khuyến mãi Mới</h2>
-            <p class="text-muted">Tạo mã giảm giá mới cho khách hàng</p>
+    <!-- Alert Messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-danger">
+            <i data-lucide="alert-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
         </div>
+    }
 
-        <form method="post" action="/admin/marketing/promotion/create">
-            @Html.AntiForgeryToken()
-            
-            <div class="mb-3">
-                <label for="Name" class="form-label">Tên khuyến mãi *</label>
-                <input type="text" class="form-control" id="Name" name="Name" required />
-            </div>
+    <div class="admin-card">
+        <div class="admin-card-body">
+        <div class="admin-card-body">
+            <form method="post" action="/admin/marketing/promotion/create">
+                @Html.AntiForgeryToken()
+                
+                <!-- Basic Information -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="info"></i>
+                        Thông tin cơ bản
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Name" class="form-label">Tên khuyến mãi <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="Name" name="Name" placeholder="VD: Giảm giá mùa hè" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Code" class="form-label">Mã khuyến mãi <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="Code" name="Code" placeholder="VD: SUMMER2025" required style="text-transform: uppercase;" />
+                            <small class="form-text text-muted">Mã này khách hàng sẽ nhập khi thanh toán</small>
+                        </div>
+                    </div>
 
-            <div class="mb-3">
-                <label for="Code" class="form-label">Mã khuyến mãi *</label>
-                <input type="text" class="form-control" id="Code" name="Code" placeholder="VD: SUMMER2025" required />
-                <small class="text-muted">Mã này khách hàng sẽ nhập khi thanh toán</small>
-            </div>
-
-            <div class="mb-3">
-                <label for="Description" class="form-label">Mô tả</label>
-                <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="Type" class="form-label">Loại giảm giá *</label>
-                    <select class="form-select" id="Type" name="Type" required>
-                        <option value="percentage">Phần trăm (%)</option>
-                        <option value="fixed">Số tiền cố định (VNĐ)</option>
-                    </select>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3" placeholder="Mô tả chi tiết về chương trình khuyến mãi"></textarea>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="Value" class="form-label">Giá trị *</label>
-                    <input type="number" class="form-control" id="Value" name="Value" step="0.01" required />
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="MinOrderAmount" class="form-label">Giá trị đơn hàng tối thiểu</label>
-                    <input type="number" class="form-control" id="MinOrderAmount" name="MinOrderAmount" step="0.01" value="0" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="MaxDiscountAmount" class="form-label">Giảm giá tối đa</label>
-                    <input type="number" class="form-control" id="MaxDiscountAmount" name="MaxDiscountAmount" step="0.01" />
-                </div>
-            </div>
+                <!-- Discount Configuration -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="percent"></i>
+                        Cấu hình giảm giá
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Type" class="form-label">Loại giảm giá <span class="text-danger">*</span></label>
+                            <select class="form-select" id="Type" name="Type" required>
+                                <option value="percentage">Phần trăm (%)</option>
+                                <option value="fixed">Số tiền cố định (VNĐ)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Value" class="form-label">Giá trị <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="Value" name="Value" step="0.01" min="0" placeholder="0" required />
+                            <small class="form-text text-muted">Nhập % hoặc số tiền tùy theo loại giảm giá</small>
+                        </div>
+                    </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="UsageLimit" class="form-label">Giới hạn số lần sử dụng</label>
-                    <input type="number" class="form-control" id="UsageLimit" name="UsageLimit" />
-                    <small class="text-muted">Để trống = không giới hạn</small>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="MinOrderAmount" class="form-label">
+                                <i data-lucide="shopping-bag" style="width: 14px; height: 14px;"></i>
+                                Giá trị đơn hàng tối thiểu
+                            </label>
+                            <input type="number" class="form-control" id="MinOrderAmount" name="MinOrderAmount" step="0.01" min="0" value="0" placeholder="0" />
+                            <small class="form-text text-muted">Để 0 = không giới hạn</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="MaxDiscountAmount" class="form-label">
+                                <i data-lucide="dollar-sign" style="width: 14px; height: 14px;"></i>
+                                Giảm giá tối đa
+                            </label>
+                            <input type="number" class="form-control" id="MaxDiscountAmount" name="MaxDiscountAmount" step="0.01" min="0" placeholder="Không giới hạn" />
+                            <small class="form-text text-muted">Để trống = không giới hạn</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="UsageLimitPerUser" class="form-label">Giới hạn mỗi người dùng</label>
-                    <input type="number" class="form-control" id="UsageLimitPerUser" name="UsageLimitPerUser" />
+
+                <!-- Usage Limits -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="users"></i>
+                        Giới hạn sử dụng
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="UsageLimit" class="form-label">Giới hạn số lần sử dụng</label>
+                            <input type="number" class="form-control" id="UsageLimit" name="UsageLimit" min="0" placeholder="Không giới hạn" />
+                            <small class="form-text text-muted">Để trống = không giới hạn tổng số lần</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="UsageLimitPerUser" class="form-label">Giới hạn mỗi người dùng</label>
+                            <input type="number" class="form-control" id="UsageLimitPerUser" name="UsageLimitPerUser" min="0" placeholder="Không giới hạn" />
+                            <small class="form-text text-muted">Để trống = không giới hạn mỗi người</small>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="StartDate" class="form-label">Ngày bắt đầu *</label>
-                    <input type="datetime-local" class="form-control" id="StartDate" name="StartDate" required />
+                <!-- Time Period -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="calendar"></i>
+                        Thời gian áp dụng
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="StartDate" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="StartDate" name="StartDate" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="EndDate" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="EndDate" name="EndDate" required />
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="EndDate" class="form-label">Ngày kết thúc *</label>
-                    <input type="datetime-local" class="form-control" id="EndDate" name="EndDate" required />
+
+                <!-- Additional Settings -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="settings"></i>
+                        Cài đặt khác
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="BannerImageUrl" class="form-label">
+                            <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+                            URL Banner (tùy chọn)
+                        </label>
+                        <input type="url" class="form-control" id="BannerImageUrl" name="BannerImageUrl" placeholder="https://example.com/banner.jpg" />
+                        <small class="form-text text-muted">Hình ảnh hiển thị cho chương trình khuyến mãi</small>
+                    </div>
+
+                    <div class="form-check" style="padding-left: 1.5rem;">
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" value="true" checked style="width: 1.25rem; height: 1.25rem; margin-top: 0.125rem;" />
+                        <label class="form-check-label" for="IsActive" style="font-weight: 500; margin-left: 0.5rem;">
+                            Kích hoạt khuyến mãi ngay sau khi tạo
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label for="BannerImageUrl" class="form-label">URL Banner (tùy chọn)</label>
-                <input type="url" class="form-control" id="BannerImageUrl" name="BannerImageUrl" />
-            </div>
-
-            <div class="form-check mb-4">
-                <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" value="true" checked />
-                <label class="form-check-label" for="IsActive">
-                    Kích hoạt ngay
-                </label>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> Lưu Khuyến mãi
-                </button>
-                <a href="/admin/marketing/promotions" class="btn btn-cancel">
-                    <i class="fas fa-times"></i> Hủy
-                </a>
-            </div>
-        </form>
+                <!-- Action Buttons -->
+                <div class="admin-form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-border-color);">
+                    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+                        <i data-lucide="save"></i>
+                        Tạo khuyến mãi
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Auto-hide alert messages
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.admin-alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        // Auto uppercase code input
+        document.getElementById('Code').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Validate end date is after start date
+        document.getElementById('EndDate').addEventListener('change', function() {
+            const startDate = new Date(document.getElementById('StartDate').value);
+            const endDate = new Date(this.value);
+            
+            if (endDate <= startDate) {
+                alert('Ngày kết thúc phải sau ngày bắt đầu!');
+                this.value = '';
+            }
+        });
+    </script>
+}

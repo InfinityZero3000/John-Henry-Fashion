@@ -1,107 +1,214 @@
 @model JohnHenryFashionWeb.Models.FlashSale
 @{
-    ViewData["Title"] = "Edit Flash Sale";
+    ViewData["Title"] = "Chỉnh sửa Flash Sale";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item\"><a href=\"/admin/marketing/flashsales\">Flash Sales</a></li><li class=\"breadcrumb-item active\">Chỉnh sửa</li>";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        min-height: calc(100vh - 80px);
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="edit"></i>
+                Chỉnh sửa Flash Sale
+            </h1>
+            <span class="admin-badge @(Model.IsActive ? "admin-badge-success" : "admin-badge-secondary")">
+                @(Model.IsActive ? "Đang hoạt động" : "Tạm dừng")
+            </span>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-danger">
+            <i data-lucide="alert-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
     }
 
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        max-width: 800px;
-        margin: 0 auto;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <form method="post" action="/admin/marketing/flashsale/@Model.Id">
+                @Html.AntiForgeryToken()
+                
+                <!-- Basic Information -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="info"></i>
+                        Thông tin cơ bản
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Tên Flash Sale <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" required />
+                    </div>
 
-    .form-control, .form-select { border-radius: 10px; padding: 0.75rem; }
-    .btn-submit { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white; border: none; padding: 0.75rem 2rem; border-radius: 10px; }
-</style>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3">@Model.Description</textarea>
+                    </div>
 
-<div class="marketing-container">
-    <div class="form-card">
-        <h2 class="mb-4">✏️ Edit Flash Sale</h2>
-        
-        <form method="post" action="/admin/marketing/flashsale/@Model.Id">
-            @Html.AntiForgeryToken()
-            
-            <div class="mb-3">
-                <label class="form-label">Flash Sale Name *</label>
-                <input type="text" class="form-control" name="Name" value="@Model.Name" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea class="form-control" name="Description" rows="3">@Model.Description</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Banner Image URL</label>
-                <input type="url" class="form-control" name="BannerImageUrl" value="@Model.BannerImageUrl" />
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Start Date *</label>
-                    <input type="datetime-local" class="form-control" name="StartDate" 
-                           value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required />
+                    <div class="mb-3">
+                        <label for="BannerImageUrl" class="form-label">
+                            <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+                            URL Banner
+                        </label>
+                        <input type="url" class="form-control" id="BannerImageUrl" name="BannerImageUrl" value="@Model.BannerImageUrl" />
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">End Date *</label>
-                    <input type="datetime-local" class="form-control" name="EndDate" 
-                           value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" required />
+
+                <!-- Discount & Stock -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="percent"></i>
+                        Giảm giá & Kho hàng
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="DiscountPercentage" class="form-label">Phần trăm giảm giá <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="DiscountPercentage" name="DiscountPercentage" min="0" max="100" value="@Model.DiscountPercentage" required />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="StockLimit" class="form-label">Giới hạn kho</label>
+                            <input type="number" class="form-control" id="StockLimit" name="StockLimit" min="0" value="@Model.StockLimit" />
+                            <small class="form-text text-muted">Còn lại: @(Model.StockLimit > 0 ? (Model.StockLimit - Model.SoldCount).ToString() : "∞")</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="SoldCount" class="form-label">Đã bán</label>
+                            <input type="number" class="form-control" id="SoldCount" value="@Model.SoldCount" readonly style="background-color: #f8f9fa;" />
+                            <small class="form-text text-muted">Tự động cập nhật</small>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Discount % *</label>
-                    <input type="number" class="form-control" name="DiscountPercentage" min="0" max="100" 
-                           value="@Model.DiscountPercentage" required />
+                <!-- Time Period -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="calendar"></i>
+                        Thời gian áp dụng
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="StartDate" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="StartDate" name="StartDate" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="EndDate" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="EndDate" name="EndDate" value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" required />
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Stock Limit</label>
-                    <input type="number" class="form-control" name="StockLimit" value="@Model.StockLimit" />
+
+                <!-- Product IDs -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="package"></i>
+                        Sản phẩm áp dụng
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="ProductIds" class="form-label">Product IDs (JSON array)</label>
+                        <textarea class="form-control" id="ProductIds" name="ProductIds" rows="4" style="font-family: 'Courier New', monospace;">@Model.ProductIds</textarea>
+                        <small class="form-text text-muted">Nhập danh sách ID sản phẩm dạng JSON array. Để trống để áp dụng cho tất cả sản phẩm.</small>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Sold Count</label>
-                    <input type="number" class="form-control" value="@Model.SoldCount" readonly />
+
+                <!-- Activation -->
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title">
+                        <i data-lucide="settings"></i>
+                        Cài đặt kích hoạt
+                    </h3>
+                    
+                    <div class="form-check" style="padding-left: 1.5rem;">
+                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") style="width: 1.25rem; height: 1.25rem; margin-top: 0.125rem;" />
+                        <label class="form-check-label" for="IsActive" style="font-weight: 500; margin-left: 0.5rem;">
+                            Kích hoạt Flash Sale
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">Product IDs (JSON array)</label>
-                <textarea class="form-control" name="ProductIds" rows="3">@Model.ProductIds</textarea>
-                <small class="text-muted">Enter product IDs as JSON array</small>
-            </div>
-
-            <div class="form-check mb-4">
-                <input type="checkbox" class="form-check-input" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") />
-                <label class="form-check-label">Active</label>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> Update
-                </button>
-                <a href="/admin/marketing/flashsales" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-
-        <hr class="my-4" />
-        
-        <form method="post" action="/admin/marketing/flashsale/@Model.Id/delete" onsubmit="return confirm('Delete?');">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-danger">
-                <i class="fas fa-trash"></i> Delete Flash Sale
-            </button>
-        </form>
+                <!-- Action Buttons -->
+                <div class="admin-form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-border-color);">
+                    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+                        <i data-lucide="save"></i>
+                        Lưu thay đổi
+                    </button>
+                    <a href="/admin/marketing/flashsales" class="admin-btn admin-btn-secondary admin-btn-lg">
+                        <i data-lucide="x"></i>
+                        Hủy bỏ
+                    </a>
+                    <button type="button" onclick="deleteFlashSale()" class="admin-btn admin-btn-danger admin-btn-lg" style="margin-left: auto;">
+                        <i data-lucide="trash-2"></i>
+                        Xóa Flash Sale
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<!-- Hidden form for antiforgery token -->
+<form id="antiforgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Auto-hide alert messages
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.admin-alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        // Validate end date is after start date
+        document.getElementById('EndDate').addEventListener('change', function() {
+            const startDate = new Date(document.getElementById('StartDate').value);
+            const endDate = new Date(this.value);
+            
+            if (endDate <= startDate) {
+                alert('Ngày kết thúc phải sau ngày bắt đầu!');
+                this.value = '@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")';
+            }
+        });
+
+        // Delete flash sale function with FormData
+        function deleteFlashSale() {
+            if (!confirm('Xác nhận xóa Flash Sale này? Hành động này không thể hoàn tác!')) {
+                return;
+            }
+
+            const form = new FormData();
+            form.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            fetch('/admin/marketing/flashsale/@Model.Id/delete', {
+                method: 'POST',
+                body: form
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/admin/marketing/flashsales';
+                } else {
+                    alert('Có lỗi xảy ra khi xóa Flash Sale');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa Flash Sale');
+            });
+        }
+    </script>
+}

@@ -1,102 +1,150 @@
 @model JohnHenryFashionWeb.Models.PushNotificationCampaign
 @{
-    ViewData["Title"] = "Edit Push Notification";
+    ViewData["Title"] = "Chỉnh sửa Push Notification";
+    ViewData["Breadcrumbs"] = new[] { "Marketing", "Push Notifications", "Chỉnh sửa" };
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        min-height: calc(100vh - 80px);
-    }
+<div class="admin-layout-container">
+    <div class="admin-content-header">
+        <div>
+            <h1 class="admin-page-title">
+                <i data-lucide="edit-3"></i> Chỉnh sửa Push Notification
+            </h1>
+            <p class="admin-page-description">
+                @{
+                    var badgeClass = Model.Status switch
+                    {
+                        "sent" => "admin-badge-success",
+                        "sending" => "admin-badge-warning",
+                        "scheduled" => "admin-badge-info",
+                        _ => "admin-badge-secondary"
+                    };
+                }
+                <span class="admin-badge @badgeClass">@Model.Status</span>
+            </p>
+        </div>
+    </div>
 
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        max-width: 800px;
-        margin: 0 auto;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-control, .form-select { border-radius: 10px; padding: 0.75rem; }
-    .btn-submit { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; padding: 0.75rem 2rem; border-radius: 10px; }
-</style>
-
-<div class="marketing-container">
-    <div class="form-card">
-        <h2 class="mb-4">✏️ Edit Push Notification</h2>
-        
-        <form method="post" action="/admin/marketing/push/@Model.Id">
-            @Html.AntiForgeryToken()
-            
-            <div class="mb-3">
-                <label class="form-label">Title *</label>
-                <input type="text" class="form-control" name="Title" value="@Model.Title" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Message *</label>
-                <textarea class="form-control" name="Message" rows="4" required>@Model.Message</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Image URL</label>
-                <input type="url" class="form-control" name="ImageUrl" value="@Model.ImageUrl" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Action URL</label>
-                <input type="url" class="form-control" name="ActionUrl" value="@Model.ActionUrl" />
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Target Audience</label>
-                    <select class="form-select" name="TargetAudience">
-                        <option value="all" selected="@(Model.TargetAudience == "all")">All Users</option>
-                        <option value="customers" selected="@(Model.TargetAudience == "customers")">Customers Only</option>
-                        <option value="custom" selected="@(Model.TargetAudience == "custom")">Custom Segment</option>
-                    </select>
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <form method="post" action="/admin/marketing/push/@Model.Id">
+                @Html.AntiForgeryToken()
+                
+                <div class="admin-form-section">
+                    <div class="admin-form-section-title">
+                        <i data-lucide="info"></i> Thông tin cơ bản
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Tiêu đề *</label>
+                            <input type="text" class="form-control" name="Title" value="@Model.Title" required />
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Nội dung thông báo *</label>
+                            <textarea class="form-control" name="Message" rows="3" required>@Model.Message</textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">URL hình ảnh</label>
+                            <input type="url" class="form-control" name="ImageUrl" value="@Model.ImageUrl" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">URL hành động</label>
+                            <input type="url" class="form-control" name="ActionUrl" value="@Model.ActionUrl" />
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" name="Status">
-                        <option value="draft" selected="@(Model.Status == "draft")">Draft</option>
-                        <option value="scheduled" selected="@(Model.Status == "scheduled")">Scheduled</option>
-                        <option value="sent" selected="@(Model.Status == "sent")">Sent</option>
-                    </select>
+
+                <div class="admin-form-section">
+                    <div class="admin-form-section-title">
+                        <i data-lucide="users"></i> Đối tượng & Lịch trình
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Đối tượng nhận</label>
+                            <select class="form-select" name="TargetAudience">
+                                <option value="all" selected="@(Model.TargetAudience == "all")">Tất cả người dùng</option>
+                                <option value="customers" selected="@(Model.TargetAudience == "customers")">Khách hàng</option>
+                                <option value="sellers" selected="@(Model.TargetAudience == "sellers")">Người bán</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" name="Status">
+                                <option value="draft" selected="@(Model.Status == "draft")">Nháp</option>
+                                <option value="scheduled" selected="@(Model.Status == "scheduled")">Đã lên lịch</option>
+                                <option value="sent" selected="@(Model.Status == "sent")">Đã gửi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Thời gian gửi</label>
+                            <input type="datetime-local" class="form-control" name="ScheduledAt" 
+                                   value="@(Model.ScheduledAt?.ToString("yyyy-MM-ddTHH:mm"))" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">IDs người dùng cụ thể</label>
+                            <input type="text" class="form-control" name="TargetUserIds" value="@Model.TargetUserIds" />
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">Scheduled Time</label>
-                <input type="datetime-local" class="form-control" name="ScheduledAt" 
-                       value="@(Model.ScheduledAt?.ToString("yyyy-MM-ddTHH:mm"))" />
-            </div>
+                <div class="admin-form-section">
+                    <div class="admin-form-section-title">
+                        <i data-lucide="bar-chart-3"></i> Thống kê
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tổng người nhận</label>
+                            <input type="text" class="form-control" value="@Model.TotalRecipients" readonly style="background-color: #f8f9fa;" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Đã gửi</label>
+                            <input type="text" class="form-control" value="@Model.SentCount" readonly style="background-color: #f8f9fa;" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Lượt mở</label>
+                            <input type="text" class="form-control" value="@Model.OpenCount" readonly style="background-color: #f8f9fa;" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Lượt click</label>
+                            <input type="text" class="form-control" value="@Model.ClickCount" readonly style="background-color: #f8f9fa;" />
+                        </div>
+                    </div>
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">Target User IDs (comma-separated)</label>
-                <input type="text" class="form-control" name="TargetUserIds" value="@Model.TargetUserIds" />
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> Update
-                </button>
-                <a href="/admin/marketing/pushes" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-
-        <hr class="my-4" />
-        
-        <form method="post" action="/admin/marketing/push/@Model.Id/delete" onsubmit="return confirm('Delete?');">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-danger">
-                <i class="fas fa-trash"></i> Delete
-            </button>
-        </form>
+                <div class="admin-form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-border-color);">
+                    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+                        <i data-lucide="save"></i> Lưu thay đổi
+                    </button>
+                    <a href="/admin/marketing/pushes" class="admin-btn admin-btn-secondary admin-btn-lg">
+                        <i data-lucide="x"></i> Hủy
+                    </a>
+                    <button type="button" onclick="deletePushCampaign()" class="admin-btn admin-btn-danger admin-btn-lg" style="margin-left: auto;">
+                        <i data-lucide="trash-2"></i> Xóa Campaign
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<form id="antiforgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+
+        function deletePushCampaign() {
+            if (!confirm('Xác nhận xóa Push Campaign này?')) return;
+            const form = new FormData();
+            form.append('__RequestVerificationToken', document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]').value);
+            fetch('/admin/marketing/push/@Model.Id/delete', {
+                method: 'POST',
+                body: form
+            }).then(r => r.ok ? window.location.href = '/admin/marketing/pushes' : alert('Lỗi khi xóa'));
+        }
+    </script>
+}
+

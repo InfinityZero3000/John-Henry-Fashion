@@ -1,107 +1,256 @@
 @model List<JohnHenryFashionWeb.Models.FlashSale>
 @{
-    ViewData["Title"] = "Flash Sales";
+    ViewData["Title"] = "Quản lý Flash Sales";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item active\">Flash Sales</li>";
+    
+    var activeFlashSales = Model.Count(f => f.IsActive && f.StartDate <= DateTime.UtcNow && f.EndDate >= DateTime.UtcNow);
+    var totalSold = Model.Sum(f => f.SoldCount);
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass, .sale-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .sale-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-primary-glass {
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        color: white;
-        border: none;
-        padding: 0.5rem 1.5rem;
-        border-radius: 10px;
-    }
-</style>
-
-<div class="marketing-container">
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="mb-1">⚡ Flash Sales</h2>
-                <p class="text-muted mb-0">Quản lý chương trình Flash Sale</p>
-            </div>
-            <a href="/admin/marketing/flashsale/create" class="btn btn-primary-glass">
-                <i class="fas fa-plus"></i> Tạo Flash Sale
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="zap"></i>
+                Quản lý Flash Sales
+            </h1>
+            <a href="/admin/marketing/flashsale/create" class="admin-btn admin-btn-primary">
+                <i data-lucide="plus"></i>
+                Tạo Flash Sale
             </a>
         </div>
     </div>
 
+    <!-- Alert Messages -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="admin-alert admin-alert-success">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
         </div>
     }
 
+    <!-- Statistics -->
+    <div class="admin-stats-grid" style="margin-bottom: var(--spacing-lg);">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng Flash Sales</h3>
+                    <p class="value">@Model.Count</p>
+                    <p class="change">@activeFlashSales đang hoạt động</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="zap"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Sản phẩm đã bán</h3>
+                    <p class="value">@totalSold.ToString("N0")</p>
+                    <p class="change">Tổng số lượng</p>
+                </div>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="shopping-bag"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tỷ lệ hoạt động</h3>
+                    <p class="value">@((Model.Count > 0 ? (activeFlashSales * 100.0 / Model.Count).ToString("F0") : "0"))%</p>
+                    <p class="change">Đang chạy</p>
+                </div>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="trending-up"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Sales List -->
     @if (Model == null || !Model.Any())
     {
-        <div class="sale-card text-center">
-            <p class="text-muted mb-0">Chưa có flash sale nào.</p>
+        <div class="admin-card">
+            <div class="admin-card-body admin-text-center" style="padding: 3rem;">
+                <i data-lucide="zap" style="width: 64px; height: 64px; color: var(--admin-text-muted); margin-bottom: 1rem;"></i>
+                <h3 style="margin-bottom: 0.5rem;">Chưa có Flash Sale</h3>
+                <p style="color: var(--admin-text-light); margin-bottom: 1.5rem;">Tạo chương trình Flash Sale đầu tiên</p>
+                <a href="/admin/marketing/flashsale/create" class="admin-btn admin-btn-primary">
+                    <i data-lucide="plus"></i>
+                    Tạo Flash Sale
+                </a>
+            </div>
         </div>
     }
     else
     {
-        @foreach (var sale in Model)
-        {
-            <div class="sale-card">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <h5 class="mb-0">@sale.Name</h5>
-                            @if (sale.IsActive)
+        <div class="admin-card">
+            <div class="admin-card-body" style="padding: 0;">
+                <div class="admin-table-wrapper" style="border: none; border-radius: 0;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tên & Mô tả</th>
+                                <th>Giảm giá</th>
+                                <th>Kho & Đã bán</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 150px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sale in Model)
                             {
-                                <span class="badge bg-success">Active</span>
+                                var isExpired = sale.EndDate < DateTime.UtcNow;
+                                var isUpcoming = sale.StartDate > DateTime.UtcNow;
+                                var isActive = sale.IsActive && !isExpired && !isUpcoming;
+                                var stockPercent = sale.StockLimit > 0 ? ((double)sale.SoldCount * 100.0 / sale.StockLimit) : 0;
+                                
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">
+                                            @sale.Name
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(sale.Description))
+                                        {
+                                            <div style="font-size: 0.8125rem; color: var(--admin-text-light); max-width: 300px;">
+                                                @sale.Description
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="admin-badge admin-badge-danger" style="font-size: 1.125rem; font-weight: 600;">
+                                            <i data-lucide="zap" style="width: 14px; height: 14px;"></i>
+                                            -@sale.DiscountPercentage%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="margin-bottom: 0.5rem;">
+                                            <div style="font-size: 0.875rem; color: var(--admin-text-muted); margin-bottom: 0.25rem;">
+                                                Đã bán: <strong>@sale.SoldCount</strong> / @(sale.StockLimit > 0 ? sale.StockLimit.ToString() : "∞")
+                                            </div>
+                                            @if (sale.StockLimit > 0)
+                                            {
+                                                var width = stockPercent > 100 ? 100 : stockPercent;
+                                                <div class="progress" style="height: 8px; background-color: #e9ecef;">
+                                                    <div class="progress-bar @(stockPercent >= 80 ? "bg-danger" : stockPercent >= 50 ? "bg-warning" : "bg-success")" 
+                                                         style="width: @(width.ToString())%"></div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 0.875rem;">
+                                            <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+                                            @sale.StartDate.ToString("dd/MM/yyyy HH:mm")
+                                        </div>
+                                        <div style="font-size: 0.875rem; color: var(--admin-text-light);">
+                                            <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i>
+                                            @sale.EndDate.ToString("dd/MM/yyyy HH:mm")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (isExpired)
+                                        {
+                                            <span class="admin-badge admin-badge-secondary">
+                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                                Đã kết thúc
+                                            </span>
+                                        }
+                                        else if (isUpcoming)
+                                        {
+                                            <span class="admin-badge admin-badge-info">
+                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                                Sắp diễn ra
+                                            </span>
+                                        }
+                                        else if (isActive)
+                                        {
+                                            <span class="admin-badge admin-badge-success">
+                                                <i data-lucide="zap" style="width: 12px; height: 12px;"></i>
+                                                Đang chạy
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-badge admin-badge-warning">
+                                                <i data-lucide="pause-circle" style="width: 12px; height: 12px;"></i>
+                                                Tạm dừng
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="actions">
+                                        <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
+                                            <a href="/admin/marketing/flashsale/@sale.Id" class="admin-btn admin-btn-sm admin-btn-primary" title="Sửa">
+                                                <i data-lucide="edit"></i>
+                                            </a>
+                                            <button onclick="deleteFlashSale('@sale.Id')" class="admin-btn admin-btn-sm admin-btn-danger" title="Xóa">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             }
-                            else
-                            {
-                                <span class="badge bg-secondary">Inactive</span>
-                            }
-                        </div>
-                        <p class="text-muted mb-2">@sale.Description</p>
-                        <div class="d-flex gap-3">
-                            <span class="badge bg-danger">-@sale.DiscountPercentage%</span>
-                            <span><strong>Stock:</strong> @sale.SoldCount / @sale.StockLimit</span>
-                            <span><i class="fas fa-calendar"></i> @sale.StartDate.ToString("dd/MM HH:mm") - @sale.EndDate.ToString("dd/MM HH:mm")</span>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="/admin/marketing/flashsale/@sale.Id" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <form method="post" action="/admin/marketing/flashsale/@sale.Id/delete" style="display:inline;" onsubmit="return confirm('Delete?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        }
+        </div>
     }
 </div>
+
+<!-- Hidden form for antiforgery token -->
+<form id="antiforgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function deleteFlashSale(flashSaleId) {
+            if (!confirm('Xác nhận xóa Flash Sale này? Hành động này không thể hoàn tác!')) {
+                return;
+            }
+
+            const form = new FormData();
+            form.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            fetch(`/admin/marketing/flashsale/${flashSaleId}/delete`, {
+                method: 'POST',
+                body: form
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi xóa Flash Sale');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa Flash Sale');
+            });
+        }
+
+        // Auto-hide success messages
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.admin-alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
+}

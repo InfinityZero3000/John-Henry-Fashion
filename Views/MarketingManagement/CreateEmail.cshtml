@@ -1,94 +1,99 @@
 @model JohnHenryFashionWeb.Models.EmailCampaign
 @{
-    ViewData["Title"] = Model.Id == Guid.Empty ? "Create Email Campaign" : "Edit Email Campaign";
+    ViewData["Title"] = "Tạo Email Campaign mới";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    var isEdit = Model.Id != Guid.Empty;
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item\"><a href=\"/admin/marketing/email\">Email Campaigns</a></li><li class=\"breadcrumb-item active\">Tạo mới</li>";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        min-height: calc(100vh - 80px);
-    }
+<div class="admin-content">
+    <div class="admin-page-header">
+        <h1 class="admin-page-title">
+            <i data-lucide="mail-plus"></i>
+            Tạo Email Campaign mới
+        </h1>
+    </div>
 
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        max-width: 900px;
-        margin: 0 auto;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-control, .form-select { border-radius: 10px; padding: 0.75rem; }
-    .btn-submit { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; padding: 0.75rem 2rem; border-radius: 10px; }
-</style>
-
-<div class="marketing-container">
-    <div class="form-card">
-        <h2 class="mb-4">📧 @(isEdit ? "Edit" : "Create") Email Campaign</h2>
-        
-        <form method="post" action="@(isEdit ? $"/admin/marketing/email/{Model.Id}" : "/admin/marketing/email/create")">
-            @Html.AntiForgeryToken()
-            
-            <div class="mb-3">
-                <label class="form-label">Campaign Name *</label>
-                <input type="text" class="form-control" name="Name" value="@Model.Name" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Email Subject *</label>
-                <input type="text" class="form-control" name="Subject" value="@Model.Subject" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">HTML Content *</label>
-                <textarea class="form-control" name="HtmlContent" rows="8" required>@Model.HtmlContent</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Plain Text Content</label>
-                <textarea class="form-control" name="PlainTextContent" rows="5">@Model.PlainTextContent</textarea>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Target Audience</label>
-                    <select class="form-select" name="TargetAudience">
-                        <option value="all" selected="@(Model.TargetAudience == "all")">All Users</option>
-                        <option value="customers" selected="@(Model.TargetAudience == "customers")">Customers Only</option>
-                        <option value="subscribers" selected="@(Model.TargetAudience == "subscribers")">Subscribers</option>
-                    </select>
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <form method="post" action="/admin/marketing/email/create">
+                @Html.AntiForgeryToken()
+                
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title"><i data-lucide="info"></i> Thông tin cơ bản</h3>
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Tên Campaign <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="Name" name="Name" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Subject" class="form-label">Subject Email <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="Subject" name="Subject" required />
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" name="Status">
-                        <option value="draft" selected="@(Model.Status == "draft")">Draft</option>
-                        <option value="scheduled" selected="@(Model.Status == "scheduled")">Scheduled</option>
-                        <option value="sent" selected="@(Model.Status == "sent")">Sent</option>
-                    </select>
-                </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">Scheduled Time</label>
-                <input type="datetime-local" class="form-control" name="ScheduledAt" 
-                       value="@(Model.ScheduledAt?.ToString("yyyy-MM-ddTHH:mm"))" />
-            </div>
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title"><i data-lucide="file-text"></i> Nội dung</h3>
+                    <div class="mb-3">
+                        <label for="HtmlContent" class="form-label">HTML Content <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="HtmlContent" name="HtmlContent" rows="10" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="PlainTextContent" class="form-label">Plain Text</label>
+                        <textarea class="form-control" id="PlainTextContent" name="PlainTextContent" rows="5"></textarea>
+                    </div>
+                </div>
+
+                <div class="admin-form-section">
+                    <h3 class="admin-form-section-title"><i data-lucide="users"></i> Đối tượng & Trạng thái</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="TargetAudience" class="form-label">Đối tượng</label>
+                            <select class="form-select" id="TargetAudience" name="TargetAudience">
+                                <option value="all">Tất cả</option>
+                                <option value="customers">Khách hàng</option>
+                                <option value="sellers">Người bán</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="Status" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="Status" name="Status">
+                                <option value="draft">Nháp</option>
+                                <option value="scheduled">Lên lịch</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="ScheduledAt" class="form-label">Thời gian gửi</label>
+                            <input type="datetime-local" class="form-control" id="ScheduledAt" name="ScheduledAt" />
+                        </div>
+                    </div>
+                </div>
 
             <div class="mb-3">
                 <label class="form-label">Target Segment Criteria (JSON)</label>
                 <textarea class="form-control" name="TargetSegmentCriteria" rows="3">@Model.TargetSegmentCriteria</textarea>
             </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> @(isEdit ? "Update" : "Create")
-                </button>
-                <a href="/admin/marketing/emails" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+                <div class="admin-form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-border-color);">
+                    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+                        <i data-lucide="send"></i> Tạo Campaign
+                    </button>
+                    <a href="/admin/marketing/email" class="admin-btn admin-btn-secondary admin-btn-lg">
+                        <i data-lucide="x"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
+    <script>
+        lucide.createIcons();
+        tinymce.init({
+            selector: '#HtmlContent',
+            height: 500,
+            plugins: 'code link image lists table',
+            toolbar: 'undo redo | bold italic | bullist numlist | link image | code'
+        });
+    </script>
+}

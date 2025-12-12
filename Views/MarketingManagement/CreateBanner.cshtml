@@ -1,111 +1,61 @@
 @model JohnHenryFashionWeb.Models.MarketingBanner
 @{
     ViewData["Title"] = "Tạo Banner Mới";
+    ViewData["CurrentSection"] = "MarketingManagement";
+    ViewData["Breadcrumb"] = new List<(string Text, string Url)>
+    {
+        ("Marketing", "/admin/marketing"),
+        ("Quản lý Banner", "/admin/marketing/banners"),
+        ("Tạo Banner Mới", "")
+    };
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<style>
-    .marketing-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control, .form-select {
-        border: 2px solid rgba(102, 126, 234, 0.2);
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-
-    .btn-submit {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-    }
-
-    .btn-cancel {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #333;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
-</style>
-
-<div class="marketing-container">
-    <div class="form-card">
-        <div class="mb-4">
-            <h2>Tạo Banner Mới</h2>
-            <p class="text-muted">Thêm banner marketing mới cho website</p>
+<div class="admin-content">
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
+            <div>
+                <h1>Tạo Banner Mới</h1>
+                <p>Thêm banner marketing mới cho website</p>
+            </div>
         </div>
+    </div>
+
+    <div class="admin-card" style="max-width: 800px; margin: 1.5rem auto 0;"">
 
         <form method="post" action="/admin/marketing/banner/create">
             @Html.AntiForgeryToken()
             
-            <div class="mb-3">
-                <label for="Title" class="form-label">Tiêu đề *</label>
-                <input type="text" class="form-control" id="Title" name="Title" required />
+            <div class="admin-form-group">
+                <label for="Title" class="admin-form-label">Tiêu đề *</label>
+                <input type="text" class="admin-form-control" id="Title" name="Title" required />
             </div>
 
-            <div class="mb-3">
-                <label for="Description" class="form-label">Mô tả</label>
-                <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
+            <div class="admin-form-group">
+                <label for="Description" class="admin-form-label">Mô tả</label>
+                <textarea class="admin-form-control" id="Description" name="Description" rows="3"></textarea>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="ImageUrl" class="form-label">URL Hình ảnh Desktop *</label>
-                    <input type="url" class="form-control" id="ImageUrl" name="ImageUrl" required />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="admin-form-group">
+                    <label for="ImageUrl" class="admin-form-label">URL Hình ảnh Desktop *</label>
+                    <input type="url" class="admin-form-control" id="ImageUrl" name="ImageUrl" required />
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="MobileImageUrl" class="form-label">URL Hình ảnh Mobile</label>
-                    <input type="url" class="form-control" id="MobileImageUrl" name="MobileImageUrl" />
+                <div class="admin-form-group">
+                    <label for="MobileImageUrl" class="admin-form-label">URL Hình ảnh Mobile</label>
+                    <input type="url" class="admin-form-control" id="MobileImageUrl" name="MobileImageUrl" />
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label for="LinkUrl" class="form-label">URL Liên kết</label>
-                <input type="url" class="form-control" id="LinkUrl" name="LinkUrl" />
+            <div class="admin-form-group">
+                <label for="LinkUrl" class="admin-form-label">URL Liên kết</label>
+                <input type="url" class="admin-form-control" id="LinkUrl" name="LinkUrl" />
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="Position" class="form-label">Vị trí *</label>
-                    <select class="form-select" id="Position" name="Position" required>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="admin-form-group">
+                    <label for="Position" class="admin-form-label">Vị trí *</label>
+                    <select class="admin-form-control" id="Position" name="Position" required>
                         <option value="Homepage Hero">Homepage Hero</option>
                         <option value="Homepage Middle">Homepage Middle</option>
                         <option value="Homepage Bottom">Homepage Bottom</option>
@@ -114,47 +64,49 @@
                         <option value="Sidebar">Sidebar</option>
                     </select>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="TargetPage" class="form-label">Trang đích</label>
-                    <input type="text" class="form-control" id="TargetPage" name="TargetPage" placeholder="/" />
+                <div class="admin-form-group">
+                    <label for="TargetPage" class="admin-form-label">Trang đích</label>
+                    <input type="text" class="admin-form-control" id="TargetPage" name="TargetPage" placeholder="/" />
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="SortOrder" class="form-label">Thứ tự hiển thị</label>
-                    <input type="number" class="form-control" id="SortOrder" name="SortOrder" value="0" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div class="admin-form-group">
+                    <label for="SortOrder" class="admin-form-label">Thứ tự hiển thị</label>
+                    <input type="number" class="admin-form-control" id="SortOrder" name="SortOrder" value="0" />
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="StartDate" class="form-label">Ngày bắt đầu</label>
-                    <input type="datetime-local" class="form-control" id="StartDate" name="StartDate" />
+                <div class="admin-form-group">
+                    <label for="StartDate" class="admin-form-label">Ngày bắt đầu</label>
+                    <input type="datetime-local" class="admin-form-control" id="StartDate" name="StartDate" />
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="EndDate" class="form-label">Ngày kết thúc</label>
-                    <input type="datetime-local" class="form-control" id="EndDate" name="EndDate" />
+                <div class="admin-form-group">
+                    <label for="EndDate" class="admin-form-label">Ngày kết thúc</label>
+                    <input type="datetime-local" class="admin-form-control" id="EndDate" name="EndDate" />
                 </div>
             </div>
 
-            <div class="form-check mb-4">
-                <input type="checkbox" class="form-check-input" id="OpenInNewTab" name="OpenInNewTab" value="true" />
-                <label class="form-check-label" for="OpenInNewTab">
-                    Mở link trong tab mới
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="OpenInNewTab" name="OpenInNewTab" value="true" style="width: 18px; height: 18px;" />
+                    <span>Mở link trong tab mới</span>
                 </label>
             </div>
 
-            <div class="form-check mb-4">
-                <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" value="true" checked />
-                <label class="form-check-label" for="IsActive">
-                    Kích hoạt ngay
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="IsActive" name="IsActive" value="true" checked style="width: 18px; height: 18px;" />
+                    <span>Kích hoạt ngay</span>
                 </label>
             </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-save"></i> Lưu Banner
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" class="admin-btn admin-btn-primary">
+                    <i data-lucide="save"></i>
+                    Lưu Banner
                 </button>
-                <a href="/admin/marketing/banners" class="btn btn-cancel">
-                    <i class="fas fa-times"></i> Hủy
+                <a href="/admin/marketing/banners" class="admin-btn admin-btn-secondary">
+                    <i data-lucide="x"></i>
+                    Hủy
                 </a>
             </div>
         </form>
