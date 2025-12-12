@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using JohnHenryFashionWeb.Data;
 using JohnHenryFashionWeb.Models;
 using JohnHenryFashionWeb.ViewModels;
+using JohnHenryFashionWeb.Services;
 
 namespace JohnHenryFashionWeb.Controllers
 {
@@ -12,15 +13,18 @@ namespace JohnHenryFashionWeb.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<ContactController> _logger;
+        private readonly IEmailService _emailService;
 
         public ContactController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            ILogger<ContactController> logger)
+            ILogger<ContactController> logger,
+            IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -73,6 +77,30 @@ namespace JohnHenryFashionWeb.Controllers
 
                     _logger.LogInformation("New contact message received from {Email} with subject: {Subject}", 
                         model.Email, model.Subject);
+
+                    // Send confirmation email to customer
+                    try
+                    {
+                        await _emailService.SendContactConfirmationEmailAsync(model.Email, contactMessage);
+                        _logger.LogInformation("Confirmation email sent to {Email}", model.Email);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, "Failed to send confirmation email to {Email}", model.Email);
+                        // Don't fail the whole operation if email fails
+                    }
+
+                    // Send notification email to admin
+                    try
+                    {
+                        await _emailService.SendContactNotificationToAdminAsync(contactMessage);
+                        _logger.LogInformation("Admin notification sent for contact from {Email}", model.Email);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, "Failed to send admin notification for contact from {Email}", model.Email);
+                        // Don't fail the whole operation if email fails
+                    }
 
                     TempData["SuccessMessage"] = "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.";
                     
