@@ -192,10 +192,10 @@
                         {
                             <div class="mb-3">
                                 <label class="form-label">Ảnh hiện tại</label>
-                                <div class="position-relative">
-                                    <img src="@Model.FeaturedImageUrl" alt="@Model.Title" class="img-fluid rounded" id="currentImage">
-                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeCurrentImage()" title="Xóa ảnh hiện tại">
-                                        <i data-lucide="trash-2"></i>
+                                <div>
+                                    <img src="@Model.FeaturedImageUrl" alt="@Model.Title" class="img-fluid rounded" id="currentImage" style="max-height: 200px;">
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeCurrentImage()" title="Xóa ảnh hiện tại">
+                                        <i data-lucide="trash-2"></i> Xóa ảnh
                                     </button>
                                 </div>
                                 <input type="hidden" name="RemoveCurrentImage" id="removeCurrentImageFlag" value="false">
@@ -203,16 +203,15 @@
                         }
 
                         <div class="mb-3">
-                            <label class="form-label">Thay đổi ảnh</label>
+                            <label class="form-label">Chọn ảnh</label>
                             <input type="file" name="FeaturedImage" class="form-control" accept="image/*" id="featuredImageInput">
                             <small class="form-text text-muted">Kích thước khuyến nghị: 1200x630px</small>
                         </div>
 
                         <div id="imagePreview" class="mt-3" style="display: none;">
-                            <label class="form-label">Ảnh mới</label>
                             <img id="previewImg" src="" class="img-fluid rounded" style="max-height: 200px;">
                             <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeNewImage()">
-                                <i data-lucide="trash-2"></i> Xóa ảnh mới
+                                <i data-lucide="trash-2"></i> Xóa ảnh
                             </button>
                         </div>
 
@@ -361,12 +360,12 @@
 
         function deletePost() {
             if (confirm('Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.')) {
+                const form = new FormData();
+                form.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+                
                 fetch(`/admin/blog/delete/@Model.Id`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                    }
+                    body: form
                 })
                 .then(response => response.json())
                 .then(data => {

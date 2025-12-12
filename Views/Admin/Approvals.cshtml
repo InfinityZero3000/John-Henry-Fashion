@@ -1,7 +1,7 @@
 @{
-    ViewData["Title"] = "Duyệt sản phẩmt";
+    ViewData["Title"] = "Quản lý phê duyệt";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item active\">Duyệt sản phẩm</li>";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item active\">Quản lý phê duyệt</li>";
     
     var pendingReviewsCount = ViewBag.PendingReviewsCount ?? 0;
     var totalReviewsCount = ViewBag.TotalReviewsCount ?? 0;
@@ -17,8 +17,56 @@
             <div>
                 <h1 class="admin-page-title">
                     <i data-lucide="check-circle"></i>
-                    Duyệt sản phẩm
+                    Quản lý phê duyệt
                 </h1>
+                <p class="admin-page-subtitle">Duyệt sản phẩm và đánh giá từ người dùng</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="admin-card" style="border-left: 4px solid var(--admin-primary); cursor: pointer; transition: all 0.3s;" onclick="window.location.href='/admin/approvals/products'">
+                <div class="admin-card-body" style="padding: 2rem;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i data-lucide="box" style="width: 32px; height: 32px; color: var(--admin-primary);"></i>
+                                <h3 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Duyệt sản phẩm</h3>
+                            </div>
+                            <p style="color: var(--admin-text-light); margin: 0; font-size: 0.9375rem;">Quản lý và phê duyệt sản phẩm từ seller</p>
+                            <div style="margin-top: 1rem;">
+                                <a href="/admin/approvals/products" class="admin-btn admin-btn-primary">
+                                    <i data-lucide="arrow-right"></i>
+                                    Vào trang duyệt sản phẩm
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="admin-card" style="border-left: 4px solid var(--admin-success); cursor: pointer; transition: all 0.3s;" onclick="window.location.href='/admin/approvals/reviews?status=pending'">
+                <div class="admin-card-body" style="padding: 2rem;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i data-lucide="message-square" style="width: 32px; height: 32px; color: var(--admin-success);"></i>
+                                <h3 style="margin: 0; font-size: 1.5rem; font-weight: 600;">Duyệt đánh giá</h3>
+                            </div>
+                            <p style="color: var(--admin-text-light); margin: 0; font-size: 0.9375rem;">Kiểm duyệt đánh giá sản phẩm từ khách hàng</p>
+                            <div style="margin-top: 1rem;">
+                                <a href="/admin/approvals/reviews?status=pending" class="admin-btn admin-btn-success">
+                                    <i data-lucide="arrow-right"></i>
+                                    Vào trang duyệt đánh giá
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -39,60 +87,50 @@
         </div>
     }
 
-    <!-- Statistics Cards -->
-    <div class="admin-stats-grid">
-        <div class="admin-stat-card">
-            <div class="admin-stat-card-content">
-                <div class="admin-stat-card-info">
-                    <h3>Chờ duyệt</h3>
-                    <p class="value">@pendingReviewsCount</p>
-                    <p class="change">Cần xem xét</p>
-                </div>
-                <div class="admin-stat-card-icon warning">
-                    <i data-lucide="clock"></i>
-                </div>
-            </div>
+    <!-- Statistics Cards - Reviews Overview -->
+    <div class="admin-card mb-4">
+        <div class="admin-card-header">
+            <h3>Thống kê đánh giá</h3>
         </div>
+        <div class="admin-card-body">
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card-content">
+                        <div class="admin-stat-card-info">
+                            <h3>Chờ duyệt</h3>
+                            <p class="value">@pendingReviewsCount</p>
+                            <p class="change">Cần xem xét</p>
+                        </div>
+                        <div class="admin-stat-card-icon warning">
+                            <i data-lucide="clock"></i>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="admin-stat-card">
-            <div class="admin-stat-card-content">
-                <div class="admin-stat-card-info">
-                    <h3>Đã duyệt</h3>
-                    <p class="value">@approvedReviewsCount</p>
-                    <p class="change">@((approvedReviewsCount > 0 ? (approvedReviewsCount * 100.0 / totalReviewsCount).ToString("F1") : "0"))% tổng số</p>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card-content">
+                        <div class="admin-stat-card-info">
+                            <h3>Đã duyệt</h3>
+                            <p class="value">@approvedReviewsCount</p>
+                            <p class="change">@((approvedReviewsCount > 0 ? (approvedReviewsCount * 100.0 / totalReviewsCount).ToString("F1") : "0"))% tổng số</p>
+                        </div>
+                        <div class="admin-stat-card-icon success">
+                            <i data-lucide="check-circle"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="admin-stat-card-icon success">
-                    <i data-lucide="check-circle"></i>
-                </div>
-            </div>
-        </div>
 
-        <div class="admin-stat-card">
-            <div class="admin-stat-card-content">
-                <div class="admin-stat-card-info">
-                    <h3>Tổng đánh giá</h3>
-                    <p class="value">@totalReviewsCount</p>
-                    <p class="change">Tất cả đánh giá</p>
-                </div>
-                <div class="admin-stat-card-icon info">
-                    <i data-lucide="message-square"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-stat-card">
-            <div class="admin-stat-card-content">
-                <div class="admin-stat-card-info">
-                    <h3>Hành động nhanh</h3>
-                    <p class="value">
-                        <a href="/admin/approvals/reviews?status=pending" class="admin-btn admin-btn-primary admin-btn-sm">
-                            <i data-lucide="eye"></i>
-                            Xem tất cả chờ duyệt
-                        </a>
-                    </p>
-                </div>
-                <div class="admin-stat-card-icon primary">
-                    <i data-lucide="zap"></i>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-card-content">
+                        <div class="admin-stat-card-info">
+                            <h3>Tổng đánh giá</h3>
+                            <p class="value">@totalReviewsCount</p>
+                            <p class="change">Tất cả đánh giá</p>
+                        </div>
+                        <div class="admin-stat-card-icon info">
+                            <i data-lucide="message-square"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -649,33 +649,38 @@
                         <h5><i data-lucide="activity" style="width: 16px; height: 16px; margin-right: 8px;"></i>Sức khỏe hệ thống</h5>
                     </div>
                     <div class="section-card-body">
+                        @{
+                            var health = Model.SystemHealth ?? new JohnHenryFashionWeb.ViewModels.SystemHealthMetrics();
+                            var healthColor = health.OverallHealth >= 90 ? "#28a745" : 
+                                             health.OverallHealth >= 70 ? "#ffc107" : "#dc3545";
+                        }
                         <div class="text-center mb-3">
-                            <div class="health-status">98%</div>
-                            <div class="text-muted" style="font-size: 0.875rem; font-weight: 500;">Hoạt động tốt</div>
+                            <div class="health-status" style="color: @healthColor;">@health.OverallHealth%</div>
+                            <div class="text-muted" style="font-size: 0.875rem; font-weight: 500;">@health.HealthStatus</div>
                         </div>
                         
                         <div class="row g-2">
                             <div class="col-6">
                                 <div class="health-metric">
-                                    <div class="health-metric-value">45%</div>
+                                    <div class="health-metric-value">@health.CpuUsage%</div>
                                     <div class="health-metric-label">CPU Usage</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="health-metric">
-                                    <div class="health-metric-value">68%</div>
+                                    <div class="health-metric-value">@health.MemoryUsage%</div>
                                     <div class="health-metric-label">Memory</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="health-metric">
-                                    <div class="health-metric-value">23%</div>
+                                    <div class="health-metric-value">@health.StorageUsage%</div>
                                     <div class="health-metric-label">Storage</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="health-metric">
-                                    <div class="health-metric-value">@(Model.DashboardSummary?.ActiveUsers ?? 0)</div>
+                                    <div class="health-metric-value">@health.OnlineUsers</div>
                                     <div class="health-metric-label">Online</div>
                                 </div>
                             </div>

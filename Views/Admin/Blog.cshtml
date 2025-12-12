@@ -280,7 +280,7 @@
                             </td>
                             <td class="actions">
                                 <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
-                                    <a href="/blog/@post.Slug" target="_blank" class="admin-btn admin-btn-sm admin-btn-secondary" title="Xem">
+                                    <a href="/blog/details/@post.Id" target="_blank" class="admin-btn admin-btn-sm admin-btn-secondary" title="Xem">
                                         <i data-lucide="eye"></i>
                                     </a>
                                     <a href="/admin/blog/edit/@post.Id" class="admin-btn admin-btn-sm admin-btn-primary" title="Sửa">
@@ -428,15 +428,13 @@
                 return;
             }
 
-            // Get antiforgery token
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            // Get antiforgery token and send via FormData
+            const form = new FormData();
+            form.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
             fetch(`/admin/blog/delete/${postId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
-                }
+                body: form
             })
             .then(response => response.json())
             .then(data => {

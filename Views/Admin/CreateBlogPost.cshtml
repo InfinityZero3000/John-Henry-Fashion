@@ -31,59 +31,42 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="Title" class="admin-form-label">Tiêu đề <span style="color: var(--status-danger); font-size: 0.875rem;">*</span></label>
-                            <input asp-for="Title" class="admin-form-input" placeholder="Nhập tiêu đề bài viết..." id="titleInput">
-                            <span asp-validation-for="Title" style="color: var(--status-danger); font-size: 0.875rem;"></span>
+                            <label asp-for="Title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề bài viết..." id="titleInput">
+                            <span asp-validation-for="Title" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Slug" class="admin-form-label">Slug (URL thân thiện)</label>
-                            <input asp-for="Slug" class="admin-form-input" placeholder="slug-bai-viet" id="slugInput">
-                            <small class="admin-form-help">URL: /blog/<span id="slugPreview">slug-bai-viet</span></small>
-                            <span asp-validation-for="Slug" style="color: var(--status-danger); font-size: 0.875rem;"></span>
+                            <label asp-for="Slug" class="form-label">Slug (URL thân thiện)</label>
+                            <div class="input-group">
+                                <input asp-for="Slug" class="form-control" placeholder="slug-bai-viet" id="slugInput">
+                                <button type="button" class="btn btn-outline-secondary" onclick="regenerateSlug()" title="Tạo lại slug">
+                                    <i data-lucide="refresh-cw"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">URL: /blog/<span id="slugPreview">slug-bai-viet</span></small>
+                            <span asp-validation-for="Slug" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Excerpt" class="admin-form-label">Mô tả ngắn</label>
-                            <textarea asp-for="Excerpt" class="admin-form-input" rows="3" placeholder="Nhập mô tả ngắn cho bài viết..."></textarea>
-                            <small class="admin-form-help">Mô tả này sẽ hiển thị trong danh sách bài viết và kết quả tìm kiếm.</small>
-                            <span asp-validation-for="Excerpt" style="color: var(--status-danger); font-size: 0.875rem;"></span>
+                            <label asp-for="Excerpt" class="form-label">Mô tả ngắn</label>
+                            <textarea asp-for="Excerpt" class="form-control" rows="3" placeholder="Nhập mô tả ngắn cho bài viết..."></textarea>
+                            <small class="form-text text-muted">Mô tả này sẽ hiển thị trong danh sách bài viết và kết quả tìm kiếm.</small>
+                            <span asp-validation-for="Excerpt" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Content -->
                 <div class="card shadow mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="card-header">
                         <h6 class="m-0 font-weight-bold text-primary">Nội dung bài viết</h6>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-primary" id="markdownTab">
-                                <i data-lucide="code"></i> Markdown
-                            </button>
-                            <button type="button" class="btn btn-outline-primary active" id="previewTab">
-                                <i data-lucide="eye"></i> Preview
-                            </button>
-                        </div>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="Content" class="admin-form-label">
-                            </label>
-                            <textarea asp-for="Content" class="admin-form-input" rows="20" id="contentEditor"></textarea>
-                            <span asp-validation-for="Content" style="color: var(--status-danger); font-size: 0.875rem;"></span>
-                        </div>
-                        
-                        <!-- Markdown Helper -->
-                        <div class="alert alert-info">
-                            <strong><i data-lucide="lightbulb"></i> Hướng dẫn nhanh Markdown:</strong>
-                            <ul class="mb-0 mt-2" style="font-size: 0.85rem;">
-                                <li><code># Heading 1</code> - Tiêu đề lớn</li>
-                                <li><code>## Heading 2</code> - Tiêu đề vừa</li>
-                                <li><code>**text**</code> - In đậm</li>
-                                <li><code>![alt text](url-anh)</code> - Chèn ảnh</li>
-                                <li><code>[text](url)</code> - Chèn link</li>
-                                <li><code>- Item</code> - Danh sách</li>
-                            </ul>
+                            <label asp-for="Content" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                            <textarea asp-for="Content" class="form-control" rows="15" id="contentEditor"></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -95,21 +78,21 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="MetaTitle" class="admin-form-label">Meta Title</label>
-                            <input asp-for="MetaTitle" class="admin-form-input" placeholder="Tiêu đề tối ưu SEO...">
-                            <small class="admin-form-help">Để trống để sử dụng tiêu đề bài viết. Nên giữ dưới 60 ký tự.</small>
+                            <label asp-for="MetaTitle" class="form-label">Meta Title</label>
+                            <input asp-for="MetaTitle" class="form-control" placeholder="Tiêu đề tối ưu SEO...">
+                            <small class="form-text text-muted">Để trống để sử dụng tiêu đề bài viết. Nên giữ dưới 60 ký tự.</small>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="MetaDescription" class="admin-form-label">Meta Description</label>
-                            <textarea asp-for="MetaDescription" class="admin-form-input" rows="2" placeholder="Mô tả cho search engine..."></textarea>
-                            <small class="admin-form-help">Nên giữ dưới 160 ký tự.</small>
+                            <label asp-for="MetaDescription" class="form-label">Meta Description</label>
+                            <textarea asp-for="MetaDescription" class="form-control" rows="2" placeholder="Mô tả cho search engine..."></textarea>
+                            <small class="form-text text-muted">Nên giữ dưới 160 ký tự.</small>
                         </div>
 
                         <div class="mb-3">
-                            <label class="admin-form-label">Tags</label>
-                            <input name="TagsString" class="admin-form-input" placeholder="tag1, tag2, tag3...">
-                            <small class="admin-form-help">Các từ khóa phân cách bằng dấu phẩy.</small>
+                            <label class="form-label">Tags</label>
+                            <input name="TagsString" class="form-control" placeholder="tag1, tag2, tag3...">
+                            <small class="form-text text-muted">Các từ khóa phân cách bằng dấu phẩy.</small>
                         </div>
                     </div>
                 </div>
@@ -124,7 +107,7 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="Status" class="admin-form-label">Trạng thái</label>
+                            <label asp-for="Status" class="form-label">Trạng thái</label>
                             <select asp-for="Status" class="form-select">
                                 <option value="draft">Bản nháp</option>
                                 <option value="published">Xuất bản</option>
@@ -133,9 +116,9 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="PublishedAt" class="admin-form-label">Ngày xuất bản</label>
-                            <input asp-for="PublishedAt" type="datetime-local" class="admin-form-input">
-                            <small class="admin-form-help">Để trống để sử dụng thời gian hiện tại khi xuất bản.</small>
+                            <label asp-for="PublishedAt" class="form-label">Ngày xuất bản</label>
+                            <input asp-for="PublishedAt" type="datetime-local" class="form-control">
+                            <small class="form-text text-muted">Để trống để sử dụng thời gian hiện tại khi xuất bản.</small>
                         </div>
 
                         <div class="form-check mb-3">
@@ -155,7 +138,7 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label asp-for="CategoryId" class="admin-form-label">Chọn danh mục</label>
+                            <label asp-for="CategoryId" class="form-label">Chọn danh mục</label>
                             <select asp-for="CategoryId" class="form-select" asp-items="@ViewBag.Categories">
                                 <option value="">-- Chọn danh mục --</option>
                             </select>
@@ -170,9 +153,9 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="admin-form-label">Chọn ảnh</label>
-                            <input type="file" name="FeaturedImage" class="admin-form-input" accept="image/*" id="featuredImageInput">
-                            <small class="admin-form-help">Kích thước khuyến nghị: 1200x630px</small>
+                            <label class="form-label">Chọn ảnh</label>
+                            <input type="file" name="FeaturedImage" class="form-control" accept="image/*" id="featuredImageInput">
+                            <small class="form-text text-muted">Kích thước khuyến nghị: 1200x630px</small>
                         </div>
 
                         <div id="imagePreview" class="mt-3" style="display: none;">
@@ -183,9 +166,9 @@
                         </div>
 
                         <div class="mb-3 mt-3">
-                            <label class="admin-form-label">Alt text cho ảnh</label>
-                            <input name="FeaturedImageAlt" class="admin-form-input" placeholder="Mô tả ảnh...">
-                            <small class="admin-form-help">Giúp tối ưu SEO và hỗ trợ người khuyết tật.</small>
+                            <label class="form-label">Alt text cho ảnh</label>
+                            <input name="FeaturedImageAlt" class="form-control" placeholder="Mô tả ảnh...">
+                            <small class="form-text text-muted">Giúp tối ưu SEO và hỗ trợ người khuyết tật.</small>
                         </div>
                     </div>
                 </div>
@@ -212,50 +195,7 @@
 </div>
 
 @section Styles {
-    <!-- EasyMDE CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
     <style>
-        /* EasyMDE Editor Styles */
-        .EasyMDEContainer {
-            margin-bottom: 1rem;
-        }
-        .EasyMDEContainer .CodeMirror {
-            height: 500px;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 14px;
-        }
-        .editor-toolbar {
-            border: 1px solid #dee2e6;
-            border-bottom: none;
-            border-radius: 0.25rem 0.25rem 0 0;
-            background: #f8f9fa;
-        }
-        .editor-toolbar button {
-            color: #495057 !important;
-        }
-        .editor-toolbar button:hover {
-            background: #e9ecef !important;
-            border-color: #dee2e6 !important;
-        }
-        .editor-toolbar.fullscreen {
-            z-index: 9999;
-        }
-        .CodeMirror-fullscreen {
-            z-index: 9999;
-        }
-        .editor-preview {
-            padding: 20px;
-        }
-        .editor-preview img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 20px 0;
-        }
-
-        /* Card Styles */
         .card-header h6 {
             color: #5a5c69 !important;
         }
@@ -271,221 +211,136 @@
 
         #imagePreview img {
             border: 2px solid #e3e6f0;
-        }
-
-        .btn-group .btn {
-            border-radius: 0.35rem;
+            max-height: 200px;
+            object-fit: cover;
         }
     </style>
 }
 
 @section Scripts {
-    <!-- EasyMDE (Markdown Editor) -->
-    <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+    <!-- TinyMCE with API Key -->
+    <script src="https://cdn.tiny.cloud/1/d67td8nejj6rff12j33i4zzyx8mszk91dsvgzfcq74lrmmjv/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     
     <script>
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
-            
-            // Initialize Lucide icons first
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-                console.log('Lucide icons initialized');
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Initialize TinyMCE
+        tinymce.init({
+            selector: '#contentEditor',
+            height: 500,
+            menubar: 'file edit view insert format tools table help',
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
+            ],
+            toolbar: 'undo redo | blocks | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | removeformat code | help',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; }',
+            language: 'vi',
+            promotion: false,
+            branding: false
+        });
+
+        // Auto-generate slug from title
+        document.getElementById('titleInput').addEventListener('input', function() {
+            const title = this.value;
+            const slug = generateSlug(title);
+            document.getElementById('slugInput').value = slug;
+            document.getElementById('slugPreview').textContent = slug;
+        });
+
+        // Update slug preview when manually edited
+        document.getElementById('slugInput').addEventListener('input', function() {
+            document.getElementById('slugPreview').textContent = this.value;
+        });
+
+        function regenerateSlug() {
+            const title = document.getElementById('titleInput').value;
+            const slug = generateSlug(title);
+            document.getElementById('slugInput').value = slug;
+            document.getElementById('slugPreview').textContent = slug;
+        }
+
+        function generateSlug(text) {
+            return text
+                .toLowerCase()
+                .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+                .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+                .replace(/[ìíịỉĩ]/g, 'i')
+                .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+                .replace(/[ùúụủũưừứựửữ]/g, 'u')
+                .replace(/[ỳýỵỷỹ]/g, 'y')
+                .replace(/[đ]/g, 'd')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
+        }
+
+        // Image preview
+        document.getElementById('featuredImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
+        });
+
+        function removeImage() {
+            document.getElementById('featuredImageInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        function previewPost() {
+            // Get form data
+            const title = document.getElementById('titleInput').value;
+            const content = tinymce.get('contentEditor').getContent();
             
-            // Initialize EasyMDE Markdown Editor
-            const easyMDE = new EasyMDE({
-                element: document.getElementById('contentEditor'),
-                spellChecker: false,
-                autosave: {
-                    enabled: true,
-                    uniqueId: "blog-post-draft",
-                    delay: 1000,
-                },
-                placeholder: "Nhập nội dung bài viết bằng Markdown...\n\nVí dụ:\n# Tiêu đề chính\n\n## Tiêu đề phụ\n\n**Text in đậm** và *text in nghiêng*\n\n![Mô tả ảnh](/images/blog/anh.jpg)\n\n- Danh sách item 1\n- Danh sách item 2",
-                toolbar: [
-                    "bold", "italic", "heading", "|",
-                    "quote", "unordered-list", "ordered-list", "|",
-                    "link", "image", "|",
-                    "preview", "side-by-side", "fullscreen", "|",
-                    "guide",
-                    {
-                        name: "upload-image",
-                        action: function customFunction(editor) {
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.accept = 'image/*';
-                            input.onchange = async function(e) {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    // TODO: Upload to server
-                                    const cm = editor.codemirror;
-                                    const output = `![${file.name}](/images/blog/${file.name})`;
-                                    cm.replaceSelection(output);
-                                }
-                            };
-                            input.click();
-                        },
-                        className: "fa fa-upload",
-                        title: "Upload ảnh",
-                    }
-                ],
-                status: ["lines", "words", "cursor"],
-                renderingConfig: {
-                    singleLineBreaks: false,
-                    codeSyntaxHighlighting: true,
-                }
-            });
-            
-            console.log('EasyMDE initialized');
-
-            // Markdown/Preview Tab Toggle
-            const markdownTab = document.getElementById('markdownTab');
-            const previewTab = document.getElementById('previewTab');
-
-            if (markdownTab && previewTab) {
-                console.log('Found tab buttons, adding event listeners');
-                
-                markdownTab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Markdown tab clicked');
-                    
-                    // Switch to edit mode (hide preview)
-                    if (easyMDE.isPreviewActive()) {
-                        easyMDE.togglePreview();
-                        console.log('Preview disabled');
-                    }
-                    
-                    // Update button states
-                    markdownTab.classList.add('active');
-                    previewTab.classList.remove('active');
-                });
-
-                previewTab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Preview tab clicked');
-                    
-                    // Switch to preview mode
-                    if (!easyMDE.isPreviewActive()) {
-                        easyMDE.togglePreview();
-                        console.log('Preview enabled');
-                    }
-                    
-                    // Update button states
-                    previewTab.classList.add('active');
-                    markdownTab.classList.remove('active');
-                });
-                
-                console.log('Tab event listeners added successfully');
-            } else {
-                console.error('Tab buttons not found!');
+            if (!title || !content) {
+                alert('Vui lòng nhập tiêu đề và nội dung trước khi xem trước.');
+                return;
             }
 
-            // Auto-generate slug from title
-            document.getElementById('titleInput').addEventListener('input', function() {
-                const title = this.value;
-                const slug = generateSlug(title);
-                document.getElementById('slugInput').value = slug;
-                document.getElementById('slugPreview').textContent = slug;
-            });
+            // Open preview in new window
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(`
+                <html>
+                <head>
+                    <title>Preview: ${title}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                </head>
+                <body>
+                    <div class="container mt-4">
+                        <h1>${title}</h1>
+                        <hr>
+                        <div>${content}</div>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
 
-            // Update slug preview when manually edited
-            document.getElementById('slugInput').addEventListener('input', function() {
-                document.getElementById('slugPreview').textContent = this.value;
-            });
+        // Form validation
+        document.getElementById('blogForm').addEventListener('submit', function(e) {
+            const title = document.getElementById('titleInput').value.trim();
+            const content = tinymce.get('contentEditor').getContent().trim();
 
-            function generateSlug(text) {
-                return text
-                    .toLowerCase()
-                    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
-                    .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
-                    .replace(/[ìíịỉĩ]/g, 'i')
-                    .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
-                    .replace(/[ùúụủũưừứựửữ]/g, 'u')
-                    .replace(/[ỳýỵỷỹ]/g, 'y')
-                    .replace(/[đ]/g, 'd')
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-                    .trim('-');
+            if (!title) {
+                alert('Vui lòng nhập tiêu đề bài viết.');
+                e.preventDefault();
+                return;
             }
 
-            // Image preview
-            document.getElementById('featuredImageInput').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('previewImg').src = e.target.result;
-                        document.getElementById('imagePreview').style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            window.removeImage = function() {
-                document.getElementById('featuredImageInput').value = '';
-                document.getElementById('imagePreview').style.display = 'none';
-            };
-
-            window.previewPost = function() {
-                // Get form data
-                const title = document.getElementById('titleInput').value;
-                const content = easyMDE.value();
-                
-                if (!title || !content) {
-                    alert('Vui lòng nhập tiêu đề và nội dung trước khi xem trước.');
-                    return;
-                }
-
-                // Open preview in new window
-                const previewWindow = window.open('', '_blank');
-                previewWindow.document.write(`
-                    <html>
-                    <head>
-                        <title>Preview: ${title}</title>
-                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                    </head>
-                    <body>
-                        <div class="container mt-4">
-                            <h1>${title}</h1>
-                            <hr>
-                            <div>${content}</div>
-                        </div>
-                    </body>
-                    </html>
-                `);
-            };
-
-            // Form validation
-            document.getElementById('blogForm').addEventListener('submit', function(e) {
-                console.log('Form submit triggered');
-                
-                const title = document.getElementById('titleInput').value.trim();
-                const content = easyMDE.value().trim();
-
-                console.log('Title:', title);
-                console.log('Content length:', content.length);
-
-                if (!title) {
-                    alert('Vui lòng nhập tiêu đề bài viết.');
-                    e.preventDefault();
-                    console.log('Submit prevented: No title');
-                    return;
-                }
-
-                if (!content) {
-                    alert('Vui lòng nhập nội dung bài viết.');
-                    e.preventDefault();
-                    console.log('Submit prevented: No content');
-                    return;
-                }
-                
-                console.log('Validation passed, form will submit');
-            });
-            
-            console.log('All initialization completed');
+            if (!content) {
+                alert('Vui lòng nhập nội dung bài viết.');
+                e.preventDefault();
+                return;
+            }
         });
     </script>
 }

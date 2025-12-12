@@ -494,17 +494,10 @@
     // Copy to clipboard
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(function() {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Đã copy!',
-                    text: `Mã "${text}" đã được copy vào clipboard`,
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            } else {
-                alert(`Mã "${text}" đã được copy!`);
-            }
+            AdminNotification.toast('success', `Mã "${text}" đã được copy!`);
+        }, function(err) {
+            AdminNotification.error('Lỗi', 'Không thể copy vào clipboard');
+            console.error('Could not copy text: ', err);
         }, function(err) {
             console.error('Could not copy text: ', err);
         });
@@ -646,25 +639,11 @@
 
     // Delete coupon
     function deleteCoupon(id, code) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Xóa mã giảm giá?',
-                html: `Bạn có chắc chắn muốn xóa mã <strong>${code}</strong>?<br><small class="text-muted">Không thể hoàn tác sau khi xóa</small>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                confirmButtonText: 'Xóa',
-                cancelButtonText: 'Hủy'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performDelete(id);
-                }
-            });
-        } else {
-            if (confirm(`Bạn có chắc chắn muốn xóa mã "${code}"? Không thể hoàn tác sau khi xóa.`)) {
+        AdminNotification.confirmDelete(code, 'mã giảm giá').then((result) => {
+            if (result.isConfirmed) {
                 performDelete(id);
             }
-        }
+        });
     }
 
     function performDelete(id) {
@@ -677,30 +656,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Đã xóa!',
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    alert(data.message);
+                AdminNotification.success('Đã xóa!', data.message).then(() => {
                     location.reload();
-                }
+                });
             } else {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Không thể xóa',
-                        text: data.message
-                    });
-                } else {
-                    alert(data.message);
-                }
+                AdminNotification.error('Không thể xóa', data.message);
             }
         })
         .catch(error => {
