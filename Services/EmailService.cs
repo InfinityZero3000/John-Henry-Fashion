@@ -15,6 +15,7 @@ namespace JohnHenryFashionWeb.Services
         Task<bool> SendOrderStatusUpdateEmailAsync(string email, Order order);
         Task<bool> SendPasswordResetEmailAsync(string email, string resetLink);
         Task<bool> SendContactConfirmationEmailAsync(string email, ContactMessage message);
+        Task<bool> SendContactNotificationToAdminAsync(ContactMessage message);
         Task<bool> SendNewsletterEmailAsync(string email, string subject, string content);
         Task<bool> SendBulkEmailAsync(List<string> recipients, string subject, string content);
         Task<bool> SendProductNotificationEmailAsync(string email, Product product, string notificationType);
@@ -148,7 +149,78 @@ namespace JohnHenryFashionWeb.Services
                               .Replace("{{OriginalMessage}}", message.Message)
                               .Replace("{{SubmissionDate}}", message.CreatedAt.ToString("dd/MM/yyyy HH:mm"));
 
-            return await SendEmailAsync(email, "Xác nhận liên hệ - John Henry Fashion", body, null, null, true);
+            return await SendEmailAsync(email, "Cảm ơn bạn đã liên hệ - John Henry Fashion", body, null, null, true);
+        }
+
+        public async Task<bool> SendContactNotificationToAdminAsync(ContactMessage message)
+        {
+            if (string.IsNullOrEmpty(_emailSettings.AdminEmail))
+            {
+                _logger.LogWarning("Admin email not configured. Skipping admin notification.");
+                return false;
+            }
+
+            var htmlBody = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
+                    <div style='background-color: #8B0000; color: white; padding: 20px; text-align: center;'>
+                        <h1 style='margin: 0;'>📧 Tin nhắn liên hệ mới</h1>
+                    </div>
+                    
+                    <div style='background-color: white; padding: 30px; border-radius: 5px; margin-top: 20px;'>
+                        <h2 style='color: #8B0000; border-bottom: 2px solid #8B0000; padding-bottom: 10px;'>Thông tin người gửi</h2>
+                        
+                        <table style='width: 100%; margin: 20px 0;'>
+                            <tr>
+                                <td style='padding: 10px; font-weight: bold; width: 150px;'>Họ và tên:</td>
+                                <td style='padding: 10px;'>{message.Name}</td>
+                            </tr>
+                            <tr style='background-color: #f5f5f5;'>
+                                <td style='padding: 10px; font-weight: bold;'>Email:</td>
+                                <td style='padding: 10px;'><a href='mailto:{message.Email}'>{message.Email}</a></td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; font-weight: bold;'>Số điện thoại:</td>
+                                <td style='padding: 10px;'>{(string.IsNullOrEmpty(message.Phone) ? "Không cung cấp" : message.Phone)}</td>
+                            </tr>
+                            <tr style='background-color: #f5f5f5;'>
+                                <td style='padding: 10px; font-weight: bold;'>Thời gian:</td>
+                                <td style='padding: 10px;'>{message.CreatedAt:dd/MM/yyyy HH:mm:ss}</td>
+                            </tr>
+                        </table>
+
+                        <h2 style='color: #8B0000; border-bottom: 2px solid #8B0000; padding-bottom: 10px; margin-top: 30px;'>Nội dung tin nhắn</h2>
+                        
+                        <div style='background-color: #f5f5f5; padding: 20px; border-left: 4px solid #8B0000; margin: 20px 0;'>
+                            <p style='margin: 0 0 10px 0; font-weight: bold; color: #8B0000;'>Chủ đề: {message.Subject}</p>
+                            <div style='white-space: pre-wrap; line-height: 1.6;'>{message.Message}</div>
+                        </div>
+
+                        <div style='margin-top: 30px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107;'>
+                            <p style='margin: 0; color: #856404;'>
+                                <strong>⚠️ Lưu ý:</strong> Vui lòng phản hồi khách hàng trong vòng 24 giờ để đảm bảo chất lượng dịch vụ.
+                            </p>
+                        </div>
+
+                        <div style='text-align: center; margin-top: 30px;'>
+                            <a href='mailto:{message.Email}?subject=Re: {message.Subject}' 
+                               style='display: inline-block; padding: 12px 30px; background-color: #8B0000; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                                Trả lời ngay
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style='text-align: center; padding: 20px; color: #666; font-size: 12px;'>
+                        <p>Email tự động từ hệ thống John Henry Fashion</p>
+                        <p>ID Tin nhắn: {message.Id}</p>
+                    </div>
+                </div>";
+
+            return await SendEmailAsync(_emailSettings.AdminEmail, 
+                $"[Liên hệ mới] {message.Subject}", 
+                htmlBody, 
+                null, 
+                null, 
+                true);
         }
 
         public async Task<bool> SendNewsletterEmailAsync(string email, string subject, string content)
@@ -424,5 +496,6 @@ namespace JohnHenryFashionWeb.Services
         public string FromEmail { get; set; } = string.Empty;
         public string FromName { get; set; } = string.Empty;
         public string BaseUrl { get; set; } = string.Empty;
+        public string AdminEmail { get; set; } = string.Empty;
     }
 }
