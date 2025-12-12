@@ -25,30 +25,95 @@ namespace JohnHenryFashionWeb.Controllers
         /// Trang tổng quan hỗ trợ khách hàng
         /// </summary>
         [HttpGet("")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? status = null, string? priority = null, string? category = null, string? search = null, int page = 1)
         {
             ViewData["CurrentSection"] = "Support";
             ViewData["Title"] = "Quản lý hỗ trợ khách hàng";
 
-            // Thống kê
+            // Thống kê Tickets
             var totalTickets = await _context.SupportTickets.CountAsync();
-            var openTickets = await _context.SupportTickets.CountAsync(t => t.Status == "open");
-            var inProgressTickets = await _context.SupportTickets.CountAsync(t => t.Status == "in_progress");
-            var resolvedTickets = await _context.SupportTickets.CountAsync(t => t.Status == "resolved");
+            var openTickets = await _context.SupportTickets.CountAsync(t => t.Status != null && t.Status.ToLower() == "open");
+            var inProgressTickets = await _context.SupportTickets.CountAsync(t => t.Status != null && (t.Status.ToLower() == "in_progress" || t.Status.ToLower() == "inprogress"));
+            var resolvedTickets = await _context.SupportTickets.CountAsync(t => t.Status != null && t.Status.ToLower() == "resolved");
 
-            // Tickets gần đây
-            var recentTickets = await _context.SupportTickets
+            // Danh sách tickets theo bộ lọc
+            var ticketsQuery = _context.SupportTickets
                 .Include(t => t.User)
                 .Include(t => t.AssignedAdmin)
                 .OrderByDescending(t => t.CreatedAt)
-                .Take(10)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                var normalizedStatus = status.ToLower();
+                ticketsQuery = ticketsQuery.Where(t => t.Status != null && t.Status.ToLower() == normalizedStatus);
+            }
+
+            if (!string.IsNullOrWhiteSpace(priority))
+            {
+                var normalizedPriority = priority.ToLower();
+                ticketsQuery = ticketsQuery.Where(t => t.Priority != null && t.Priority.ToLower() == normalizedPriority);
+            }
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                var normalizedCategory = category.ToLower();
+                ticketsQuery = ticketsQuery.Where(t => t.Category != null && t.Category.ToLower() == normalizedCategory);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                ticketsQuery = ticketsQuery.Where(t =>
+                    (t.Subject != null && t.Subject.Contains(search)) ||
+                    (t.TicketNumber != null && t.TicketNumber.Contains(search)) ||
+                    (t.User != null && t.User.Email != null && t.User.Email.Contains(search)));
+            }
+
+            var pageSize = 20;
+            var totalItems = await ticketsQuery.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            page = Math.Max(1, Math.Min(page, totalPages));
+
+            var tickets = await ticketsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             ViewBag.TotalTickets = totalTickets;
             ViewBag.OpenTickets = openTickets;
             ViewBag.InProgressTickets = inProgressTickets;
             ViewBag.ResolvedTickets = resolvedTickets;
-            ViewBag.RecentTickets = recentTickets;
+
+            ViewBag.Tickets = tickets;
+            ViewBag.StatusFilter = status;
+            ViewBag.PriorityFilter = priority;
+            ViewBag.CategoryFilter = category;
+            ViewBag.SearchTerm = search;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+
+            // Thống kê Disputes
+            var totalDisputes = await _context.Disputes.CountAsync();
+            var pendingDisputes = await _context.Disputes.CountAsync(d => d.Status == "Pending");
+            var underReviewDisputes = await _context.Disputes.CountAsync(d => d.Status == "UnderReview");
+            var resolvedDisputes = await _context.Disputes.CountAsync(d => d.Status == "Resolved");
+
+            // Disputes gần đây
+            var recentDisputes = await _context.Disputes
+                .Include(d => d.Customer)
+                .Include(d => d.Seller)
+                .Include(d => d.Order)
+                .Include(d => d.Resolver)
+                .OrderByDescending(d => d.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            ViewBag.TotalDisputes = totalDisputes;
+            ViewBag.PendingDisputes = pendingDisputes;
+            ViewBag.UnderReviewDisputes = underReviewDisputes;
+            ViewBag.ResolvedDisputes = resolvedDisputes;
+            ViewBag.RecentDisputes = recentDisputes;
 
             return View("~/Views/Admin/Support.cshtml");
         }

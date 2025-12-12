@@ -33,6 +33,18 @@ namespace JohnHenryFashionWeb.Controllers
             var activeBanners = await _context.MarketingBanners.CountAsync(b => b.IsActive);
             var totalBlogPosts = await _context.BlogPosts.CountAsync();
             var publishedBlogPosts = await _context.BlogPosts.CountAsync(b => b.Status == "published");
+            
+            var totalPromotions = await _context.SystemPromotions.CountAsync();
+            var activePromotions = await _context.SystemPromotions.CountAsync(p => p.IsActive && p.StartDate <= DateTime.UtcNow && p.EndDate >= DateTime.UtcNow);
+            
+            var totalFlashSales = await _context.FlashSales.CountAsync();
+            var activeFlashSales = await _context.FlashSales.CountAsync(f => f.IsActive && f.StartDate <= DateTime.UtcNow && f.EndDate >= DateTime.UtcNow);
+            
+            var totalEmailCampaigns = await _context.EmailCampaigns.CountAsync();
+            var sentEmailCampaigns = await _context.EmailCampaigns.CountAsync(e => e.Status == "sent");
+            
+            var totalPushCampaigns = await _context.PushNotificationCampaigns.CountAsync();
+            var sentPushCampaigns = await _context.PushNotificationCampaigns.CountAsync(p => p.Status == "sent");
 
             // Recent banners
             var recentBanners = await _context.MarketingBanners
@@ -50,6 +62,14 @@ namespace JohnHenryFashionWeb.Controllers
             ViewBag.ActiveBanners = activeBanners;
             ViewBag.TotalBlogPosts = totalBlogPosts;
             ViewBag.PublishedBlogPosts = publishedBlogPosts;
+            ViewBag.TotalPromotions = totalPromotions;
+            ViewBag.ActivePromotions = activePromotions;
+            ViewBag.TotalFlashSales = totalFlashSales;
+            ViewBag.ActiveFlashSales = activeFlashSales;
+            ViewBag.TotalEmailCampaigns = totalEmailCampaigns;
+            ViewBag.SentEmailCampaigns = sentEmailCampaigns;
+            ViewBag.TotalPushCampaigns = totalPushCampaigns;
+            ViewBag.SentPushCampaigns = sentPushCampaigns;
             ViewBag.RecentBanners = recentBanners;
             ViewBag.RecentBlogPosts = recentBlogPosts;
 
@@ -84,7 +104,7 @@ namespace JohnHenryFashionWeb.Controllers
             await _context.SaveChangesAsync();
             _logger.LogInformation($"Banner created: {banner.Title} by {User.Identity?.Name}");
             TempData["SuccessMessage"] = "Banner đã được tạo";
-            return RedirectToAction(nameof(Banners));
+            return RedirectToAction("Banners", "Admin");
         }
 
         [HttpGet("banner/{id}")]
@@ -117,7 +137,7 @@ namespace JohnHenryFashionWeb.Controllers
             existing.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Banner đã được cập nhật";
-            return RedirectToAction(nameof(Banners));
+            return RedirectToAction("Banners", "Admin");
         }
 
         [HttpPost("banner/{id}/delete")]
@@ -129,7 +149,7 @@ namespace JohnHenryFashionWeb.Controllers
             _context.MarketingBanners.Remove(existing);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Banner đã được xóa";
-            return RedirectToAction(nameof(Banners));
+            return RedirectToAction("Banners", "Admin");
         }
         #endregion
 
@@ -148,14 +168,39 @@ namespace JohnHenryFashionWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePromotion(SystemPromotion promo)
         {
-            if (!ModelState.IsValid) return View(promo);
-            promo.Id = Guid.NewGuid();
-            promo.CreatedAt = DateTime.UtcNow;
-            promo.UpdatedAt = DateTime.UtcNow;
-            _context.SystemPromotions.Add(promo);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Promotion created";
-            return RedirectToAction(nameof(Promotions));
+            if (!ModelState.IsValid)
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    _logger.LogWarning($"ModelState Error: {error.ErrorMessage}");
+                }
+                TempData["ErrorMessage"] = "Vui lòng kiểm tra lại thông tin";
+                return View(promo);
+            }
+
+            try
+            {
+                promo.Id = Guid.NewGuid();
+                promo.CreatedAt = DateTime.UtcNow;
+                promo.UpdatedAt = DateTime.UtcNow;
+                
+                // Ensure dates are in UTC
+                if (promo.StartDate.Kind == DateTimeKind.Unspecified)
+                    promo.StartDate = DateTime.SpecifyKind(promo.StartDate, DateTimeKind.Utc);
+                if (promo.EndDate.Kind == DateTimeKind.Unspecified)
+                    promo.EndDate = DateTime.SpecifyKind(promo.EndDate, DateTimeKind.Utc);
+
+                _context.SystemPromotions.Add(promo);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Promotion created";
+                return RedirectToAction(nameof(Promotions));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating promotion");
+                TempData["ErrorMessage"] = $"Lỗi khi tạo: {ex.Message}";
+                return View(promo);
+            }
         }
 
         [HttpGet("promotion/{id}")]

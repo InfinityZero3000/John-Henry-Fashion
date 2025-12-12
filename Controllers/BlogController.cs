@@ -239,15 +239,41 @@ namespace JohnHenryFashionWeb.Controllers
         public async Task<IActionResult> DetailsById(Guid id)
         {
             var post = await _context.BlogPosts
-                .FirstOrDefaultAsync(b => b.Id == id && b.Status == "published");
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .FirstOrDefaultAsync(b => b.Id == id);
 
             if (post == null)
             {
                 return NotFound();
             }
 
-            // Redirect to SEO-friendly slug URL
-            return RedirectToAction("Details", new { slug = post.Slug });
+            // If post is not published, only allow authenticated users (admins) to view
+            if (post.Status != "published" && !(User?.Identity?.IsAuthenticated == true))
+            {
+                return NotFound();
+            }
+
+            // For published posts, redirect to SEO-friendly slug URL
+            if (post.Status == "published")
+            {
+                return RedirectToAction("Details", new { slug = post.Slug });
+            }
+
+            // For draft/archived posts, show preview directly (admin only)
+            // Get related posts from same category
+            var relatedPosts = await _context.BlogPosts
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Where(b => b.Id != id && b.CategoryId == post.CategoryId && b.Status == "published")
+                .OrderByDescending(b => b.PublishedAt)
+                .Take(3)
+                .ToListAsync();
+
+            ViewBag.RelatedPosts = relatedPosts;
+            ViewBag.IsPreview = true;
+
+            return View("Details", post);
         }
 
         // GET: Blog/Category/fashion

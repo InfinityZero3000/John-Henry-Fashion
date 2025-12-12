@@ -26,7 +26,7 @@ namespace JohnHenryFashionWeb.Controllers
         public async Task<IActionResult> Index()
         {
             ViewData["CurrentSection"] = "Approvals";
-            ViewData["Title"] = "Duyệt sản phẩm";
+            ViewData["Title"] = "Quản lý phê duyệt";
 
             // Thống kê tổng quan
             var pendingReviewsCount = await _context.ProductReviews.CountAsync(r => !r.IsApproved);

@@ -168,6 +168,7 @@ namespace JohnHenryFashionWeb.ViewModels
         public List<Product> LowStockProducts { get; set; } = new();
         public DashboardStats? TodayStats { get; set; }
         public WeeklyComparisonStats? WeeklyComparison { get; set; }
+        public SystemHealthMetrics? SystemHealth { get; set; }
         public List<SystemAlert> SystemAlerts { get; set; } = new();
         public QuickAction[] QuickActions { get; set; } = Array.Empty<QuickAction>();
         
@@ -191,6 +192,19 @@ namespace JohnHenryFashionWeb.ViewModels
         public int TodayOrders { get; set; }
         public int TodayVisitors { get; set; }
         public int ActiveUsers { get; set; }
+    }
+
+    public class SystemHealthMetrics
+    {
+        public double OverallHealth { get; set; }
+        public string HealthStatus { get; set; } = "Hoạt động tốt";
+        public double CpuUsage { get; set; }
+        public double MemoryUsage { get; set; }
+        public double StorageUsage { get; set; }
+        public int OnlineUsers { get; set; }
+        public long TotalRequests { get; set; }
+        public double AverageResponseTime { get; set; }
+        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     }
 
     public class WeeklyComparisonStats
