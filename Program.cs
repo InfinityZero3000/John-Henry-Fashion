@@ -98,6 +98,8 @@ if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_FROM"))
     configuration["EmailSettings:FromEmail"] = Environment.GetEnvironmentVariable("EMAIL_FROM");
 if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_FROM_NAME")))
     configuration["EmailSettings:FromName"] = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_ADMIN")))
+    configuration["EmailSettings:AdminEmail"] = Environment.GetEnvironmentVariable("EMAIL_ADMIN");
 
 // All other settings will use values from appsettings.json
 // Environment variables can still override them but won't set null values
@@ -479,18 +481,17 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        context.Database.EnsureCreated();
+        // First, ensure database is created
+        await context.Database.EnsureCreatedAsync();
         Log.Information("Database ensured created successfully");
         
-        // Seed roles
+        // Now seed data after model is fully created
         await SeedRoles(roleManager);
         Log.Information("Roles seeded successfully");
         
-        // Seed admin user
         await SeedAdminUser(userManager);
         Log.Information("Admin user seeded successfully");
         
-        // Seed sample blog posts
         await SeedBlogPosts(context, userManager);
         Log.Information("Sample blog posts seeded successfully");
     }
@@ -569,7 +570,7 @@ static async Task SeedAdminUser(UserManager<ApplicationUser> userManager)
 static async Task SeedBlogPosts(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
 {
     // Check if blog posts already exist
-    if (context.BlogPosts.Any())
+    if (await context.BlogPosts.AnyAsync())
     {
         return; // Already seeded
     }
@@ -579,9 +580,9 @@ static async Task SeedBlogPosts(ApplicationDbContext context, UserManager<Applic
     if (adminUser == null) return;
 
     // Remove any old categories with wrong slugs
-    var oldCategories = context.BlogCategories
+    var oldCategories = await context.BlogCategories
         .Where(c => c.Slug == "xu-huong-thoi-trang" || c.Slug == "thoi-trang")
-        .ToList();
+        .ToListAsync();
     if (oldCategories.Any())
     {
         context.BlogCategories.RemoveRange(oldCategories);
@@ -589,7 +590,7 @@ static async Task SeedBlogPosts(ApplicationDbContext context, UserManager<Applic
     }
 
     // Create blog category if not exists
-    var fashionCategory = context.BlogCategories.FirstOrDefault(c => c.Slug == "xu-huong");
+    var fashionCategory = await context.BlogCategories.FirstOrDefaultAsync(c => c.Slug == "xu-huong");
     if (fashionCategory == null)
     {
         fashionCategory = new BlogCategory
