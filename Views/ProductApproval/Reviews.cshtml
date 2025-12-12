@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Review Management";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item active\">Đánh giá (Reviews)</li>";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item active\">Đánh giá</li>";
 
     var totalReviews = ViewBag.TotalReviews ?? 0;
     var pendingReviews = ViewBag.PendingReviews ?? 0;
@@ -18,14 +18,13 @@
         <div class="admin-flex-between">
             <h1 class="admin-page-title">
                 <i data-lucide="star"></i>
-                Đánh giá (Reviews)
+                Đánh giá
             </h1>
-            <a href="/admin" class="admin-btn admin-btn-secondary">
+            <button type="button" class="admin-btn admin-btn-secondary" onclick="history.back()">
                 <i data-lucide="chevrons-left"></i>
-                Quay lại Admin
-            </a>
+                Quay lại
+            </button>
         </div>
-        <p class="admin-page-subtitle">Approve or reject product reviews</p>
     </div>
 
     <!-- Statistics Cards -->
@@ -91,11 +90,11 @@
                 <div class="col-md-7 text-end">
                     <button type="button" class="admin-btn admin-btn-success" onclick="bulkApprove()">
                         <i data-lucide="check"></i>
-                        Bulk Approve
+                        Duyệt hàng loạt
                     </button>
                     <button type="button" class="admin-btn admin-btn-danger" onclick="bulkReject()">
                         <i data-lucide="x"></i>
-                        Bulk Reject
+                        Từ chối hàng loạt
                     </button>
                 </div>
             </div>
