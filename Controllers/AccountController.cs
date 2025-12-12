@@ -179,129 +179,194 @@ namespace JohnHenryFashionWeb.Controllers
                             <meta charset='utf-8'>
                             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                             <style>
-                                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }}
-                                .container {{ max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
-                                .header {{ background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 30px 20px; text-align: center; }}
-                                .header h1 {{ margin: 0; font-size: 28px; font-weight: bold; }}
-                                .content {{ padding: 30px 20px; }}
-                                .verification-box {{ background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-left: 4px solid #dc3545; padding: 20px; margin: 25px 0; border-radius: 8px; text-align: center; }}
-                                .verification-code {{ font-size: 36px; font-weight: bold; color: #dc3545; letter-spacing: 8px; margin: 15px 0; font-family: 'Courier New', monospace; }}
-                                .promo-section {{ margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%); border-radius: 8px; }}
-                                .promo-image {{ width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }}
-                                .promo-title {{ color: #dc3545; font-size: 22px; font-weight: bold; margin: 15px 0; text-align: center; }}
-                                .promo-text {{ color: #666; font-size: 15px; line-height: 1.8; margin: 10px 0; }}
-                                .cta-button {{ display: inline-block; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 50px; font-weight: bold; margin: 20px 0; text-align: center; box-shadow: 0 4px 6px rgba(220,53,69,0.3); transition: transform 0.2s; }}
-                                .cta-button:hover {{ transform: translateY(-2px); box-shadow: 0 6px 8px rgba(220,53,69,0.4); }}
-                                .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }}
-                                .feature {{ background: white; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; text-align: center; }}
-                                .feature-icon {{ font-size: 32px; margin-bottom: 10px; }}
-                                .feature-text {{ color: #666; font-size: 14px; }}
-                                .footer {{ background-color: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 13px; border-top: 1px solid #e9ecef; }}
-                                .social-links {{ margin: 15px 0; }}
-                                .social-links a {{ display: inline-block; margin: 0 10px; color: #dc3545; text-decoration: none; font-weight: bold; }}
-                                .divider {{ height: 1px; background: linear-gradient(90deg, transparent, #e9ecef, transparent); margin: 25px 0; }}
+                                * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+                                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; }}
+                                .email-wrapper {{ max-width: 800px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }}
+                                
+                                /* Header with brand */
+                                .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center; position: relative; overflow: hidden; }}
+                                .header::before {{ content: ''; position: absolute; top: 0; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%; }}
+                                .header::after {{ content: ''; position: absolute; bottom: -30px; left: -30px; width: 150px; height: 150px; background: rgba(255,255,255,0.03); border-radius: 50%; }}
+                                .brand-logo {{ font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }}
+                                .brand-tagline {{ color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 300; letter-spacing: 1px; }}
+                                
+                                /* Main content area */
+                                .content {{ padding: 40px 30px; }}
+                                .greeting {{ font-size: 18px; color: #1a1a2e; margin-bottom: 20px; }}
+                                .greeting strong {{ color: #dc3545; }}
+                                .intro-text {{ color: #555; font-size: 15px; line-height: 1.8; margin-bottom: 30px; }}
+                                
+                                /* Verification section */
+                                .verification-container {{ background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%); border-radius: 12px; padding: 30px; margin: 30px 0; border: 2px solid #e9ecef; text-align: center; }}
+                                .verification-label {{ color: #6c757d; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }}
+                                .verification-code {{ font-size: 42px; font-weight: 800; color: #dc3545; letter-spacing: 12px; font-family: 'Courier New', monospace; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(220,53,69,0.15); display: inline-block; margin: 10px 0; }}
+                                .verification-note {{ color: #999; font-size: 13px; margin-top: 15px; }}
+                                .verification-note strong {{ color: #dc3545; }}
+                                
+                                /* Promotional section with horizontal layout */
+                                .promo-section {{ margin: 40px 0; }}
+                                .promo-header {{ text-align: center; margin-bottom: 30px; }}
+                                .promo-title {{ font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; letter-spacing: 1px; }}
+                                .promo-subtitle {{ color: #6c757d; font-size: 14px; }}
+                                
+                                /* Horizontal product showcase - Full width image */
+                                .product-showcase {{ margin: 35px 0; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }}
+                                .showcase-image {{ width: 100%; }}
+                                .showcase-image img {{ width: 100%; height: 500px; object-fit: cover; display: block; }}
+                                .showcase-content {{ padding: 50px 60px; text-align: center; background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); }}
+                                .showcase-heading {{ font-size: 36px; font-weight: 800; color: #1a1a2e; margin-bottom: 25px; line-height: 1.2; letter-spacing: -0.5px; }}
+                                .showcase-text {{ color: #555; font-size: 18px; line-height: 1.9; margin: 0 auto 35px; max-width: 700px; }}
+                                .cta-button {{ display: inline-block; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white !important; padding: 20px 60px; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 19px; box-shadow: 0 8px 30px rgba(220,53,69,0.4); transition: all 0.3s ease; text-align: center; letter-spacing: 1px; text-transform: uppercase; }}
+                                .cta-button:hover {{ transform: translateY(-3px); box-shadow: 0 12px 40px rgba(220,53,69,0.5); }}
+                                
+                                /* Features grid - 2x2 square layout */
+                                .features-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin: 40px 0; }}
+                                .feature-item {{ background: white; padding: 40px 25px; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; transition: all 0.3s ease; }}
+                                .feature-item:hover {{ transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0,0,0,0.12); border-color: #dc3545; }}
+                                .feature-icon {{ width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); }}
+                                .feature-title {{ font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px; }}
+                                .feature-desc {{ color: #6c757d; font-size: 15px; }}
+                                
+                                /* Offer banner */
+                                .offer-banner {{ background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%); border: 2px dashed #dc3545; border-radius: 12px; padding: 25px; text-align: center; margin: 30px 0; }}
+                                .offer-title {{ color: #dc3545; font-size: 20px; font-weight: 700; margin-bottom: 10px; }}
+                                .offer-text {{ color: #555; font-size: 15px; line-height: 1.6; }}
+                                .offer-text strong {{ color: #dc3545; font-size: 18px; }}
+                                .offer-conditions {{ color: #999; font-size: 12px; margin-top: 8px; }}
+                                
+                                /* Divider */
+                                .divider {{ height: 1px; background: linear-gradient(90deg, transparent 0%, #e9ecef 50%, transparent 100%); margin: 35px 0; }}
+                                
+                                /* Footer */
+                                .footer {{ background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; }}
+                                .footer-brand {{ font-weight: 700; color: #1a1a2e; font-size: 16px; margin-bottom: 8px; letter-spacing: 1px; }}
+                                .footer-desc {{ color: #6c757d; font-size: 13px; margin-bottom: 15px; }}
+                                .footer-links {{ margin: 20px 0; }}
+                                .footer-links a {{ color: #dc3545; text-decoration: none; font-weight: 600; margin: 0 15px; font-size: 13px; }}
+                                .footer-links a:hover {{ text-decoration: underline; }}
+                                .footer-note {{ color: #999; font-size: 12px; margin-top: 15px; line-height: 1.6; }}
+                                
+                                /* Responsive */
                                 @media only screen and (max-width: 600px) {{
-                                    .container {{ margin: 0; border-radius: 0; }}
-                                    .features {{ grid-template-columns: 1fr; }}
+                                    .email-wrapper {{ margin: 0; border-radius: 0; }}
+                                    .content {{ padding: 25px 20px; }}
+                                    .showcase-image img {{ height: 320px; }}
+                                    .showcase-content {{ padding: 35px 25px; }}
+                                    .showcase-heading {{ font-size: 26px; }}
+                                    .showcase-text {{ font-size: 16px; }}
+                                    .cta-button {{ padding: 16px 40px; font-size: 17px; }}
+                                    .features-grid {{ grid-template-columns: 1fr; gap: 15px; }}
+                                    .feature-item {{ padding: 30px 20px; }}
+                                    .feature-icon {{ width: 65px; height: 65px; font-size: 28px; }}
+                                    .feature-title {{ font-size: 16px; }}
+                                    .verification-code {{ font-size: 32px; letter-spacing: 8px; }}
                                 }}
                             </style>
                         </head>
                         <body>
-                            <div class='container'>
+                            <div class='email-wrapper'>
                                 <!-- Header -->
                                 <div class='header'>
-                                    <h1>🎉 CHÀO MỪNG BẠN ĐÃ ĐĂNG KÝ!</h1>
-                                    <p style='margin: 10px 0 0 0; font-size: 16px; opacity: 0.95;'>John Henry Fashion - Phong cách hiện đại, tự tin vượt trội</p>
+                                    <div class='brand-logo'>JOHN HENRY</div>
+                                    <div class='brand-tagline'>Modern Fashion & Lifestyle</div>
                                 </div>
 
-                                <!-- Content -->
+                                <!-- Main Content -->
                                 <div class='content'>
-                                    <p style='font-size: 16px; color: #333;'>Xin chào <strong>{model.FirstName} {model.LastName}</strong>,</p>
-                                    <p style='color: #666;'>Cảm ơn bạn đã đăng ký tài khoản tại <strong>John Henry Fashion</strong>! Chúng tôi rất vui mừng được chào đón bạn đến với cộng đồng những người yêu thích thời trang hiện đại.</p>
+                                    <div class='greeting'>Xin chào <strong>{model.FirstName} {model.LastName}</strong>,</div>
+                                    <p class='intro-text'>Cảm ơn bạn đã tin tưởng và đăng ký tài khoản tại John Henry. Chúng tôi rất hân hạnh được đồng hành cùng bạn trên hành trình khám phá phong cách thời trang hiện đại.</p>
                                     
                                     <!-- Verification Code -->
-                                    <div class='verification-box'>
-                                        <p style='margin: 0 0 10px 0; color: #666; font-size: 15px;'>Mã xác thực của bạn là:</p>
+                                    <div class='verification-container'>
+                                        <div class='verification-label'>Mã xác thực của bạn</div>
                                         <div class='verification-code'>{verificationCode}</div>
-                                        <p style='margin: 10px 0 0 0; color: #999; font-size: 13px;'>⏰ Mã này có hiệu lực trong <strong>10 phút</strong></p>
+                                        <div class='verification-note'>Mã này có hiệu lực trong <strong>10 phút</strong></div>
                                     </div>
 
                                     <div class='divider'></div>
 
                                     <!-- Promotional Section -->
                                     <div class='promo-section'>
-                                        <div class='promo-title'>✨ JOHN HENRY SHOPPING IN MODERN SPACE</div>
-                                        
-                                        <!-- Banner Image -->
-                                        <div style='text-align: center; margin: 20px 0; background: white; padding: 10px; border-radius: 8px;'>
-                                            <img src='https://drive.google.com/uc?export=view&id=14yqLo1QxNgFdGDRPbwHvozo5BsSJOuJg' alt='John Henry Shopping in Modern Space' class='promo-image' style='width: 100%; max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);' />
-                                            <p style='margin: 10px 0 0 0; font-size: 12px; color: #999; font-style: italic;'>Trải nghiệm mua sắm thời trang hiện đại tại John Henry</p>
+                                        <div class='promo-header'>
+                                            <div class='promo-title'>KHÁM PHÁ BỘ SƯU TẬP MỚI NHẤT</div>
+                                            <div class='promo-subtitle'>Thiết kế độc đáo - Chất liệu cao cấp - Phong cách hiện đại</div>
                                         </div>
                                         
-                                        <p class='promo-text'>Khám phá bộ sưu tập thời trang nam nữ hiện đại với chất liệu cao cấp, thiết kế tinh tế và phong cách độc đáo. Từ áo sơ mi lịch lãm đến quần kaki thanh lịch, chúng tôi mang đến cho bạn những sản phẩm hoàn hảo cho mọi dịp.</p>
-                                        
-                                        <div style='text-align: center; margin: 20px 0;'>
-                                            <a href='{baseUrl}/products' class='cta-button' style='color: white; text-decoration: none;'>🛍️ Khám phá ngay</a>
+                                        <!-- Product Showcase -->
+                                        <div class='product-showcase'>
+                                            <div class='showcase-image'>
+                                                <img src='https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_8fa38793.jpg' alt='John Henry Collection' />
+                                            </div>
+                                            <div class='showcase-content'>
+                                                <div class='showcase-heading'>Bộ Sưu Tập Thời Trang Nam Nữ Cao Cấp</div>
+                                                <div class='showcase-text'>Từ áo sơ mi lịch lãm đến quần kaki thanh lịch, từ váy đầm sang trọng đến phụ kiện tinh tế. John Henry mang đến cho bạn những sản phẩm hoàn hảo cho mọi dịp, giúp bạn tự tin thể hiện phong cách riêng.</div>
+                                                <div>
+                                                    <a href='{baseUrl}/products' class='cta-button'>Xem Bộ Sưu Tập</a>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <!-- Features -->
-                                        <div class='features'>
-                                            <div class='feature'>
-                                                <div class='feature-icon'>🎨</div>
-                                                <div class='feature-text'><strong>Thiết kế độc đáo</strong><br>Phong cách hiện đại</div>
+                                        <table class='features-grid' cellpadding='0' cellspacing='0' style='width: 100%; margin: 40px 0;'>
+                                            <tr>
+                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
+                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>★</div>
+                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Thiết Kế Độc Đáo</div>
+                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Phong cách hiện đại</div>
+                                                </td>
+                                                <td style='width: 4%;'></td>
+                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
+                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>✓</div>
+                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Chất Lượng Cao</div>
+                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Vải cao cấp thoải mái</div>
+                                                </td>
+                                            </tr>
+                                            <tr><td colspan='3' style='height: 25px;'></td></tr>
+                                            <tr>
+                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
+                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>⚡</div>
+                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Giao Hàng Nhanh</div>
+                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Toàn quốc 24-48h</div>
+                                                </td>
+                                                <td style='width: 4%;'></td>
+                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
+                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>↻</div>
+                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Đổi Trả Dễ Dàng</div>
+                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Trong vòng 7 ngày</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Offer Banner -->
+                                        <div class='offer-banner'>
+                                            <div class='offer-title'>ƯU ĐÃI ĐẶC BIỆT CHO THÀNH VIÊN MỚI</div>
+                                            <div class='offer-text'>
+                                                Nhận ngay <strong>VOUCHER GIẢM 10%</strong> cho đơn hàng đầu tiên
                                             </div>
-                                            <div class='feature'>
-                                                <div class='feature-icon'>✨</div>
-                                                <div class='feature-text'><strong>Chất liệu cao cấp</strong><br>Thoải mái tối đa</div>
-                                            </div>
-                                            <div class='feature'>
-                                                <div class='feature-icon'>🚚</div>
-                                                <div class='feature-text'><strong>Giao hàng nhanh</strong><br>Toàn quốc 24-48h</div>
-                                            </div>
-                                            <div class='feature'>
-                                                <div class='feature-icon'>💯</div>
-                                                <div class='feature-text'><strong>Đổi trả dễ dàng</strong><br>Trong vòng 7 ngày</div>
-                                            </div>
+                                            <div class='offer-conditions'>Áp dụng cho đơn hàng từ 500.000đ</div>
                                         </div>
-
-                                        <div class='divider'></div>
-
-                                        <p style='text-align: center; color: #dc3545; font-weight: bold; font-size: 16px; margin: 15px 0;'>
-                                            🎁 Ưu đãi đặc biệt dành cho thành viên mới!
-                                        </p>
-                                        <p style='text-align: center; color: #666; font-size: 14px; margin: 10px 0;'>
-                                            Nhận ngay <strong style='color: #dc3545;'>VOUCHER GIẢM 10%</strong> cho đơn hàng đầu tiên<br>
-                                            <span style='font-size: 12px; color: #999;'>(Áp dụng cho đơn hàng từ 500.000đ)</span>
-                                        </p>
                                     </div>
 
                                     <div class='divider'></div>
 
-                                    <p style='color: #666; font-size: 14px; margin-top: 25px;'>
+                                    <p style='color: #999; font-size: 13px; text-align: center;'>
                                         Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.
-                                    </p>
-                                    
-                                    <p style='margin-top: 25px; color: #666;'>
-                                        Trân trọng,<br>
-                                        <strong style='color: #dc3545;'>Đội ngũ John Henry Fashion</strong>
                                     </p>
                                 </div>
 
                                 <!-- Footer -->
                                 <div class='footer'>
-                                    <p style='margin: 0 0 10px 0; font-weight: bold; color: #333;'>JOHN HENRY FASHION</p>
-                                    <p style='margin: 5px 0;'>Thời trang nam nữ cao cấp - Phong cách hiện đại</p>
-                                    <div class='social-links'>
-                                        <a href='{baseUrl}' style='color: #dc3545;'>🌐 Website</a>
-                                        <a href='{baseUrl}/products' style='color: #dc3545;'>🛍️ Sản phẩm</a>
-                                        <a href='{baseUrl}/contact' style='color: #dc3545;'>📧 Liên hệ</a>
+                                    <div class='footer-brand'>JOHN HENRY FASHION</div>
+                                    <div class='footer-desc'>Thời trang nam nữ cao cấp - Phong cách hiện đại</div>
+                                    <div class='footer-links'>
+                                        <a href='{baseUrl}'>Trang Chủ</a>
+                                        <a href='{baseUrl}/'>Sản Phẩm</a>
+                                        <a href='{baseUrl}/contact'>Liên Hệ</a>
                                     </div>
-                                    <p style='margin: 15px 0 5px 0; font-size: 12px;'>
-                                        Email này được gửi tự động, vui lòng không trả lời trực tiếp.
-                                    </p>
-                                    <p style='margin: 5px 0; font-size: 11px; color: #999;'>
-                                        © 2025 John Henry Fashion. All rights reserved.
-                                    </p>
+                                    <div class='footer-note'>
+                                        Email này được gửi tự động, vui lòng không trả lời trực tiếp.<br>
+                                        © 2025 John Henry. All rights reserved.
+                                    </div>
                                 </div>
                             </div>
                         </body>
