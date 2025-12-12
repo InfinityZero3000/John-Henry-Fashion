@@ -74,13 +74,26 @@ namespace JohnHenryFashionWeb.Models
     public partial class Product
     {
         public Guid Id { get; set; }
+        
+        [Required(ErrorMessage = "Tên sản phẩm là bắt buộc")]
+        [MaxLength(255, ErrorMessage = "Tên sản phẩm không được vượt quá 255 ký tự")]
         public string Name { get; set; } = string.Empty;
+        
         public string Slug { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string? ShortDescription { get; set; }
+        
+        [Required(ErrorMessage = "Mã SKU là bắt buộc")]
         public string SKU { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Giá sản phẩm là bắt buộc")]
+        [Range(0, double.MaxValue, ErrorMessage = "Giá sản phẩm phải lớn hơn hoặc bằng 0")]
         public decimal Price { get; set; }
+        
+        [Range(0, double.MaxValue, ErrorMessage = "Giá khuyến mãi phải lớn hơn hoặc bằng 0")]
         public decimal? SalePrice { get; set; }
+        
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng tồn kho không được âm")]
         public int StockQuantity { get; set; } = 0;
         public bool ManageStock { get; set; } = true;
         public bool InStock { get; set; } = true;

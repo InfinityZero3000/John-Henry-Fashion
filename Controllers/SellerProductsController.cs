@@ -88,6 +88,30 @@ public class SellerProductsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Product product, IFormFile? imageFile)
     {
+        // ✅ FIX 1: Validate SalePrice < Price
+        if (product.SalePrice.HasValue && product.SalePrice >= product.Price)
+        {
+            ModelState.AddModelError("SalePrice", "Giá khuyến mãi phải nhỏ hơn giá gốc!");
+        }
+        
+        // ✅ FIX 2: Validate SKU unique
+        if (await _context.Products.AnyAsync(p => p.SKU == product.SKU))
+        {
+            ModelState.AddModelError("SKU", "Mã SKU đã tồn tại trong hệ thống!");
+        }
+        
+        // ✅ FIX 3: Validate CategoryId exists
+        if (!await _context.Categories.AnyAsync(c => c.Id == product.CategoryId))
+        {
+            ModelState.AddModelError("CategoryId", "Danh mục không tồn tại!");
+        }
+        
+        // ✅ FIX 4: Validate BrandId if provided
+        if (product.BrandId.HasValue && !await _context.Brands.AnyAsync(b => b.Id == product.BrandId))
+        {
+            ModelState.AddModelError("BrandId", "Thương hiệu không tồn tại!");
+        }
+        
         if (ModelState.IsValid)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -96,37 +120,53 @@ public class SellerProductsController : Controller
                 return RedirectToAction("Login", "Account");
             }
             
-            // Handle image upload
-            if (imageFile != null && imageFile.Length > 0)
+            // ✅ FIX 5: Start transaction for atomicity
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
-                Directory.CreateDirectory(uploadsFolder);
-
-                var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                // Handle image upload
+                if (imageFile != null && imageFile.Length > 0)
                 {
-                    await imageFile.CopyToAsync(fileStream);
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(fileStream);
+                    }
+
+                    product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
                 }
 
-                product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                // ✅ FIX 6: Generate unique slug
+                product.Slug = await GenerateUniqueSlug(product.Name);
+                product.CreatedAt = DateTime.UtcNow;
+                product.UpdatedAt = DateTime.UtcNow;
+                product.IsActive = true;
+                
+                // Set SellerId to current user
+                product.SellerId = currentUserId;
+
+                _context.Add(product);
+                await _context.SaveChangesAsync();
+                
+                // ✅ Commit transaction
+                await transaction.CommitAsync();
+
+                TempData["Success"] = "Tạo sản phẩm thành công!";
+                return RedirectToAction(nameof(Index));
             }
-
-            // Generate slug from name
-            product.Slug = GenerateSlug(product.Name);
-            product.CreatedAt = DateTime.UtcNow;
-            product.UpdatedAt = DateTime.UtcNow;
-            product.IsActive = true;
-            
-            // Set SellerId to current user
-            product.SellerId = currentUserId;
-
-            _context.Add(product);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Tạo sản phẩm thành công!";
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                // ✅ Rollback transaction on error
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error creating product: {Message}", ex.Message);
+                
+                ModelState.AddModelError("", "Có lỗi xảy ra khi tạo sản phẩm. Vui lòng thử lại!");
+            }
         }
 
         ViewBag.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name", product.CategoryId);
@@ -320,5 +360,21 @@ public class SellerProductsController : Controller
         slug = System.Text.RegularExpressions.Regex.Replace(slug, @"\s+", "-");
         slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
         return slug.Trim('-');
+    }
+    
+    // ✅ NEW: Generate unique slug by appending counter if needed
+    private async Task<string> GenerateUniqueSlug(string name)
+    {
+        var baseSlug = GenerateSlug(name);
+        var slug = baseSlug;
+        var counter = 1;
+        
+        while (await _context.Products.AnyAsync(p => p.Slug == slug))
+        {
+            slug = $"{baseSlug}-{counter}";
+            counter++;
+        }
+        
+        return slug;
     }
 }
