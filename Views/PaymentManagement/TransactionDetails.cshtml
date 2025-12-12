@@ -1,41 +1,22 @@
 @model JohnHenryFashionWeb.Models.PaymentTransaction
 @{
     ViewData["Title"] = "Chi tiết Giao dịch";
+    ViewData["CurrentSection"] = "PaymentManagement";
+    ViewData["Breadcrumb"] = new List<(string Text, string Url)>
+    {
+        ("Thanh toán", "/admin/payments"),
+        ("Chi tiết Giao dịch", "")
+    };
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <style>
-    .payment-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .detail-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
     .info-row {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 1rem 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .info-row:last-child {
@@ -50,306 +31,264 @@
     .info-value {
         color: #111827;
         font-weight: 500;
+        text-align: right;
     }
 
-    .badge-modern {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
+    .amount-card {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .amount-card .label {
+        color: #1e3a8a;
         font-size: 0.875rem;
+        margin-bottom: 0.5rem;
     }
 
-    .badge-success {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .badge-warning {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-    }
-
-    .badge-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
-    }
-
-    .btn-modern {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary-modern {
-        background: linear-gradient(135deg, var(--jh-red), #ff6b6b);
-        color: white;
-    }
-
-    .btn-primary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(206, 25, 58, 0.3);
-        color: white;
-    }
-
-    .table-modern {
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table-modern thead th {
-        background: rgba(206, 25, 58, 0.1);
-        color: var(--jh-red);
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-    }
-
-    .amount-highlight {
-        font-size: 2rem;
+    .amount-card .value {
+        color: #1e40af;
+        font-size: 1.75rem;
         font-weight: 700;
-        color: var(--jh-red);
     }
 </style>
 
-<div class="payment-container">
-    <!-- Page Header -->
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
+<div class="admin-content">
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
             <div>
-                <h2 class="mb-2">
-                    <i class="fas fa-receipt me-2" style="color: var(--jh-red);"></i>
-                    Chi tiết Giao dịch
-                </h2>
-                <p class="text-muted mb-0">Thông tin chi tiết về giao dịch thanh toán</p>
+                <h1>Chi tiết Giao dịch</h1>
+                <p>Thông tin chi tiết về giao dịch thanh toán</p>
             </div>
-            <a asp-action="Index" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i> Quay lại
+            <a asp-action="Index" class="admin-btn admin-btn-secondary">
+                <i data-lucide="arrow-left"></i>
+                Quay lại
             </a>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
         <!-- Transaction Info -->
-        <div class="col-lg-6">
-            <div class="detail-card">
-                <h4 class="mb-4">
-                    <i class="fas fa-info-circle me-2" style="color: var(--jh-red);"></i>
-                    Thông tin Giao dịch
-                </h4>
+        <div class="admin-card">
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="receipt" style="width: 20px; height: 20px;"></i>
+                Thông tin Giao dịch
+            </h3>
 
-                <div class="info-row">
-                    <span class="info-label">Mã giao dịch:</span>
-                    <span class="info-value">@(Model.TransactionReference ?? Model.Id.ToString())</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Ngày tạo:</span>
-                    <span class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Trạng thái:</span>
-                    <span class="info-value">
-                        @if (Model.Status == "Completed")
-                        {
-                            <span class="badge-modern badge-success">Hoàn thành</span>
-                        }
-                        else if (Model.Status == "Pending")
-                        {
-                            <span class="badge-modern badge-warning">Chờ xử lý</span>
-                        }
-                        else if (Model.Status == "Failed")
-                        {
-                            <span class="badge-modern badge-danger">Thất bại</span>
-                        }
-                        else
-                        {
-                            <span class="badge-modern bg-secondary">@Model.Status</span>
-                        }
-                    </span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Phương thức thanh toán:</span>
-                    <span class="info-value">
-                        @if (Model.PaymentMethod == "COD")
-                        {
-                            <span class="badge bg-secondary">COD</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-info">@Model.PaymentMethod</span>
-                        }
-                    </span>
-                </div>
-
-                @if (!string.IsNullOrEmpty(Model.PaymentGateway))
-                {
-                    <div class="info-row">
-                        <span class="info-label">Cổng thanh toán:</span>
-                        <span class="info-value">@Model.PaymentGateway</span>
-                    </div>
-                }
-
-                @if (!string.IsNullOrEmpty(Model.Notes))
-                {
-                    <div class="info-row">
-                        <span class="info-label">Ghi chú:</span>
-                        <span class="info-value">@Model.Notes</span>
-                    </div>
-                }
+            <div class="info-row">
+                <span class="info-label">Mã giao dịch:</span>
+                <span class="info-value">@(Model.TransactionReference ?? Model.Id.ToString())</span>
             </div>
+
+            <div class="info-row">
+                <span class="info-label">Ngày tạo:</span>
+                <span class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Trạng thái:</span>
+                <span class="info-value">
+                    @if (Model.Status == "Completed")
+                    {
+                        <span class="admin-badge" style="background-color: #d1fae5; color: #065f46;">
+                            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                            Hoàn thành
+                        </span>
+                    }
+                    else if (Model.Status == "Pending")
+                    {
+                        <span class="admin-badge" style="background-color: #fef3c7; color: #92400e;">
+                            <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                            Chờ xử lý
+                        </span>
+                    }
+                    else if (Model.Status == "Failed")
+                    {
+                        <span class="admin-badge" style="background-color: #fee2e2; color: #991b1b;">
+                            <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+                            Thất bại
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="admin-badge" style="background-color: #e5e7eb; color: #374151;">@Model.Status</span>
+                    }
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Phương thức thanh toán:</span>
+                <span class="info-value">
+                    @if (Model.PaymentMethod == "COD")
+                    {
+                        <span class="admin-badge" style="background-color: #e5e7eb; color: #374151;">COD</span>
+                    }
+                    else
+                    {
+                        <span class="admin-badge" style="background-color: #dbeafe; color: #1e40af;">@Model.PaymentMethod</span>
+                    }
+                </span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.PaymentGateway))
+            {
+                <div class="info-row">
+                    <span class="info-label">Cổng thanh toán:</span>
+                    <span class="info-value">@Model.PaymentGateway</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="info-row">
+                    <span class="info-label">Ghi chú:</span>
+                    <span class="info-value">@Model.Notes</span>
+                </div>
+            }
         </div>
 
         <!-- Amount Breakdown -->
-        <div class="col-lg-6">
-            <div class="detail-card">
-                <h4 class="mb-4">
-                    <i class="fas fa-calculator me-2" style="color: var(--jh-red);"></i>
-                    Chi tiết Số tiền
-                </h4>
+        <div class="admin-card">
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="calculator" style="width: 20px; height: 20px;"></i>
+                Chi tiết Số tiền
+            </h3>
 
-                <div class="text-center mb-4">
-                    <p class="text-muted mb-2">Tổng số tiền</p>
-                    <div class="amount-highlight">@Model.Amount.ToString("N0") ₫</div>
-                </div>
+            <div class="amount-card">
+                <div class="label">Tổng số tiền</div>
+                <div class="value">@Model.Amount.ToString("N0") ₫</div>
+            </div>
 
-                <div class="info-row">
-                    <span class="info-label">
-                        <i class="fas fa-building me-2 text-danger"></i>
-                        Phí nền tảng:
-                    </span>
-                    <span class="info-value text-danger fw-bold">@Model.PlatformFee.ToString("N0") ₫</span>
-                </div>
+            <div class="info-row">
+                <span class="info-label">
+                    <i data-lucide="building" style="width: 16px; height: 16px; color: #dc2626; margin-right: 0.5rem;"></i>
+                    Phí nền tảng:
+                </span>
+                <span class="info-value" style="color: #dc2626; font-weight: 700;">@Model.PlatformFee.ToString("N0") ₫</span>
+            </div>
 
-                <div class="info-row">
-                    <span class="info-label">
-                        <i class="fas fa-user-tie me-2 text-success"></i>
-                        Số tiền cho Seller:
-                    </span>
-                    <span class="info-value text-success fw-bold">@Model.SellerAmount.ToString("N0") ₫</span>
-                </div>
+            <div class="info-row">
+                <span class="info-label">
+                    <i data-lucide="user-check" style="width: 16px; height: 16px; color: #16a34a; margin-right: 0.5rem;"></i>
+                    Số tiền cho Seller:
+                </span>
+                <span class="info-value" style="color: #16a34a; font-weight: 700;">@Model.SellerAmount.ToString("N0") ₫</span>
             </div>
         </div>
+    </div>
 
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
         <!-- Customer Info -->
-        <div class="col-lg-6">
-            <div class="detail-card">
-                <h4 class="mb-4">
-                    <i class="fas fa-user me-2" style="color: var(--jh-red);"></i>
-                    Thông tin Khách hàng
-                </h4>
+        <div class="admin-card">
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+                Thông tin Khách hàng
+            </h3>
 
-                @if (Model.Customer != null)
-                {
-                    <div class="info-row">
-                        <span class="info-label">Email:</span>
-                        <span class="info-value">@Model.Customer.Email</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">ID:</span>
-                        <span class="info-value">@Model.UserId</span>
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted">Không có thông tin khách hàng</p>
-                }
-            </div>
+            @if (Model.Customer != null)
+            {
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">@Model.Customer.Email</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">ID:</span>
+                    <span class="info-value">@Model.UserId</span>
+                </div>
+            }
+            else
+            {
+                <p style="color: #9ca3af; margin: 0;">Không có thông tin khách hàng</p>
+            }
         </div>
 
         <!-- Seller Info -->
-        <div class="col-lg-6">
-            <div class="detail-card">
-                <h4 class="mb-4">
-                    <i class="fas fa-store me-2" style="color: var(--jh-red);"></i>
-                    Thông tin Seller
-                </h4>
+        <div class="admin-card">
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="store" style="width: 20px; height: 20px;"></i>
+                Thông tin Seller
+            </h3>
 
-                @if (Model.Seller != null)
-                {
-                    <div class="info-row">
-                        <span class="info-label">Email:</span>
-                        <span class="info-value">@Model.Seller.Email</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">ID:</span>
-                        <span class="info-value">@Model.SellerId</span>
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted">Không có thông tin seller</p>
-                }
-            </div>
-        </div>
-
-        <!-- Order Info -->
-        @if (Model.Order != null)
-        {
-            <div class="col-12">
-                <div class="detail-card">
-                    <h4 class="mb-4">
-                        <i class="fas fa-shopping-bag me-2" style="color: var(--jh-red);"></i>
-                        Thông tin Đơn hàng
-                    </h4>
-
-                    <div class="info-row">
-                        <span class="info-label">Mã đơn hàng:</span>
-                        <span class="info-value">
-                            <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@Model.OrderId" class="text-decoration-none">
-                                @Model.Order.OrderNumber
-                                <i class="fas fa-external-link-alt ms-1"></i>
-                            </a>
-                        </span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Ngày đặt:</span>
-                        <span class="info-value">@Model.Order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Trạng thái đơn hàng:</span>
-                        <span class="info-value">
-                            <span class="badge bg-primary">@Model.Order.Status</span>
-                        </span>
-                    </div>
-
-                    @if (Model.Order.OrderItems != null && Model.Order.OrderItems.Any())
-                    {
-                        <div class="mt-4">
-                            <h5 class="mb-3">Sản phẩm</h5>
-                            <div class="table-responsive">
-                                <table class="table table-modern">
-                                    <thead>
-                                        <tr>
-                                            <th>Tên sản phẩm</th>
-                                            <th>Số lượng</th>
-                                            <th>Đơn giá</th>
-                                            <th>Thành tiền</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Order.OrderItems)
-                                        {
-                                            <tr>
-                                                <td>@item.Product?.Name</td>
-                                                <td>@item.Quantity</td>
-                                                <td>@item.Price.ToString("N0") ₫</td>
-                                                <td class="fw-bold">@((item.Price * item.Quantity).ToString("N0")) ₫</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    }
+            @if (Model.Seller != null)
+            {
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">@Model.Seller.Email</span>
                 </div>
-            </div>
-        }
+                <div class="info-row">
+                    <span class="info-label">ID:</span>
+                    <span class="info-value">@Model.SellerId</span>
+                </div>
+            }
+            else
+            {
+                <p style="color: #9ca3af; margin: 0;">Không có thông tin seller</p>
+            }
+        </div>
     </div>
+
+    <!-- Order Info -->
+    @if (Model.Order != null)
+    {
+        <div class="admin-card" style="margin-top: 1.5rem;">
+            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="shopping-bag" style="width: 20px; height: 20px;"></i>
+                Thông tin Đơn hàng
+            </h3>
+
+            <div class="info-row">
+                <span class="info-label">Mã đơn hàng:</span>
+                <span class="info-value">
+                    <a asp-controller="Admin" asp-action="OrderDetails" asp-route-id="@Model.OrderId" class="admin-link">
+                        @Model.Order.OrderNumber
+                        <i data-lucide="external-link" style="width: 14px; height: 14px; margin-left: 0.25rem;"></i>
+                    </a>
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Ngày đặt:</span>
+                <span class="info-value">@Model.Order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Trạng thái đơn hàng:</span>
+                <span class="info-value">
+                    <span class="admin-badge" style="background-color: #dbeafe; color: #1e40af;">@Model.Order.Status</span>
+                </span>
+            </div>
+
+            @if (Model.Order.OrderItems != null && Model.Order.OrderItems.Any())
+            {
+                <div style="margin-top: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem;">Sản phẩm</h4>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Order.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.Product?.Name</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.Price.ToString("N0") ₫</td>
+                                        <td style="font-weight: 600;">@((item.Price * item.Quantity).ToString("N0")) ₫</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>

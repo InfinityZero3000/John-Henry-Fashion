@@ -1,213 +1,102 @@
 @model List<JohnHenryFashionWeb.Models.WithdrawalRequest>
 @{
     ViewData["Title"] = "Yêu cầu Rút tiền";
+    ViewData["CurrentSection"] = "PaymentManagement";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/payments\">Quản lý thanh toán</a></li><li class=\"breadcrumb-item active\">Rút tiền</li>";
     
     var stats = ViewBag.Statistics;
     var statusFilter = ViewBag.StatusFilter as string;
 }
 
 <style>
-    .payment-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .stats-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: transform 0.3s ease;
-    }
-
-    .stats-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .stats-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .filter-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .table-modern {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .table-modern thead th {
-        background: var(--jh-red);
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-    }
-
-    .table-modern tbody tr {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        transition: background-color 0.2s ease;
-    }
-
-    .table-modern tbody tr:hover {
-        background-color: rgba(102, 126, 234, 0.1);
-    }
-
-    .table-modern tbody tr.pending-highlight {
-        background-color: rgba(245, 158, 11, 0.1);
-    }
-
-    .badge-modern {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-
-    .badge-pending {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-    }
-
-    .badge-approved {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .badge-rejected {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
-    }
-
-    .btn-modern {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-success-modern {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .btn-success-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        color: white;
-    }
-
-    .btn-danger-modern {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
-    }
-
-    .btn-danger-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        color: white;
-    }
-
-    .form-control-modern {
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control-modern:focus {
-        border-color: var(--jh-red);
-        box-shadow: 0 0 0 0.2rem rgba(206, 25, 58, 0.25);
+    .pending-highlight {
+        background-color: #fffbeb !important;
     }
 </style>
 
-<div class="payment-container">
+<div class="admin-content">
     <!-- Page Header -->
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
             <div>
-                <h2 class="mb-2">
-                    <i class="fas fa-hand-holding-usd me-2" style="color: var(--jh-red);"></i>
+                <h1 class="admin-page-title">
+                    <i data-lucide="banknote"></i>
                     Yêu cầu Rút tiền
-                </h2>
-                <p class="text-muted mb-0">Quản lý và phê duyệt yêu cầu rút tiền của Seller</p>
+                </h1>
+                <p style="color: #6b7280; margin-top: 0.5rem;">Quản lý và phê duyệt yêu cầu rút tiền của Seller</p>
             </div>
         </div>
     </div>
 
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-success">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-danger">
+            <i data-lucide="alert-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
     <!-- Statistics Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                    <i class="fas fa-clock text-white"></i>
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Chờ duyệt</h3>
+                    <p class="value">@stats.PendingAmount.ToString("N0") ₫</p>
+                    <p class="change">@stats.PendingCount yêu cầu</p>
                 </div>
-                <h6 class="text-muted mb-1">Chờ Duyệt</h6>
-                <h3 class="mb-0">@stats.PendingAmount.ToString("N0") ₫</h3>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="clock"></i>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i class="fas fa-check-circle text-white"></i>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Đã phê duyệt</h3>
+                    <p class="value">@stats.ApprovedAmount.ToString("N0") ₫</p>
+                    <p class="change">@stats.ApprovedCount yêu cầu</p>
                 </div>
-                <h6 class="text-muted mb-1">Đã Phê Duyệt</h6>
-                <h3 class="mb-0">@stats.ApprovedAmount.ToString("N0") ₫</h3>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="check-circle"></i>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-times-circle text-white"></i>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Từ chối</h3>
+                    <p class="value">@stats.RejectedCount</p>
+                    <p class="change">Yêu cầu bị từ chối</p>
                 </div>
-                <h6 class="text-muted mb-1">Từ Chối</h6>
-                <h3 class="mb-0">@stats.RejectedCount Yêu cầu</h3>
+                <div class="admin-stat-card-icon danger">
+                    <i data-lucide="x-circle"></i>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="filter-card">
-        <form method="get" asp-action="Withdrawals">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Trạng Thái</label>
-                    <select name="status" class="form-control-modern">
+    <div class="admin-card admin-mb-lg">
+        <div class="admin-card-header">
+            <h3>Lọc yêu cầu</h3>
+        </div>
+        <div class="admin-card-body">
+            <form method="get" asp-action="Withdrawals" class="admin-flex admin-gap-sm" style="flex-wrap: wrap;">
+                <div class="admin-form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                    <label class="admin-form-label">Trạng thái</label>
+                    <select name="status" class="admin-form-control">
                         <option value="">Tất cả</option>
                         <option value="Pending" selected="@(statusFilter == "Pending")">Chờ duyệt</option>
                         <option value="Approved" selected="@(statusFilter == "Approved")">Đã duyệt</option>
@@ -215,39 +104,57 @@
                         <option value="Completed" selected="@(statusFilter == "Completed")">Hoàn thành</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-success-modern w-100">
-                        <i class="fas fa-search"></i> Lọc
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="admin-btn admin-btn-primary">
+                        <i data-lucide="search"></i>
+                        Lọc
                     </button>
                 </div>
-            </div>
-        </form>
+                @if (!string.IsNullOrEmpty(statusFilter))
+                {
+                    <div style="display: flex; align-items: flex-end;">
+                        <a href="/admin/payments/withdrawals" class="admin-btn admin-btn-secondary">
+                            <i data-lucide="x"></i>
+                            Xóa lọc
+                        </a>
+                    </div>
+                }
+            </form>
+        </div>
     </div>
 
     <!-- Withdrawals Table -->
-    <div class="filter-card">
-        <div class="table-responsive">
-            <table class="table table-modern mb-0">
-                <thead>
-                    <tr>
-                        <th>Mã YC</th>
-                        <th>Ngày YC</th>
-                        <th>Seller</th>
-                        <th>Số Tiền</th>
-                        <th>Ngân Hàng</th>
-                        <th>Số TK</th>
-                        <th>Trạng Thái</th>
-                        <th>Người Xử Lý</th>
-                        <th>Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Any())
-                    {
-                        foreach (var withdrawal in Model)
+    <div class="admin-card">
+        <div class="admin-card-header admin-flex-between">
+            <h3>Danh sách yêu cầu rút tiền</h3>
+            @if (Model.Any())
+            {
+                <span class="admin-badge admin-badge-primary">@Model.Count yêu cầu</span>
+            }
+        </div>
+        <div class="admin-card-body" style="padding: 0;">
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Mã YC</th>
+                            <th>Ngày YC</th>
+                            <th>Seller</th>
+                            <th>Số Tiền</th>
+                            <th>Ngân Hàng</th>
+                            <th>Số TK</th>
+                            <th>Trạng Thái</th>
+                            <th>Người Xử Lý</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
                         {
-                            var rowClass = withdrawal.Status == "Pending" ? "pending-highlight" : "";
-                            <tr class="@rowClass">
+                            foreach (var withdrawal in Model)
+                            {
+                                var rowClass = withdrawal.Status == "Pending" ? "pending-highlight" : "";
+                                <tr class="@rowClass">
                                 <td>
                                     <strong>@withdrawal.WithdrawalNumber</strong>
                                 </td>
@@ -270,163 +177,177 @@
                                 <td>
                                     @if (withdrawal.Status == "Pending")
                                     {
-                                        <span class="badge-modern badge-pending">
-                                            <i class="fas fa-clock me-1"></i>Chờ duyệt
+                                        <span class="admin-badge" style="background-color: #fef3c7; color: #92400e;">
+                                            <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                                            Chờ duyệt
                                         </span>
                                     }
                                     else if (withdrawal.Status == "Approved")
                                     {
-                                        <span class="badge-modern badge-approved">
-                                            <i class="fas fa-check me-1"></i>Đã duyệt
+                                        <span class="admin-badge" style="background-color: #d1fae5; color: #065f46;">
+                                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                                            Đã duyệt
                                         </span>
                                         @if (withdrawal.ProcessedAt.HasValue)
                                         {
-                                            <div class="small text-muted mt-1">
+                                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
                                                 @withdrawal.ProcessedAt.Value.ToString("dd/MM/yyyy HH:mm")
                                             </div>
                                         }
                                     }
                                     else if (withdrawal.Status == "Rejected")
                                     {
-                                        <span class="badge-modern badge-rejected">
-                                            <i class="fas fa-times me-1"></i>Từ chối
+                                        <span class="admin-badge" style="background-color: #fee2e2; color: #991b1b;">
+                                            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                                            Từ chối
                                         </span>
                                     }
                                     else if (withdrawal.Status == "Completed")
                                     {
-                                        <span class="badge bg-success">Hoàn thành</span>
+                                        <span class="admin-badge" style="background-color: #d1fae5; color: #065f46;">
+                                            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                                            Hoàn thành
+                                        </span>
                                     }
                                 </td>
                                 <td>
                                     @if (!string.IsNullOrEmpty(withdrawal.ProcessedBy))
                                     {
-                                        <span class="badge bg-info">@withdrawal.ProcessedBy</span>
+                                        <span class="admin-badge" style="background-color: #dbeafe; color: #1e40af;">@withdrawal.ProcessedBy</span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">-</span>
+                                        <span style="color: #9ca3af;">-</span>
                                     }
                                 </td>
                                 <td>
-                                    <a asp-action="WithdrawalDetails" asp-route-id="@withdrawal.Id" class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="fas fa-eye"></i> Chi tiết
+                                    <a asp-action="WithdrawalDetails" asp-route-id="@withdrawal.Id" class="admin-btn admin-btn-sm admin-btn-primary">
+                                        <i data-lucide="eye"></i>
+                                        Chi tiết
                                     </a>
                                     @if (withdrawal.Status == "Pending")
                                     {
-                                        <button type="button" class="btn btn-sm btn-success-modern me-1" data-bs-toggle="modal" data-bs-target="#approveModal"
-                                                data-id="@withdrawal.Id" data-number="@withdrawal.WithdrawalNumber" data-amount="@withdrawal.Amount.ToString("N0")" data-seller="@withdrawal.Seller?.Email">
-                                            <i class="fas fa-check"></i>
+                                        <button type="button" class="admin-btn admin-btn-sm admin-btn-success"
+                                                onclick="openApproveModal('@withdrawal.Id', '@withdrawal.WithdrawalNumber', '@withdrawal.Amount.ToString("N0")', '@withdrawal.Seller?.Email')">
+                                            <i data-lucide="check"></i>
+                                            Duyệt
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-danger-modern" data-bs-toggle="modal" data-bs-target="#rejectModal"
-                                                data-id="@withdrawal.Id" data-number="@withdrawal.WithdrawalNumber">
-                                            <i class="fas fa-times"></i>
+                                        <button type="button" class="admin-btn admin-btn-sm admin-btn-danger"
+                                                onclick="openRejectModal('@withdrawal.Id', '@withdrawal.WithdrawalNumber')">
+                                            <i data-lucide="x"></i>
+                                            Từ chối
                                         </button>
                                     }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" style="padding: 4rem 2rem; text-align: center; color: #9ca3af;">
+                                    <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem; color: #d1d5db;"></i>
+                                    <p style="font-size: 1rem; margin: 0;">Không có yêu cầu rút tiền nào</p>
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="9" class="text-center py-4">
-                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p class="text-muted mb-0">Không có yêu cầu rút tiền nào</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Approve Modal -->
-<div class="modal fade" id="approveModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="approveForm" method="post" asp-action="ApproveWithdrawal">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-check-circle me-2 text-success"></i>
-                        Phê duyệt Rút tiền
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="approveId" name="id" />
-                    
-                    <div class="alert alert-success">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Phê duyệt yêu cầu rút tiền <strong id="approveNumber"></strong>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <p class="text-muted mb-1">Seller:</p>
-                            <strong id="approveSeller"></strong>
-                        </div>
-                        <div class="col-6">
-                            <p class="text-muted mb-1">Số tiền:</p>
-                            <h4 class="text-danger mb-0" id="approveAmount"></h4>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Ghi chú</label>
-                        <textarea name="notes" class="form-control-modern" rows="3" placeholder="Nhập ghi chú (không bắt buộc)..."></textarea>
-                    </div>
-
-                    <p class="small text-muted">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Sau khi phê duyệt, bạn cần thực hiện chuyển khoản cho Seller và cập nhật trạng thái sau đó.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success-modern">
-                        <i class="fas fa-check me-2"></i> Phê duyệt
-                    </button>
-                </div>
-            </form>
+<div class="admin-modal" id="approveModal" style="display: none;">
+    <div class="admin-modal-backdrop" onclick="closeApproveModal()"></div>
+    <div class="admin-modal-content" style="max-width: 500px;">
+        <div class="admin-modal-header">
+            <h3>Phê duyệt Rút tiền</h3>
+            <button type="button" class="admin-modal-close" onclick="closeApproveModal()">
+                <i data-lucide="x"></i>
+            </button>
         </div>
+        <form id="approveForm" method="post" asp-action="ApproveWithdrawal">
+            <div class="admin-modal-body">
+                <input type="hidden" id="approveId" name="id" />
+                
+                <div class="admin-alert admin-alert-success" style="margin-bottom: 1.25rem;">
+                    <i data-lucide="info"></i>
+                    <span>Phê duyệt yêu cầu rút tiền <strong id="approveNumber"></strong></span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <p style="color: #6b7280; margin-bottom: 0.25rem; font-size: 0.875rem;">Seller:</p>
+                        <strong id="approveSeller"></strong>
+                    </div>
+                    <div>
+                        <p style="color: #6b7280; margin-bottom: 0.25rem; font-size: 0.875rem;">Số tiền:</p>
+                        <h4 style="color: #dc2626; margin: 0;" id="approveAmount"></h4>
+                    </div>
+                </div>
+
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Ghi chú</label>
+                    <textarea name="notes" class="admin-form-control" rows="3" placeholder="Nhập ghi chú (không bắt buộc)..."></textarea>
+                </div>
+
+                <div class="admin-alert admin-alert-warning">
+                    <i data-lucide="alert-triangle"></i>
+                    <span>Sau khi phê duyệt, bạn cần thực hiện chuyển khoản cho Seller và cập nhật trạng thái sau đó.</span>
+                </div>
+            </div>
+            <div class="admin-modal-footer">
+                <button type="button" class="admin-btn admin-btn-secondary" onclick="closeApproveModal()">
+                    <i data-lucide="x"></i>
+                    Hủy
+                </button>
+                <button type="submit" class="admin-btn admin-btn-success">
+                    <i data-lucide="check"></i>
+                    Phê duyệt
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- Reject Modal -->
-<div class="modal fade" id="rejectModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="rejectForm" method="post" asp-action="RejectWithdrawal">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-times-circle me-2 text-danger"></i>
-                        Từ chối Rút tiền
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="rejectId" name="id" />
-                    
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Từ chối yêu cầu rút tiền <strong id="rejectNumber"></strong>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Lý do từ chối <span class="text-danger">*</span></label>
-                        <textarea name="reason" class="form-control-modern" rows="4" placeholder="Nhập lý do từ chối..." required></textarea>
-                        <small class="text-muted">Lý do này sẽ được gửi cho Seller</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-danger-modern">
-                        <i class="fas fa-times me-2"></i> Từ chối
-                    </button>
-                </div>
-            </form>
+<div class="admin-modal" id="rejectModal" style="display: none;">
+    <div class="admin-modal-backdrop" onclick="closeRejectModal()"></div>
+    <div class="admin-modal-content" style="max-width: 500px;">
+        <div class="admin-modal-header">
+            <h3>Từ chối Rút tiền</h3>
+            <button type="button" class="admin-modal-close" onclick="closeRejectModal()">
+                <i data-lucide="x"></i>
+            </button>
         </div>
+        <form id="rejectForm" method="post" asp-action="RejectWithdrawal">
+            <div class="admin-modal-body">
+                <input type="hidden" id="rejectId" name="id" />
+                
+                <div class="admin-alert admin-alert-danger" style="margin-bottom: 1.25rem;">
+                    <i data-lucide="alert-triangle"></i>
+                    <span>Từ chối yêu cầu rút tiền <strong id="rejectNumber"></strong></span>
+                </div>
+
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Lý do từ chối <span style="color: #dc2626;">*</span></label>
+                    <textarea name="reason" class="admin-form-control" rows="4" placeholder="Nhập lý do từ chối..." required></textarea>
+                    <small style="color: #6b7280; display: block; margin-top: 0.375rem;">Lý do này sẽ được gửi cho Seller</small>
+                </div>
+            </div>
+            <div class="admin-modal-footer">
+                <button type="button" class="admin-btn admin-btn-secondary" onclick="closeRejectModal()">
+                    <i data-lucide="x"></i>
+                    Hủy
+                </button>
+                <button type="submit" class="admin-btn admin-btn-danger">
+                    <i data-lucide="x"></i>
+                    Từ chối
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -438,29 +359,41 @@
         });
 
         // Handle approve modal
-        $('#approveModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget);
-            var id = button.data('id');
-            var number = button.data('number');
-            var amount = button.data('amount');
-            var seller = button.data('seller');
+        function openApproveModal(id, number, amount, seller) {
+            document.getElementById('approveId').value = id;
+            document.getElementById('approveNumber').textContent = number;
+            document.getElementById('approveAmount').textContent = amount + ' ₫';
+            document.getElementById('approveSeller').textContent = seller;
+            document.getElementById('approveModal').style.display = 'flex';
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 10);
+        }
 
-            var modal = $(this);
-            modal.find('#approveId').val(id);
-            modal.find('#approveNumber').text(number);
-            modal.find('#approveAmount').text(amount + ' ₫');
-            modal.find('#approveSeller').text(seller);
-        });
+        function closeApproveModal() {
+            document.getElementById('approveModal').style.display = 'none';
+        }
 
         // Handle reject modal
-        $('#rejectModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget);
-            var id = button.data('id');
-            var number = button.data('number');
+        function openRejectModal(id, number) {
+            document.getElementById('rejectId').value = id;
+            document.getElementById('rejectNumber').textContent = number;
+            document.getElementById('rejectModal').style.display = 'flex';
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 10);
+        }
 
-            var modal = $(this);
-            modal.find('#rejectId').val(id);
-            modal.find('#rejectNumber').text(number);
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+
+        // Close modals with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeApproveModal();
+                closeRejectModal();
+            }
         });
     </script>
 }

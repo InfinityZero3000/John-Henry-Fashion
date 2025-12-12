@@ -1,164 +1,83 @@
 @model List<JohnHenryFashionWeb.Models.SellerSettlement>
 @{
     ViewData["Title"] = "Thanh toán cho Seller";
+    ViewData["CurrentSection"] = "PaymentManagement";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/payments\">Quản lý thanh toán</a></li><li class=\"breadcrumb-item active\">Thanh toán Seller</li>";
     
     var statusFilter = ViewBag.StatusFilter as string;
     var fromDate = ViewBag.FromDate as DateTime?;
     var toDate = ViewBag.ToDate as DateTime?;
 }
 
-<style>
-    .payment-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .filter-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .table-modern {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .table-modern thead th {
-        background: var(--jh-red);
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-    }
-
-    .table-modern tbody tr {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        transition: background-color 0.2s ease;
-    }
-
-    .table-modern tbody tr:hover {
-        background-color: rgba(102, 126, 234, 0.1);
-    }
-
-    .badge-modern {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-
-    .badge-pending {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-    }
-
-    .badge-completed {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .btn-modern {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-success-modern {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .btn-success-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        color: white;
-    }
-
-    .form-control-modern {
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control-modern:focus {
-        border-color: var(--jh-red);
-        box-shadow: 0 0 0 0.2rem rgba(206, 25, 58, 0.25);
-    }
-</style>
-
-<div class="payment-container">
+<div class="admin-content">
     <!-- Page Header -->
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
             <div>
-                <h2 class="mb-2">
-                    <i class="fas fa-money-check me-2" style="color: var(--jh-red);"></i>
+                <h1 class="admin-page-title">
+                    <i data-lucide="wallet"></i>
                     Thanh toán cho Seller
-                </h2>
-                <p class="text-muted mb-0">Quản lý các khoản thanh toán định kỳ cho Seller</p>
+                </h1>
+                <p style="color: #6b7280; margin-top: 0.5rem;">Quản lý các khoản thanh toán định kỳ cho Seller</p>
             </div>
         </div>
     </div>
 
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-success">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
     <!-- Filters -->
-    <div class="filter-card">
-        <form method="get" asp-action="Settlements">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Trạng Thái</label>
-                    <select name="status" class="form-control-modern">
+    <div class="admin-card admin-mb-lg">
+        <div class="admin-card-header">
+            <h3>Lọc thanh toán</h3>
+        </div>
+        <div class="admin-card-body">
+            <form method="get" asp-action="Settlements" class="admin-flex admin-gap-sm" style="flex-wrap: wrap;">
+                <div class="admin-form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                    <label class="admin-form-label">Trạng thái</label>
+                    <select name="status" class="admin-form-control">
                         <option value="">Tất cả</option>
                         <option value="Pending" selected="@(statusFilter == "Pending")">Chờ thanh toán</option>
                         <option value="Completed" selected="@(statusFilter == "Completed")">Đã thanh toán</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Từ Ngày</label>
-                    <input type="date" name="fromDate" class="form-control-modern" value="@fromDate?.ToString("yyyy-MM-dd")" />
+                <div class="admin-form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                    <label class="admin-form-label">Từ ngày</label>
+                    <input type="date" name="fromDate" class="admin-form-control" value="@fromDate?.ToString("yyyy-MM-dd")" />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Đến Ngày</label>
-                    <input type="date" name="toDate" class="form-control-modern" value="@toDate?.ToString("yyyy-MM-dd")" />
+                <div class="admin-form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                    <label class="admin-form-label">Đến ngày</label>
+                    <input type="date" name="toDate" class="admin-form-control" value="@toDate?.ToString("yyyy-MM-dd")" />
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-success-modern w-100">
-                        <i class="fas fa-search"></i> Lọc
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="admin-btn admin-btn-primary">
+                        <i data-lucide="search"></i>
+                        Lọc
                     </button>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Settlements Table -->
-    <div class="filter-card">
-        <div class="table-responsive">
-            <table class="table table-modern mb-0">
+    <div class="admin-card">
+        <div class="admin-card-header admin-flex-between">
+            <h3>Danh sách thanh toán</h3>
+            @if (Model.Any())
+            {
+                <span class="admin-badge admin-badge-primary">@Model.Count thanh toán</span>
+            }
+        </div>
+        <div class="admin-card-body" style="padding: 0;">
+            <div class="admin-table-container">
+                <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Mã TT</th>
@@ -205,17 +124,23 @@
                                 <td>
                                     @if (settlement.Status == "Completed")
                                     {
-                                        <span class="badge-modern badge-completed">Đã thanh toán</span>
+                                        <span class="admin-badge admin-badge-success">
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                            Đã thanh toán
+                                        </span>
                                         @if (settlement.SettledAt.HasValue)
                                         {
-                                            <div class="small text-muted mt-1">
+                                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
                                                 @settlement.SettledAt.Value.ToString("dd/MM/yyyy HH:mm")
                                             </div>
                                         }
                                     }
                                     else
                                     {
-                                        <span class="badge-modern badge-pending">Chờ thanh toán</span>
+                                        <span class="admin-badge admin-badge-warning">
+                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                            Chờ thanh toán
+                                        </span>
                                     }
                                 </td>
                                 <td>
@@ -228,15 +153,17 @@
                                         <span class="text-muted">-</span>
                                     }
                                 </td>
-                                <td>
-                                    <a asp-action="SettlementDetails" asp-route-id="@settlement.Id" class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="fas fa-eye"></i> Chi tiết
+                                <td class="actions">
+                                    <a asp-action="SettlementDetails" asp-route-id="@settlement.Id" class="admin-btn admin-btn-sm admin-btn-primary">
+                                        <i data-lucide="eye"></i>
+                                        Chi tiết
                                     </a>
                                     @if (settlement.Status != "Completed")
                                     {
-                                        <button type="button" class="btn btn-sm btn-success-modern" data-bs-toggle="modal" data-bs-target="#processModal" 
+                                        <button type="button" class="admin-btn admin-btn-sm admin-btn-success" data-bs-toggle="modal" data-bs-target="#processModal" 
                                                 data-id="@settlement.Id" data-number="@settlement.SettlementNumber" data-amount="@settlement.NetAmount.ToString("N0")">
-                                            <i class="fas fa-check"></i> Xử lý
+                                            <i data-lucide="check"></i>
+                                            Xử lý
                                         </button>
                                     }
                                 </td>
@@ -246,9 +173,9 @@
                     else
                     {
                         <tr>
-                            <td colspan="9" class="text-center py-4">
-                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p class="text-muted mb-0">Không có khoản thanh toán nào</p>
+                            <td colspan="9" style="padding: 4rem 2rem; text-align: center; color: #9ca3af;">
+                                <i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 1rem; color: #d1d5db;"></i>
+                                <p style="font-size: 1rem; margin: 0;">Không có khoản thanh toán nào</p>
                             </td>
                         </tr>
                     }
@@ -257,60 +184,86 @@
         </div>
     </div>
 </div>
+</div>
 
 <!-- Process Settlement Modal -->
-<div class="modal fade" id="processModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="processForm" method="post" asp-action="ProcessSettlement">
-                <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận Thanh toán</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="settlementId" name="id" />
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Bạn có chắc chắn muốn xử lý thanh toán cho đợt <strong id="settlementNumber"></strong>?
-                    </div>
-                    <div class="text-center my-3">
-                        <p class="text-muted mb-1">Số tiền thanh toán:</p>
-                        <h3 class="text-success" id="settlementAmount"></h3>
-                    </div>
-                    <p class="small text-muted">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Hành động này sẽ đánh dấu khoản thanh toán đã hoàn tất và không thể hoàn tác.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success-modern">
-                        <i class="fas fa-check me-2"></i> Xác nhận Thanh toán
-                    </button>
-                </div>
-            </form>
+<div class="admin-modal" id="processModal" style="display: none;">
+    <div class="admin-modal-backdrop" onclick="closeProcessModal()"></div>
+    <div class="admin-modal-content" style="max-width: 500px;">
+        <div class="admin-modal-header">
+            <h3>Xác nhận Thanh toán</h3>
+            <button type="button" class="admin-modal-close" onclick="closeProcessModal()">
+                <i data-lucide="x"></i>
+            </button>
         </div>
+        <form id="processForm" method="post" asp-action="ProcessSettlement">
+            <div class="admin-modal-body">
+                <input type="hidden" id="settlementId" name="id" />
+                <div class="admin-alert admin-alert-info" style="margin-bottom: 1.25rem;">
+                    <i data-lucide="info"></i>
+                    <span>Bạn có chắc chắn muốn xử lý thanh toán cho đợt <strong id="settlementNumber"></strong>?</span>
+                </div>
+                <div style="text-align: center; margin: 1.5rem 0;">
+                    <p style="color: #6b7280; margin-bottom: 0.5rem; font-size: 0.875rem;">Số tiền thanh toán:</p>
+                    <h3 style="color: #10b981; font-size: 2rem; font-weight: 700; margin: 0;" id="settlementAmount"></h3>
+                </div>
+                <div class="admin-alert admin-alert-warning">
+                    <i data-lucide="alert-triangle"></i>
+                    <span>Hành động này sẽ đánh dấu khoản thanh toán đã hoàn tất và không thể hoàn tác.</span>
+                </div>
+            </div>
+            <div class="admin-modal-footer">
+                <button type="button" class="admin-btn admin-btn-secondary" onclick="closeProcessModal()">
+                    <i data-lucide="x"></i>
+                    Hủy
+                </button>
+                <button type="submit" class="admin-btn admin-btn-success">
+                    <i data-lucide="check"></i>
+                    Xác nhận Thanh toán
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Auto-submit form on filter change
-        $('select[name="status"]').on('change', function() {
-            $(this).closest('form').submit();
+        // Handle process modal with Bootstrap
+        const processModal = document.getElementById('processModal');
+        
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                const number = this.dataset.number;
+                const amount = this.dataset.amount;
+                
+                document.getElementById('settlementId').value = id;
+                document.getElementById('settlementNumber').textContent = number;
+                document.getElementById('settlementAmount').textContent = amount + ' ₫';
+                
+                processModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Initialize Lucide icons in modal
+                setTimeout(() => {
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }, 10);
+            });
         });
-
-        // Handle process modal
-        $('#processModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget);
-            var id = button.data('id');
-            var number = button.data('number');
-            var amount = button.data('amount');
-
-            var modal = $(this);
-            modal.find('#settlementId').val(id);
-            modal.find('#settlementNumber').text(number);
-            modal.find('#settlementAmount').text(amount + ' ₫');
+        
+        function closeProcessModal() {
+            processModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeProcessModal();
+            }
         });
     </script>
 }

@@ -1,335 +1,254 @@
 @model JohnHenryFashionWeb.Models.SellerSettlement
 @{
     ViewData["Title"] = "Chi tiết Thanh toán";
+    ViewData["CurrentSection"] = "PaymentManagement";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/payments\">Quản lý thanh toán</a></li><li class=\"breadcrumb-item\"><a href=\"/admin/payments/settlements\">Thanh toán Seller</a></li><li class=\"breadcrumb-item active\">Chi tiết</li>";
     
     var transactions = ViewBag.Transactions as List<JohnHenryFashionWeb.Models.PaymentTransaction>;
 }
 
-<style>
-    .payment-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 80px);
-    }
-
-    .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .detail-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 1rem 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        font-weight: 600;
-        color: #6b7280;
-    }
-
-    .info-value {
-        color: #111827;
-        font-weight: 500;
-    }
-
-    .badge-modern {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-
-    .badge-pending {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-    }
-
-    .badge-completed {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .table-modern {
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table-modern thead th {
-        background: rgba(206, 25, 58, 0.1);
-        color: var(--jh-red);
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-    }
-
-    .amount-card {
-        text-align: center;
-        padding: 2rem;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-        border-radius: 16px;
-        margin-bottom: 2rem;
-    }
-
-    .amount-large {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--jh-red);
-    }
-
-    .btn-modern {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-success-modern {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-    }
-
-    .btn-success-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        color: white;
-    }
-</style>
-
-<div class="payment-container">
+<div class="admin-content">
     <!-- Page Header -->
-    <div class="page-header-glass">
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
             <div>
-                <h2 class="mb-2">
-                    <i class="fas fa-file-invoice-dollar me-2" style="color: var(--jh-red);"></i>
+                <h1 class="admin-page-title">
+                    <i data-lucide="file-text"></i>
                     Chi tiết Thanh toán
-                </h2>
-                <p class="text-muted mb-0">@Model.SettlementNumber</p>
+                </h1>
+                <p style="color: #6b7280; margin-top: 0.5rem;">@Model.SettlementNumber</p>
             </div>
-            <a asp-action="Settlements" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i> Quay lại
+            <a asp-action="Settlements" class="admin-btn admin-btn-secondary">
+                <i data-lucide="arrow-left"></i>
+                Quay lại
             </a>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- Settlement Summary -->
-        <div class="col-lg-8">
-            <div class="detail-card">
-                <h4 class="mb-4">
-                    <i class="fas fa-info-circle me-2" style="color: var(--jh-red);"></i>
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="admin-alert admin-alert-success">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem;">
+        <!-- Settlement Info -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>
+                    <i data-lucide="info"></i>
                     Thông tin Thanh toán
-                </h4>
-
-                <div class="info-row">
-                    <span class="info-label">Mã thanh toán:</span>
-                    <span class="info-value">@Model.SettlementNumber</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Seller:</span>
-                    <span class="info-value">
-                        @if (Model.Seller != null)
-                        {
-                            <strong>@Model.Seller.Email</strong>
-                        }
-                    </span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Kỳ thanh toán:</span>
-                    <span class="info-value">
-                        @Model.PeriodStart.ToString("dd/MM/yyyy") - @Model.PeriodEnd.ToString("dd/MM/yyyy")
-                    </span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Trạng thái:</span>
-                    <span class="info-value">
-                        @if (Model.Status == "Completed")
-                        {
-                            <span class="badge-modern badge-completed">Đã thanh toán</span>
-                        }
-                        else
-                        {
-                            <span class="badge-modern badge-pending">Chờ thanh toán</span>
-                        }
-                    </span>
-                </div>
-
-                @if (Model.SettledAt.HasValue)
-                {
-                    <div class="info-row">
-                        <span class="info-label">Ngày thanh toán:</span>
-                        <span class="info-value">@Model.SettledAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                </h3>
+            </div>
+            <div class="admin-card-body">
+                <div style="display: grid; gap: 1rem;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                        <span style="font-weight: 600; color: #6b7280;">Mã thanh toán:</span>
+                        <span style="color: #1f2937; font-weight: 500;">@Model.SettlementNumber</span>
                     </div>
-                }
 
-                @if (!string.IsNullOrEmpty(Model.SettledBy))
-                {
-                    <div class="info-row">
-                        <span class="info-label">Người xử lý:</span>
-                        <span class="info-value">
-                            <span class="badge bg-info">@Model.SettledBy</span>
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                        <span style="font-weight: 600; color: #6b7280;">Seller:</span>
+                        <span style="color: #1f2937; font-weight: 500;">
+                            @if (Model.Seller != null)
+                            {
+                                <strong>@Model.Seller.Email</strong>
+                            }
                         </span>
                     </div>
-                }
 
-                @if (!string.IsNullOrEmpty(Model.Notes))
-                {
-                    <div class="info-row">
-                        <span class="info-label">Ghi chú:</span>
-                        <span class="info-value">@Model.Notes</span>
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                        <span style="font-weight: 600; color: #6b7280;">Kỳ thanh toán:</span>
+                        <span style="color: #1f2937; font-weight: 500;">
+                            @Model.PeriodStart.ToString("dd/MM/yyyy") - @Model.PeriodEnd.ToString("dd/MM/yyyy")
+                        </span>
                     </div>
-                }
+
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                        <span style="font-weight: 600; color: #6b7280;">Trạng thái:</span>
+                        <span>
+                            @if (Model.Status == "Completed")
+                            {
+                                <span class="admin-badge admin-badge-success">
+                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                    Đã thanh toán
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="admin-badge admin-badge-warning">
+                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                    Chờ thanh toán
+                                </span>
+                            }
+                        </span>
+                    </div>
+
+                    @if (Model.SettledAt.HasValue)
+                    {
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-weight: 600; color: #6b7280;">Ngày thanh toán:</span>
+                            <span style="color: #1f2937; font-weight: 500;">@Model.SettledAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SettledBy))
+                    {
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-weight: 600; color: #6b7280;">Người xử lý:</span>
+                            <span>
+                                <span class="admin-badge admin-badge-info">@Model.SettledBy</span>
+                            </span>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
+                            <span style="font-weight: 600; color: #6b7280;">Ghi chú:</span>
+                            <span style="color: #1f2937; font-weight: 500;">@Model.Notes</span>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
 
         <!-- Amount Breakdown -->
-        <div class="col-lg-4">
-            <div class="detail-card">
-                <h4 class="mb-4">
-                    <i class="fas fa-calculator me-2" style="color: var(--jh-red);"></i>
-                    Tính toán
-                </h4>
-
-                <div class="amount-card">
-                    <p class="text-muted mb-2">Số tiền thanh toán</p>
-                    <div class="amount-large">@Model.NetAmount.ToString("N0") ₫</div>
+        <div>
+            <div class="admin-card admin-mb-lg">
+                <div class="admin-card-header">
+                    <h3>
+                        <i data-lucide="calculator"></i>
+                        Tính toán
+                    </h3>
                 </div>
-
-                <div class="info-row">
-                    <span class="info-label">Tổng doanh thu:</span>
-                    <span class="info-value fw-bold">@Model.TotalRevenue.ToString("N0") ₫</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">
-                        <i class="fas fa-minus-circle me-1 text-danger"></i>
-                        Phí nền tảng:
-                    </span>
-                    <span class="info-value text-danger fw-bold">@Model.PlatformFee.ToString("N0") ₫</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">
-                        <i class="fas fa-equals me-1 text-success"></i>
-                        Số tiền thanh toán:
-                    </span>
-                    <span class="info-value text-success fw-bold">@Model.NetAmount.ToString("N0") ₫</span>
-                </div>
-
-                @if (Model.Status != "Completed")
-                {
-                    <div class="mt-4">
-                        <form method="post" asp-action="ProcessSettlement" asp-route-id="@Model.Id" onsubmit="return confirm('Bạn có chắc chắn muốn xử lý thanh toán này?');">
-                            <button type="submit" class="btn btn-success-modern w-100">
-                                <i class="fas fa-check me-2"></i> Xác nhận Thanh toán
-                            </button>
-                        </form>
+                <div class="admin-card-body">
+                    <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px; margin-bottom: 1.5rem;">
+                        <p style="color: #166534; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500;">Số tiền thanh toán</p>
+                        <div style="font-size: 2.25rem; font-weight: 700; color: #166534;">@Model.NetAmount.ToString("N0") ₫</div>
                     </div>
-                }
+
+                    <div style="display: grid; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-weight: 600; color: #6b7280;">Tổng doanh thu:</span>
+                            <span style="color: #1f2937; font-weight: 600;">@Model.TotalRevenue.ToString("N0") ₫</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-weight: 600; color: #6b7280;">
+                                <i data-lucide="minus-circle" style="width: 14px; height: 14px; color: #dc2626; vertical-align: middle;"></i>
+                                Phí nền tảng:
+                            </span>
+                            <span style="color: #dc2626; font-weight: 600;">@Model.PlatformFee.ToString("N0") ₫</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
+                            <span style="font-weight: 600; color: #6b7280;">
+                                <i data-lucide="equal" style="width: 14px; height: 14px; color: #10b981; vertical-align: middle;"></i>
+                                Số tiền thanh toán:
+                            </span>
+                            <span style="color: #10b981; font-weight: 700; font-size: 1.125rem;">@Model.NetAmount.ToString("N0") ₫</span>
+                        </div>
+                    </div>
+
+                    @if (Model.Status != "Completed")
+                    {
+                        <div style="margin-top: 1.5rem;">
+                            <form method="post" asp-action="ProcessSettlement" asp-route-id="@Model.Id" onsubmit="return confirm('Bạn có chắc chắn muốn xử lý thanh toán này?');">
+                                <button type="submit" class="admin-btn admin-btn-success" style="width: 100%; justify-content: center;">
+                                    <i data-lucide="check"></i>
+                                    Xác nhận Thanh toán
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Related Transactions -->
-        @if (transactions != null && transactions.Any())
-        {
-            <div class="col-12">
-                <div class="detail-card">
-                    <h4 class="mb-4">
-                        <i class="fas fa-list me-2" style="color: var(--jh-red);"></i>
-                        Giao dịch trong kỳ (@transactions.Count giao dịch)
-                    </h4>
-
-                    <div class="table-responsive">
-                        <table class="table table-modern">
-                            <thead>
+    <!-- Related Transactions -->
+    @if (transactions != null && transactions.Any())
+    {
+        <div class="admin-card">
+            <div class="admin-card-header admin-flex-between">
+                <h3>
+                    <i data-lucide="list"></i>
+                    Giao dịch trong kỳ
+                </h3>
+                <span class="admin-badge admin-badge-primary">@transactions.Count giao dịch</span>
+            </div>
+            <div class="admin-card-body" style="padding: 0;">
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Mã GD</th>
+                                <th>Ngày</th>
+                                <th>Khách hàng</th>
+                                <th>Số tiền</th>
+                                <th>Phí NT</th>
+                                <th>Cho Seller</th>
+                                <th>PT TT</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in transactions)
+                            {
                                 <tr>
-                                    <th>Mã GD</th>
-                                    <th>Ngày</th>
-                                    <th>Khách hàng</th>
-                                    <th>Số tiền</th>
-                                    <th>Phí NT</th>
-                                    <th>Cho Seller</th>
-                                    <th>PT TT</th>
-                                    <th>Trạng thái</th>
+                                    <td>
+                                        <a asp-action="TransactionDetails" asp-route-id="@transaction.Id" class="admin-link">
+                                            @(transaction.TransactionReference ?? transaction.Id.ToString().Substring(0, 8))
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div>@transaction.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                        <div style="font-size: 0.75rem; color: #6b7280;">@transaction.CreatedAt.ToString("HH:mm")</div>
+                                    </td>
+                                    <td>@(transaction.Customer?.Email ?? "N/A")</td>
+                                    <td style="font-weight: 600;">@transaction.Amount.ToString("N0") ₫</td>
+                                    <td style="color: #dc2626; font-weight: 500;">@transaction.PlatformFee.ToString("N0") ₫</td>
+                                    <td style="color: #10b981; font-weight: 500;">@transaction.SellerAmount.ToString("N0") ₫</td>
+                                    <td>
+                                        @if (transaction.PaymentMethod == "COD")
+                                        {
+                                            <span class="admin-badge admin-badge-secondary">COD</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-badge admin-badge-info">@transaction.PaymentMethod</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (transaction.Status == "Completed")
+                                        {
+                                            <span class="admin-badge admin-badge-success">Hoàn thành</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-badge admin-badge-warning">@transaction.Status</span>
+                                        }
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var transaction in transactions)
-                                {
-                                    <tr>
-                                        <td>
-                                            <a asp-action="TransactionDetails" asp-route-id="@transaction.Id" class="text-decoration-none">
-                                                @(transaction.TransactionReference ?? transaction.Id.ToString().Substring(0, 8))
-                                            </a>
-                                        </td>
-                                        <td>@transaction.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>@transaction.Customer?.Email</td>
-                                        <td>@transaction.Amount.ToString("N0") ₫</td>
-                                        <td class="text-danger">@transaction.PlatformFee.ToString("N0") ₫</td>
-                                        <td class="text-success">@transaction.SellerAmount.ToString("N0") ₫</td>
-                                        <td>
-                                            @if (transaction.PaymentMethod == "COD")
-                                            {
-                                                <span class="badge bg-secondary">COD</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-info">@transaction.PaymentMethod</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (transaction.Status == "Completed")
-                                            {
-                                                <span class="badge bg-success">Hoàn thành</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-warning">@transaction.Status</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr class="fw-bold">
-                                    <td colspan="3" class="text-end">Tổng cộng:</td>
-                                    <td>@transactions.Sum(t => t.Amount).ToString("N0") ₫</td>
-                                    <td class="text-danger">@transactions.Sum(t => t.PlatformFee).ToString("N0") ₫</td>
-                                    <td class="text-success">@transactions.Sum(t => t.SellerAmount).ToString("N0") ₫</td>
-                                    <td colspan="2"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                            }
+                        </tbody>
+                        <tfoot style="background: #f9fafb; font-weight: 600;">
+                            <tr>
+                                <td colspan="3" style="text-align: right; padding-right: 1rem;">Tổng cộng:</td>
+                                <td>@transactions.Sum(t => t.Amount).ToString("N0") ₫</td>
+                                <td style="color: #dc2626;">@transactions.Sum(t => t.PlatformFee).ToString("N0") ₫</td>
+                                <td style="color: #10b981;">@transactions.Sum(t => t.SellerAmount).ToString("N0") ₫</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>
