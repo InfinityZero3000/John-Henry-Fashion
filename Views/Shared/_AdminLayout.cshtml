@@ -94,6 +94,20 @@
                         </a>
                     </li>
 
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="@Url.Action("Analytics", "Admin")" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Analytics" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="trending-up" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Phân tích</span>
+                        </a>
+                    </li>
+
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="@Url.Action("Reports", "Admin")" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Reports" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="bar-chart-2" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Báo cáo</span>
+                        </a>
+                    </li>
+
                     <!-- 2. QUẢN LÝ NGƯỜI DÙNG -->
                     <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">QUẢN LÝ NGƯỜI DÙNG</li>
                     
@@ -189,6 +203,13 @@
                     <!-- 7. KHIẾU NẠI & HỖ TRỢ -->
                     <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">KHIẾU NẠI & HỖ TRỢ</li>
                     
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="/admin/notifications" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Notifications" || ViewData["CurrentSection"]?.ToString() == "notifications" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="bell" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Thông báo</span>
+                        </a>
+                    </li>
+
                     <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
                         <a href="/admin/support" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Support" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
                             <i data-lucide="headphones" style="margin-right: 1rem; width: 20px;"></i>

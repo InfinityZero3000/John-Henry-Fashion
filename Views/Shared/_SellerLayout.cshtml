@@ -203,6 +203,13 @@
                     <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">CÀI ĐẶT</li>
                     
                     <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="@Url.Action("Notifications", "Seller")" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Notifications" || ViewData["CurrentSection"]?.ToString() == "notifications" || ViewContext.RouteData.Values["Action"]?.ToString() == "Notifications" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="bell" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Thông báo</span>
+                        </a>
+                    </li>
+
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
                         <a href="@Url.Action("Profile", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
                             <i data-lucide="user-cog" style="margin-right: 1rem; width: 20px;"></i>
                             <span>Hồ sơ cửa hàng</span>
