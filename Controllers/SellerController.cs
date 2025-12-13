@@ -676,46 +676,12 @@ namespace JohnHenryFashionWeb.Controllers
 
         // MARK: - Quản lý Notifications
         [HttpGet("notifications")]
-        public async Task<IActionResult> Notifications(int page = 1, int pageSize = 10, string type = "", bool? isRead = null)
+        public IActionResult Notifications()
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-                return Challenge();
+            ViewData["CurrentSection"] = "notifications";
+            ViewData["Title"] = "Thông báo";
             
-            var query = _context.Notifications
-                .Where(n => n.UserId == currentUser.Id)
-                .AsQueryable();
-            
-            if (!string.IsNullOrEmpty(type))
-            {
-                query = query.Where(n => n.Type == type);
-            }
-            
-            if (isRead.HasValue)
-            {
-                query = query.Where(n => n.IsRead == isRead.Value);
-            }
-            
-            var totalCount = await query.CountAsync();
-            var notifications = await query
-                .OrderByDescending(n => n.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            
-            var model = new SellerNotificationsViewModel
-            {
-                Notifications = notifications,
-                CurrentPage = page,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
-                PageSize = pageSize,
-                Type = type,
-                IsRead = isRead,
-                TotalCount = totalCount,
-                UnreadCount = await _context.Notifications.CountAsync(n => n.UserId == currentUser.Id && !n.IsRead)
-            };
-            
-            return View(model);
+            return View();
         }
 
         [HttpPost("notifications/mark-read/{id}")]

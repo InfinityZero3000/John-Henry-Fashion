@@ -1937,6 +1937,16 @@ namespace JohnHenryFashionWeb.Controllers
                 model.CreatedAt = DateTime.UtcNow;
                 model.UpdatedAt = DateTime.UtcNow;
                 
+                // Set IsActive = true by default for new banners
+                if (!model.IsActive)
+                {
+                    model.IsActive = true;
+                    _logger.LogInformation("Banner IsActive was false, setting to true by default");
+                }
+                
+                _logger.LogInformation("Creating banner with IsActive={IsActive}, Position={Position}, Title={Title}", 
+                    model.IsActive, model.Position, model.Title);
+                
                 // Fix DateTime Kind for PostgreSQL - convert to UTC if needed
                 if (model.StartDate.Kind == DateTimeKind.Unspecified)
                 {
@@ -2552,6 +2562,29 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         #endregion
+        #endregion
+
+        #region Notifications
+        [HttpGet("notifications")]
+        public IActionResult Notifications()
+        {
+            ViewData["CurrentSection"] = "notifications";
+            ViewData["Title"] = "Thông báo";
+            ViewData["PageIcon"] = "bell";
+            
+            return View("Notifications");
+        }
+        #endregion
+
+        #region Analytics
+        [HttpGet("analytics")]
+        public IActionResult Analytics()
+        {
+            ViewData["CurrentSection"] = "analytics";
+            ViewData["Title"] = "Phân tích";
+            
+            return View("Analytics");
+        }
         #endregion
 
         #region Advanced Reports

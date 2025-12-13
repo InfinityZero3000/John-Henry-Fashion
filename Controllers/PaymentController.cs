@@ -985,7 +985,7 @@ namespace JohnHenryFashionWeb.Controllers
         private Task<PaymentResult> ProcessCODPayment(Order order)
         {
             // COD: Đơn hàng chờ xác nhận, thanh toán khi nhận hàng
-            order.PaymentStatus = "cod_pending"; // Trạng thái đặc biệt cho COD
+            order.PaymentStatus = "COD Pending"; // Trạng thái đặc biệt cho COD
             order.Status = "pending"; // Đơn hàng chờ xác nhận
             
             var payment = new Payment

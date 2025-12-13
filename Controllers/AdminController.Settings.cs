@@ -13,27 +13,29 @@ namespace JohnHenryFashionWeb.Controllers
         #region Settings Management
         
         [HttpGet("settings")]
-        public IActionResult Settings()
+        public async Task<IActionResult> Settings()
         {
+            var systemConfig = HttpContext.RequestServices.GetRequiredService<JohnHenryFashionWeb.Services.ISystemConfigService>();
+            
             var viewModel = new SystemSettingsViewModel
             {
                 // General Settings
-                SiteName = "John Henry",
-                SiteDescription = "Fashion Store",
+                SiteName = await systemConfig.GetSettingAsync("site_name") ?? "John Henry",
+                SiteDescription = await systemConfig.GetSettingAsync("site_description") ?? "Fashion Store",
                 AdminEmail = "admin@johnhenry.com",
                 SupportEmail = "support@johnhenry.com",
                 
                 // E-commerce Settings
-                Currency = "VND",
-                TaxRate = 10.0m,
-                ShippingFee = 30000m,
-                FreeShippingThreshold = 500000m,
+                Currency = await systemConfig.GetSettingAsync("currency") ?? "VND",
+                TaxRate = await systemConfig.GetSettingAsync<decimal>("tax_rate", 10.0m),
+                ShippingFee = await systemConfig.GetSettingAsync<decimal>("shipping_fee", 30000m),
+                FreeShippingThreshold = await systemConfig.GetSettingAsync<decimal>("free_shipping_threshold", 500000m),
                 
-                // Security Settings
-                EnableTwoFactorAuth = true,
-                PasswordExpirationDays = 90,
-                MaxLoginAttempts = 5,
-                SessionTimeoutMinutes = 30,
+                // Security Settings - Read from database
+                EnableTwoFactorAuth = await systemConfig.GetSettingAsync<bool>("require_2fa", false),
+                PasswordExpirationDays = await systemConfig.GetSettingAsync<int>("password_expiry_days", 90),
+                MaxLoginAttempts = await systemConfig.GetSettingAsync<int>("max_login_attempts", 5),
+                SessionTimeoutMinutes = await systemConfig.GetSettingAsync<int>("session_timeout_minutes", 30),
                 
                 // Email Settings
                 SmtpServer = "smtp.gmail.com",
@@ -62,7 +64,7 @@ namespace JohnHenryFashionWeb.Controllers
                 EnableStripe = false,
                 
                 // Inventory Settings
-                LowStockThreshold = 10,
+                LowStockThreshold = await systemConfig.GetSettingAsync<int>("low_stock_threshold", 10),
                 AutoReduceStock = true,
                 AllowBackorders = false,
                 
@@ -77,7 +79,7 @@ namespace JohnHenryFashionWeb.Controllers
 
         [HttpPost("settings")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateSettings(SystemSettingsViewModel model)
+        public async Task<IActionResult> UpdateSettings(SystemSettingsViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -86,14 +88,32 @@ namespace JohnHenryFashionWeb.Controllers
 
             try
             {
-                // Save settings to database or configuration
-                // This would typically be saved to a Settings table or configuration provider
+                // Get or create ISystemConfigService (inject it if not already injected)
+                var systemConfig = HttpContext.RequestServices.GetRequiredService<JohnHenryFashionWeb.Services.ISystemConfigService>();
+                
+                // Save security settings to database
+                await systemConfig.SetSettingAsync("max_login_attempts", model.MaxLoginAttempts.ToString(), "security", "Maximum login attempts before account lockout");
+                await systemConfig.SetSettingAsync("session_timeout_minutes", model.SessionTimeoutMinutes.ToString(), "security", "Session timeout in minutes");
+                await systemConfig.SetSettingAsync("password_expiry_days", model.PasswordExpirationDays.ToString(), "security", "Password expiration period in days");
+                await systemConfig.SetSettingAsync("require_2fa", model.EnableTwoFactorAuth.ToString(), "security", "Require two-factor authentication");
+                
+                // Save other settings as needed
+                await systemConfig.SetSettingAsync("site_name", model.SiteName ?? string.Empty, "general");
+                await systemConfig.SetSettingAsync("site_description", model.SiteDescription ?? string.Empty, "general");
+                await systemConfig.SetSettingAsync("currency", model.Currency ?? "VND", "payment");
+                await systemConfig.SetSettingAsync("tax_rate", model.TaxRate.ToString(), "payment");
+                await systemConfig.SetSettingAsync("shipping_fee", model.ShippingFee.ToString(), "shipping");
+                await systemConfig.SetSettingAsync("free_shipping_threshold", model.FreeShippingThreshold.ToString(), "shipping");
+                await systemConfig.SetSettingAsync("low_stock_threshold", model.LowStockThreshold.ToString(), "general");
+                
+                _logger.LogInformation("Admin updated system settings");
                 
                 TempData["SuccessMessage"] = "Cài đặt đã được cập nhật thành công!";
                 return RedirectToAction("Settings");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating system settings");
                 ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật cài đặt: " + ex.Message);
                 return View("Settings", model);
             }
