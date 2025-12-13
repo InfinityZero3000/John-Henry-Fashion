@@ -96,6 +96,7 @@ namespace JohnHenryFashionWeb.Data
         public DbSet<RefundRequest> RefundRequests { get; set; }
         public DbSet<ShippingMethod> ShippingMethods { get; set; }
         public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
+        public DbSet<OrderRevenue> OrderRevenues { get; set; }
         public DbSet<Promotion> Promotions { get; set; }
         
         // DbSets cho admin/inventory management
