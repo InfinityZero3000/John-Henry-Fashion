@@ -154,6 +154,7 @@ namespace JohnHenryFashionWeb.Models
         public Guid Id { get; set; }
         public string OrderNumber { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
+        public string? SellerId { get; set; } // Seller assigned to this order
         public string Status { get; set; } = "pending"; // pending, processing, shipped, delivered, cancelled
         public decimal TotalAmount { get; set; }
         public decimal ShippingFee { get; set; } = 0;
@@ -165,6 +166,16 @@ namespace JohnHenryFashionWeb.Models
         public string? Notes { get; set; }
         public string ShippingAddress { get; set; } = string.Empty;
         public string BillingAddress { get; set; } = string.Empty;
+        
+        // Marketplace flow fields
+        public bool IsSellerConfirmed { get; set; } = false;
+        public DateTime? SellerConfirmedAt { get; set; }
+        public string? SellerConfirmedBy { get; set; }
+        public bool IsUserConfirmedDelivery { get; set; } = false;
+        public DateTime? UserConfirmedDeliveryAt { get; set; }
+        public bool IsRevenueCalculated { get; set; } = false;
+        public DateTime? RevenueCalculatedAt { get; set; }
+        
         public DateTime? ShippedAt { get; set; }
         public DateTime? DeliveredAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -177,9 +188,32 @@ namespace JohnHenryFashionWeb.Models
         public ApplicationUser User { get; set; } = null!;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+        public OrderRevenue? Revenue { get; set; }
 
         // Computed properties
         public decimal Total => TotalAmount;
+    }
+
+    public class OrderRevenue
+    {
+        public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
+        public string? OrderNumber { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string? SellerId { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal ShippingFee { get; set; }
+        public decimal Tax { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal NetRevenue { get; set; }
+        public decimal CommissionRate { get; set; } = 10.00m;
+        public decimal CommissionAmount { get; set; }
+        public decimal SellerEarning { get; set; }
+        public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
+        public string? Notes { get; set; }
+
+        // Navigation properties
+        public Order Order { get; set; } = null!;
     }
 
     public class OrderItem
