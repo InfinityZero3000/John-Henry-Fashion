@@ -7,20 +7,19 @@
 <style>
     .create-faq-container {
         padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--admin-bg);
         min-height: calc(100vh - 80px);
     }
 
     .back-btn-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 12px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 0.75rem 1.5rem;
         margin-bottom: 1.5rem;
         display: inline-block;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #667eea;
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
+        color: var(--jh-red);
         text-decoration: none;
         transition: all 0.3s ease;
     }
@@ -31,36 +30,35 @@
     }
 
     .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
         max-width: 900px;
         margin: 0 auto;
     }
 
     .form-label {
         font-weight: 600;
-        color: #667eea;
+        color: var(--admin-text);
         margin-bottom: 0.5rem;
     }
 
     .form-control, .form-select {
         border-radius: 10px;
-        border: 2px solid rgba(102, 126, 234, 0.2);
+        border: 1px solid var(--admin-border);
         padding: 0.75rem 1rem;
         transition: all 0.3s ease;
     }
 
     .form-control:focus, .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        border-color: var(--jh-red);
+        box-shadow: 0 0 0 0.2rem rgba(206, 25, 58, 0.25);
     }
 
     .btn-submit {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--jh-red);
         color: white;
         border: none;
         padding: 1rem 3rem;
@@ -72,23 +70,22 @@
 
     .btn-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(206, 25, 58, 0.3);
     }
 
     .btn-cancel {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        color: #667eea;
+        background: var(--admin-card-bg);
+        border: 2px solid var(--admin-border);
+        color: var(--admin-text);
         padding: 1rem 3rem;
-        border-radius: 12px;
+        border-radius: var(--admin-border-radius);
         font-weight: 600;
         font-size: 1.1rem;
         transition: all 0.3s ease;
     }
 
     .btn-cancel:hover {
-        background: rgba(255, 255, 255, 0.3);
+        background: var(--admin-bg-hover);
         transform: translateY(-2px);
     }
 
@@ -110,7 +107,7 @@
     }
 
     .section-title {
-        color: #667eea;
+        color: var(--jh-red);
         font-weight: 700;
         margin-bottom: 1.5rem;
         font-size: 1.2rem;
@@ -126,7 +123,7 @@
     <!-- Form Card -->
     <div class="form-card">
         <div class="text-center mb-4">
-            <h2 style="color: #667eea; font-weight: 700;">
+            <h2 style="color: var(--jh-red); font-weight: 700;">
                 <i class="fas fa-plus-circle me-2"></i>Tạo FAQ mới
             </h2>
             <p class="text-muted">Thêm câu hỏi thường gặp mới vào hệ thống</p>

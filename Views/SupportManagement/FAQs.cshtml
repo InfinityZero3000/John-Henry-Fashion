@@ -10,38 +10,35 @@
 <style>
     .faqs-container {
         padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--admin-bg);
         min-height: calc(100vh - 80px);
     }
 
     .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .filter-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 1.5rem;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .faq-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 1.5rem;
         margin-bottom: 1rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
         transition: all 0.3s ease;
     }
 
@@ -55,7 +52,7 @@
     }
 
     .category-badge {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--jh-red);
         color: white;
         padding: 0.35rem 0.75rem;
         border-radius: 8px;
@@ -71,12 +68,12 @@
     }
 
     .badge-active {
-        background: linear-gradient(135deg, #1dd1a1, #10ac84);
+        background: #10b981;
         color: white;
     }
 
     .badge-inactive {
-        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        background: #95a5a6;
         color: white;
     }
 
@@ -102,26 +99,25 @@
     }
 
     .faq-meta i {
-        color: #764ba2;
+        color: var(--jh-red);
     }
 
     .btn-glass {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: var(--admin-card-bg);
+        border: 1px solid var(--admin-border);
         padding: 0.4rem 1rem;
-        border-radius: 8px;
+        border-radius: var(--admin-border-radius);
         transition: all 0.3s ease;
         font-size: 0.9rem;
     }
 
     .btn-glass:hover {
-        background: rgba(255, 255, 255, 0.3);
+        background: var(--admin-bg-hover);
         transform: translateY(-2px);
     }
 
     .btn-create {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--jh-red);
         color: white;
         border: none;
         padding: 0.75rem 2rem;
@@ -132,12 +128,12 @@
 
     .btn-create:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(206, 25, 58, 0.3);
     }
 
     .sort-order-badge {
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
+        background: rgba(206, 25, 58, 0.1);
+        color: var(--jh-red);
         padding: 0.25rem 0.6rem;
         border-radius: 6px;
         font-size: 0.8rem;
@@ -150,7 +146,7 @@
     <div class="page-header-glass">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="mb-2" style="color: #667eea; font-weight: 700;">
+                <h2 class="mb-2" style="color: var(--jh-red); font-weight: 700;">
                     <i class="fas fa-question-circle me-2"></i>Quản lý FAQs
                 </h2>
                 <p class="text-muted mb-0">Quản lý câu hỏi thường gặp để hỗ trợ khách hàng tự giải đáp</p>
@@ -218,7 +214,7 @@
                         </div>
                         
                         <div class="faq-question">
-                            <i class="fas fa-question-circle me-2" style="color: #667eea;"></i>
+                            <i class="fas fa-question-circle me-2" style="color: var(--jh-red);"></i>
                             @faq.Question
                         </div>
                         

@@ -7,20 +7,19 @@
 <style>
     .dispute-details-container {
         padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--admin-bg);
         min-height: calc(100vh - 80px);
     }
 
     .back-btn-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 12px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 0.75rem 1.5rem;
         margin-bottom: 1.5rem;
         display: inline-block;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #667eea;
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
+        color: var(--jh-red);
         text-decoration: none;
         transition: all 0.3s ease;
     }
@@ -31,23 +30,21 @@
     }
 
     .dispute-header-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .info-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .status-badge {
@@ -97,7 +94,7 @@
 
     .info-label {
         font-weight: 600;
-        color: #667eea;
+        color: var(--jh-red);
         min-width: 150px;
     }
 
@@ -120,7 +117,8 @@
     }
 
     .order-item {
-        background: rgba(102, 126, 234, 0.05);
+        background: #f8f9fa;
+        border: 1px solid var(--admin-border);
         border-radius: 10px;
         padding: 1rem;
         margin-bottom: 0.75rem;
@@ -137,12 +135,11 @@
     }
 
     .resolve-form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 </style>
 
@@ -156,7 +153,7 @@
     <div class="dispute-header-card">
         <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-                <h3 class="mb-2" style="color: #667eea; font-weight: 700;">
+                <h3 class="mb-2" style="color: var(--jh-red); font-weight: 700;">
                     Dispute #@Model.DisputeNumber
                 </h3>
                 <h5 class="mb-3">
@@ -195,7 +192,7 @@
         @if (!string.IsNullOrEmpty(Model.EvidenceUrls))
         {
             <div class="mt-4">
-                <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                     <i class="fas fa-images me-2"></i>Bằng chứng
                 </h6>
                 <div class="d-flex gap-2 flex-wrap">
@@ -215,13 +212,13 @@
         <div class="col-md-6">
             <!-- Order Information -->
             <div class="info-card">
-                <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                     <i class="fas fa-shopping-cart me-2"></i>Thông tin Đơn hàng
                 </h6>
                 <div class="info-row">
                     <div class="info-label">Order Number:</div>
                     <div class="info-value">
-                        <a href="#" style="color: #667eea;">#@Model.Order?.OrderNumber</a>
+                        <a href="#" style="color: var(--jh-red);">#@Model.Order?.OrderNumber</a>
                     </div>
                 </div>
                 <div class="info-row">
@@ -259,7 +256,7 @@
 
             <!-- Customer Information -->
             <div class="info-card">
-                <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                     <i class="fas fa-user me-2"></i>Thông tin Khách hàng
                 </h6>
                 <div class="info-row">
@@ -278,7 +275,7 @@
 
             <!-- Seller Information -->
             <div class="info-card">
-                <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                     <i class="fas fa-store me-2"></i>Thông tin Seller
                 </h6>
                 <div class="info-row">
@@ -318,7 +315,7 @@
         <div class="col-md-6">
             <!-- Timeline -->
             <div class="info-card">
-                <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                     <i class="fas fa-history me-2"></i>Timeline
                 </h6>
                 <div class="info-row">
@@ -352,7 +349,7 @@
             {
                 <!-- Resolution Result -->
                 <div class="info-card">
-                    <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                    <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                         <i class="fas fa-gavel me-2"></i>Kết quả Giải quyết
                     </h6>
                     <div class="alert alert-success">
@@ -373,7 +370,7 @@
             {
                 <!-- Add Seller Response Form -->
                 <div class="resolve-form-card">
-                    <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                    <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                         <i class="fas fa-reply me-2"></i>Thêm Phản hồi Seller
                     </h6>
                     <form method="post" asp-action="AddSellerResponse" asp-route-id="@Model.Id">
@@ -396,7 +393,7 @@
             {
                 <!-- Resolve Dispute Form -->
                 <div class="resolve-form-card">
-                    <h6 class="mb-3" style="color: #667eea; font-weight: 700;">
+                    <h6 class="mb-3" style="color: var(--jh-red); font-weight: 700;">
                         <i class="fas fa-gavel me-2"></i>Giải quyết Tranh chấp
                     </h6>
                     <form method="post" asp-action="ResolveDispute" asp-route-id="@Model.Id">
