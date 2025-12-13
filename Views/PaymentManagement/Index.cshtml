@@ -16,27 +16,25 @@
 <style>
     .payment-container {
         padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--admin-bg);
         min-height: calc(100vh - 80px);
     }
 
     .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .stats-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
         transition: transform 0.3s ease;
     }
 
@@ -56,21 +54,18 @@
     }
 
     .filter-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .table-modern {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
     .table-modern thead th {
@@ -98,17 +93,17 @@
     }
 
     .badge-success {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: #10b981;
         color: white;
     }
 
     .badge-warning {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: #f59e0b;
         color: white;
     }
 
     .badge-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
+        background: #ef4444;
         color: white;
     }
 
@@ -124,7 +119,7 @@
     }
 
     .btn-primary-modern {
-        background: linear-gradient(135deg, var(--jh-red), #ff6b6b);
+        background: var(--jh-red);
         color: white;
     }
 
@@ -192,7 +187,7 @@
             <a href="/admin/payments/settlements" class="text-decoration-none">
                 <div class="stats-card" style="cursor: pointer; transition: all 0.3s ease;">
                     <div class="d-flex align-items-center">
-                        <div class="stats-icon me-3" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <div class="stats-icon me-3" style="background: #10b981;">
                             <i class="fas fa-wallet text-white"></i>
                         </div>
                         <div>
@@ -207,7 +202,7 @@
             <a href="/admin/payments/withdrawals" class="text-decoration-none">
                 <div class="stats-card" style="cursor: pointer; transition: all 0.3s ease;">
                     <div class="d-flex align-items-center">
-                        <div class="stats-icon me-3" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <div class="stats-icon me-3" style="background: var(--jh-red);">
                             <i class="fas fa-money-bill-wave text-white"></i>
                         </div>
                         <div>
@@ -222,7 +217,7 @@
             <a href="/admin/payments/methods" class="text-decoration-none">
                 <div class="stats-card" style="cursor: pointer; transition: all 0.3s ease;">
                     <div class="d-flex align-items-center">
-                        <div class="stats-icon me-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <div class="stats-icon me-3" style="background: #f59e0b;">
                             <i class="fas fa-credit-card text-white"></i>
                         </div>
                         <div>
@@ -239,7 +234,7 @@
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <div class="stats-icon" style="background: var(--jh-red);">
                     <i class="fas fa-dollar-sign text-white"></i>
                 </div>
                 <h6 class="text-muted mb-1">Tổng Doanh Thu</h6>
@@ -248,7 +243,7 @@
         </div>
         <div class="col-md-3">
             <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <div class="stats-icon" style="background: #10b981;">
                     <i class="fas fa-chart-line text-white"></i>
                 </div>
                 <h6 class="text-muted mb-1">Phí Nền Tảng</h6>
@@ -257,7 +252,7 @@
         </div>
         <div class="col-md-3">
             <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <div class="stats-icon" style="background: #3b82f6;">
                     <i class="fas fa-users text-white"></i>
                 </div>
                 <h6 class="text-muted mb-1">Cho Seller</h6>
@@ -266,7 +261,7 @@
         </div>
         <div class="col-md-3">
             <div class="stats-card">
-                <div class="stats-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <div class="stats-icon" style="background: #f59e0b;">
                     <i class="fas fa-check-circle text-white"></i>
                 </div>
                 <h6 class="text-muted mb-1">Hoàn Thành</h6>

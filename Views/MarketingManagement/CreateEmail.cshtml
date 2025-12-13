@@ -32,12 +32,79 @@
 
                 <div class="admin-form-section">
                     <h3 class="admin-form-section-title"><i data-lucide="file-text"></i> Nội dung</h3>
-                    <div class="mb-3">
-                        <label for="HtmlContent" class="form-label">HTML Content <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="HtmlContent" name="HtmlContent" rows="10" required></textarea>
+                    
+                    <!-- Email Templates -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Chọn mẫu email có sẵn</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="template-card" data-template="promotional" style="cursor: pointer; border: 2px solid var(--admin-border); border-radius: 8px; padding: 1rem; transition: all 0.3s;">
+                                    <img src="https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_8fa38793.jpg" alt="Promotional" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">
+                                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">🎉 Khuyến mãi</h5>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--admin-text-light);">Email giới thiệu sản phẩm và khuyến mãi</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="template-card" data-template="newsletter" style="cursor: pointer; border: 2px solid var(--admin-border); border-radius: 8px; padding: 1rem; transition: all 0.3s;">
+                                    <div style="width: 100%; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">📰</div>
+                                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">📰 Newsletter</h5>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--admin-text-light);">Tin tức và cập nhật mới nhất</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="template-card" data-template="announcement" style="cursor: pointer; border: 2px solid var(--admin-border); border-radius: 8px; padding: 1rem; transition: all 0.3s;">
+                                    <div style="width: 100%; height: 120px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 4px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">📢</div>
+                                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">📢 Thông báo</h5>
+                                    <p style="margin: 0; font-size: 0.8rem; color: var(--admin-text-light);">Thông báo quan trọng cho khách hàng</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="PlainTextContent" class="form-label">Plain Text</label>
+
+                    <!-- Editor Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="editorTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="visual-tab" data-bs-toggle="tab" data-bs-target="#visual-editor" type="button">
+                                <i data-lucide="edit" style="width: 16px; height: 16px;"></i> Soạn thảo
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button">
+                                <i data-lucide="eye" style="width: 16px; height: 16px;"></i> Xem trước
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="html-tab" data-bs-toggle="tab" data-bs-target="#html-editor" type="button">
+                                <i data-lucide="code" style="width: 16px; height: 16px;"></i> HTML
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="editorTabsContent">
+                        <!-- Visual Editor -->
+                        <div class="tab-pane fade show active" id="visual-editor">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="HtmlContent" name="HtmlContent" rows="10" required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="tab-pane fade" id="preview">
+                            <div id="email-preview" style="border: 1px solid var(--admin-border); border-radius: 8px; padding: 2rem; background: #f5f5f5; min-height: 400px;">
+                                <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <p style="padding: 2rem; color: #666; text-align: center;">Chọn mẫu email hoặc soạn nội dung để xem trước</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HTML Code -->
+                        <div class="tab-pane fade" id="html-editor">
+                            <textarea id="html-code" class="form-control" rows="15" style="font-family: 'Courier New', monospace; font-size: 0.875rem;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <label for="PlainTextContent" class="form-label">Plain Text (Dự phòng)</label>
                         <textarea class="form-control" id="PlainTextContent" name="PlainTextContent" rows="5"></textarea>
                     </div>
                 </div>
@@ -89,11 +156,398 @@
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
     <script>
         lucide.createIcons();
+
+        // Email Templates với CDN images
+        const templates = {
+            promotional: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khuyến mãi đặc biệt</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td style="padding: 20px 0;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 32px;">🎉 KHUYẾN MÃI ĐẶC BIỆT</h1>
+                            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 18px;">Giảm giá lên đến 50%</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Hero Image -->
+                    <tr>
+                        <td style="padding: 0;">
+                            <img src="https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_8fa38793.jpg" alt="Banner" style="width: 100%; height: auto; display: block;">
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #333333; margin: 0 0 20px 0;">Xin chào!</h2>
+                            <p style="color: #666666; line-height: 1.6; margin: 0 0 20px 0;">
+                                Chúng tôi rất vui mừng thông báo chương trình khuyến mãi đặc biệt dành riêng cho bạn. 
+                                Hàng ngàn sản phẩm thời trang cao cấp đang được giảm giá lên đến 50%!
+                            </p>
+                            <p style="color: #666666; line-height: 1.6; margin: 0 0 30px 0;">
+                                ⏰ Nhanh tay, chương trình chỉ diễn ra trong thời gian có hạn!
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="border-radius: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <a href="#" style="display: inline-block; padding: 16px 48px; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                            MUA NGAY
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Features -->
+                    <tr>
+                        <td style="padding: 0 30px 40px 30px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td width="33%" style="padding: 10px; text-align: center;">
+                                        <div style="font-size: 32px;">🚚</div>
+                                        <p style="margin: 10px 0 0 0; color: #666666; font-size: 14px;">Miễn phí vận chuyển</p>
+                                    </td>
+                                    <td width="33%" style="padding: 10px; text-align: center;">
+                                        <div style="font-size: 32px;">💯</div>
+                                        <p style="margin: 10px 0 0 0; color: #666666; font-size: 14px;">Đảm bảo chất lượng</p>
+                                    </td>
+                                    <td width="33%" style="padding: 10px; text-align: center;">
+                                        <div style="font-size: 32px;">🔄</div>
+                                        <p style="margin: 10px 0 0 0; color: #666666; font-size: 14px;">Đổi trả dễ dàng</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f8f8; padding: 30px; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #999999; font-size: 14px;">John Henry Fashion</p>
+                            <p style="margin: 0 0 10px 0; color: #999999; font-size: 12px;">
+                                Bạn nhận được email này vì đã đăng ký nhận thông tin từ chúng tôi
+                            </p>
+                            <p style="margin: 0; color: #999999; font-size: 12px;">
+                                <a href="#" style="color: #667eea; text-decoration: none;">Hủy đăng ký</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`,
+            
+            newsletter: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td style="padding: 20px 0;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #2c3e50;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">📰 John Henry Newsletter</h1>
+                            <p style="color: #ecf0f1; margin: 10px 0 0 0;">Tin tức & xu hướng thời trang</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #2c3e50; margin: 0 0 20px 0;">Chào mừng tháng mới! 🎊</h2>
+                            <p style="color: #666666; line-height: 1.8; margin: 0 0 25px 0;">
+                                Tháng này chúng tôi mang đến cho bạn những xu hướng thời trang mới nhất, 
+                                các bộ sưu tập độc quyền và nhiều ưu đãi hấp dẫn.
+                            </p>
+                            
+                            <!-- Article 1 -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td width="40%" style="padding-right: 20px;">
+                                        <img src="https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_8fa38793.jpg" alt="Trend" style="width: 100%; height: auto; border-radius: 8px;">
+                                    </td>
+                                    <td width="60%">
+                                        <h3 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 18px;">Xu hướng Thu Đông 2025</h3>
+                                        <p style="color: #666666; line-height: 1.6; margin: 0 0 10px 0; font-size: 14px;">
+                                            Khám phá những gam màu ấm áp và phong cách độc đáo cho mùa lạnh sắp tới.
+                                        </p>
+                                        <a href="#" style="color: #3498db; text-decoration: none; font-weight: bold; font-size: 14px;">Đọc thêm →</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Article 2 -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td width="40%" style="padding-right: 20px;">
+                                        <div style="width: 100%; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <span style="font-size: 48px;">👔</span>
+                                        </div>
+                                    </td>
+                                    <td width="60%">
+                                        <h3 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 18px;">Bộ sưu tập mới</h3>
+                                        <p style="color: #666666; line-height: 1.6; margin: 0 0 10px 0; font-size: 14px;">
+                                            Những thiết kế độc quyền vừa được ra mắt trong tuần này.
+                                        </p>
+                                        <a href="#" style="color: #3498db; text-decoration: none; font-weight: bold; font-size: 14px;">Xem ngay →</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Tips Section -->
+                            <div style="background-color: #ecf0f1; border-left: 4px solid #3498db; padding: 20px; border-radius: 4px; margin-top: 30px;">
+                                <h4 style="color: #2c3e50; margin: 0 0 10px 0;">💡 Tips phối đồ</h4>
+                                <p style="color: #666666; line-height: 1.6; margin: 0; font-size: 14px;">
+                                    Học cách kết hợp trang phục công sở với phụ kiện để tạo phong cách riêng biệt và chuyên nghiệp.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #2c3e50; padding: 30px; text-align: center;">
+                            <p style="margin: 0 0 15px 0; color: #ecf0f1; font-size: 14px;">Theo dõi chúng tôi</p>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto 15px auto;">
+                                <tr>
+                                    <td style="padding: 0 10px;">
+                                        <a href="#" style="color: #ecf0f1; font-size: 24px; text-decoration: none;">📘</a>
+                                    </td>
+                                    <td style="padding: 0 10px;">
+                                        <a href="#" style="color: #ecf0f1; font-size: 24px; text-decoration: none;">📷</a>
+                                    </td>
+                                    <td style="padding: 0 10px;">
+                                        <a href="#" style="color: #ecf0f1; font-size: 24px; text-decoration: none;">🐦</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin: 0; color: #95a5a6; font-size: 12px;">
+                                © 2025 John Henry Fashion. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`,
+            
+            announcement: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo quan trọng</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td style="padding: 20px 0;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-top: 5px solid #e74c3c;" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 30px; text-align: center; background-color: #fef5e7;">
+                            <div style="font-size: 48px; margin-bottom: 10px;">📢</div>
+                            <h1 style="color: #e74c3c; margin: 0; font-size: 28px;">THÔNG BÁO QUAN TRỌNG</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <p style="color: #666666; line-height: 1.8; margin: 0 0 20px 0; font-size: 16px;">
+                                Kính gửi Quý khách hàng,
+                            </p>
+                            <p style="color: #666666; line-height: 1.8; margin: 0 0 20px 0; font-size: 16px;">
+                                Chúng tôi xin thông báo về [NỘI DUNG THÔNG BÁO]. Điều này có thể ảnh hưởng đến 
+                                trải nghiệm mua sắm của bạn trong thời gian tới.
+                            </p>
+                            
+                            <!-- Important Box -->
+                            <div style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%); border-left: 4px solid #e74c3c; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                                <h3 style="color: #e74c3c; margin: 0 0 15px 0; font-size: 18px;">⚠️ Lưu ý quan trọng</h3>
+                                <ul style="color: #666666; line-height: 1.8; margin: 0; padding-left: 20px;">
+                                    <li>Điểm quan trọng số 1</li>
+                                    <li>Điểm quan trọng số 2</li>
+                                    <li>Điểm quan trọng số 3</li>
+                                </ul>
+                            </div>
+                            
+                            <p style="color: #666666; line-height: 1.8; margin: 20px 0 30px 0; font-size: 16px;">
+                                Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua:
+                            </p>
+                            
+                            <!-- Contact Info -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                                        <p style="margin: 0 0 10px 0; color: #2c3e50;"><strong>📧 Email:</strong> support@johnhenry.com</p>
+                                        <p style="margin: 0 0 10px 0; color: #2c3e50;"><strong>📞 Hotline:</strong> 1900 xxxx</p>
+                                        <p style="margin: 0; color: #2c3e50;"><strong>⏰ Giờ làm việc:</strong> 8:00 - 22:00 hàng ngày</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="color: #666666; line-height: 1.8; margin: 0; font-size: 16px;">
+                                Trân trọng,<br>
+                                <strong>Đội ngũ John Henry Fashion</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f8f8; padding: 30px; text-align: center; border-top: 1px solid #e0e0e0;">
+                            <p style="margin: 0 0 10px 0; color: #999999; font-size: 14px;">John Henry Fashion</p>
+                            <p style="margin: 0; color: #999999; font-size: 12px;">
+                                Email này được gửi tự động, vui lòng không phản hồi
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`
+        };
+
+        // Initialize TinyMCE
         tinymce.init({
             selector: '#HtmlContent',
             height: 500,
-            plugins: 'code link image lists table',
-            toolbar: 'undo redo | bold italic | bullist numlist | link image | code'
+            plugins: 'code link image lists table visualblocks',
+            toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+            setup: function(editor) {
+                editor.on('change', function() {
+                    updatePreview();
+                    updateHtmlCode();
+                });
+            }
+        });
+
+        // Template selection
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const templateType = this.dataset.template;
+                const templateHtml = templates[templateType];
+                
+                // Highlight selected template
+                document.querySelectorAll('.template-card').forEach(c => {
+                    c.style.borderColor = 'var(--admin-border)';
+                    c.style.boxShadow = 'none';
+                });
+                this.style.borderColor = '#667eea';
+                this.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                
+                // Set content
+                if (tinymce.get('HtmlContent')) {
+                    tinymce.get('HtmlContent').setContent(templateHtml);
+                } else {
+                    document.getElementById('HtmlContent').value = templateHtml;
+                }
+                
+                updatePreview();
+                updateHtmlCode();
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; animation: slideIn 0.3s ease;';
+                toast.innerHTML = '<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Đã áp dụng mẫu email';
+                document.body.appendChild(toast);
+                lucide.createIcons();
+                setTimeout(() => toast.remove(), 3000);
+            });
+        });
+
+        // Update preview
+        function updatePreview() {
+            const content = tinymce.get('HtmlContent') ? tinymce.get('HtmlContent').getContent() : document.getElementById('HtmlContent').value;
+            document.getElementById('email-preview').innerHTML = content;
+        }
+
+        // Update HTML code view
+        function updateHtmlCode() {
+            const content = tinymce.get('HtmlContent') ? tinymce.get('HtmlContent').getContent() : document.getElementById('HtmlContent').value;
+            document.getElementById('html-code').value = content;
+        }
+
+        // Sync HTML code back to editor
+        document.getElementById('html-code').addEventListener('input', function() {
+            if (tinymce.get('HtmlContent')) {
+                tinymce.get('HtmlContent').setContent(this.value);
+            } else {
+                document.getElementById('HtmlContent').value = this.value;
+            }
+            updatePreview();
+        });
+
+        // Auto-generate plain text from HTML
+        document.getElementById('HtmlContent').addEventListener('change', function() {
+            const html = this.value;
+            const plainText = html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+            document.getElementById('PlainTextContent').value = plainText.substring(0, 500);
+        });
+
+        // Template card hover effect
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                if (this.style.borderColor !== 'rgb(102, 126, 234)') {
+                    this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            card.addEventListener('mouseleave', function() {
+                if (this.style.borderColor !== 'rgb(102, 126, 234)') {
+                    this.style.boxShadow = 'none';
+                    this.style.transform = 'translateY(0)';
+                }
+            });
         });
     </script>
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: none;
+        }
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            border-bottom-color: #667eea;
+        }
+    </style>
 }

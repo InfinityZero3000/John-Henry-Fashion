@@ -10,27 +10,25 @@
 <style>
     .payment-container {
         padding: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--admin-bg);
         min-height: calc(100vh - 80px);
     }
 
     .page-header-glass {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .stats-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 16px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
         transition: transform 0.3s ease;
         height: 100%;
     }
@@ -51,23 +49,21 @@
     }
 
     .chart-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .filter-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--admin-card-shadow);
+        border: 1px solid var(--admin-border);
     }
 
     .form-control-modern {
@@ -94,7 +90,7 @@
     }
 
     .btn-primary-modern {
-        background: linear-gradient(135deg, var(--jh-red), #ff6b6b);
+        background: var(--jh-red);
         color: white;
     }
 
@@ -125,8 +121,8 @@
     }
 
     .table-modern {
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
+        background: var(--admin-card-bg);
+        border-radius: var(--admin-border-radius);
         overflow: hidden;
     }
 
@@ -190,7 +186,7 @@
         <div class="row g-4 mb-4">
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                    <div class="stats-icon" style="background: var(--jh-red);">
                         <i class="fas fa-dollar-sign text-white"></i>
                     </div>
                     <div class="metric-label">Tổng Doanh Thu</div>
@@ -201,7 +197,7 @@
 
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-icon" style="background: linear-gradient(135deg, var(--jh-red), #ff6b6b);">
+                    <div class="stats-icon" style="background: #f59e0b;">
                         <i class="fas fa-percentage text-white"></i>
                     </div>
                     <div class="metric-label">Phí Nền Tảng</div>
@@ -212,7 +208,7 @@
 
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <div class="stats-icon" style="background: #10b981;">
                         <i class="fas fa-hand-holding-usd text-white"></i>
                     </div>
                     <div class="metric-label">Thanh Toán Seller</div>
@@ -223,7 +219,7 @@
 
             <div class="col-md-3">
                 <div class="stats-card">
-                    <div class="stats-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <div class="stats-icon" style="background: #3b82f6;">
                         <i class="fas fa-coins text-white"></i>
                     </div>
                     <div class="metric-label">Giá Trị Trung Bình</div>
