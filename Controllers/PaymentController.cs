@@ -984,9 +984,9 @@ namespace JohnHenryFashionWeb.Controllers
 
         private Task<PaymentResult> ProcessCODPayment(Order order)
         {
-            // COD payment is always successful initially
-            order.PaymentStatus = "pending";
-            order.Status = "processing";
+            // COD: Đơn hàng chờ xác nhận, thanh toán khi nhận hàng
+            order.PaymentStatus = "cod_pending"; // Trạng thái đặc biệt cho COD
+            order.Status = "pending"; // Đơn hàng chờ xác nhận
             
             var payment = new Payment
             {
@@ -1000,14 +1000,14 @@ namespace JohnHenryFashionWeb.Controllers
             };
 
             _context.Payments.Add(payment);
-            return Task.FromResult(new PaymentResult { Success = true, Message = "Đặt hàng thành công!" });
+            return Task.FromResult(new PaymentResult { Success = true, Message = "Đặt hàng thành công! Thanh toán khi nhận hàng." });
         }
 
         private Task<PaymentResult> ProcessBankTransferPayment(Order order)
         {
-            // Bank transfer requires manual verification
-            order.PaymentStatus = "pending";
-            order.Status = "pending";
+            // Bank transfer: Đơn hàng chờ thanh toán và xác nhận
+            order.PaymentStatus = "awaiting_transfer"; // Trạng thái đặc biệt cho Bank Transfer
+            order.Status = "pending"; // Đơn hàng chờ thanh toán
             
             var payment = new Payment
             {
@@ -1021,7 +1021,7 @@ namespace JohnHenryFashionWeb.Controllers
             };
 
             _context.Payments.Add(payment);
-            return Task.FromResult(new PaymentResult { Success = true, Message = "Đặt hàng thành công! Vui lòng chuyển khoản theo thông tin được cung cấp." });
+            return Task.FromResult(new PaymentResult { Success = true, Message = "Đặt hàng thành công! Vui lòng chuyển khoản và gửi ảnh xác nhận." });
         }
 
         private async Task<PaymentResult> ProcessVNPayPayment(Order order)

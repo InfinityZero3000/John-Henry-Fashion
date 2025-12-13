@@ -181,7 +181,7 @@ namespace JohnHenryFashionWeb.Controllers
                             <style>
                                 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
                                 body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; }}
-                                .email-wrapper {{ max-width: 800px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }}
+                                .email-wrapper {{ max-width: 1500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }}
                                 
                                 /* Header with brand */
                                 .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center; position: relative; overflow: hidden; }}
@@ -212,7 +212,7 @@ namespace JohnHenryFashionWeb.Controllers
                                 /* Horizontal product showcase - Full width image */
                                 .product-showcase {{ margin: 35px 0; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }}
                                 .showcase-image {{ width: 100%; }}
-                                .showcase-image img {{ width: 100%; height: 500px; object-fit: cover; display: block; }}
+                                .showcase-image img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
                                 .showcase-content {{ padding: 50px 60px; text-align: center; background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); }}
                                 .showcase-heading {{ font-size: 36px; font-weight: 800; color: #1a1a2e; margin-bottom: 25px; line-height: 1.2; letter-spacing: -0.5px; }}
                                 .showcase-text {{ color: #555; font-size: 18px; line-height: 1.9; margin: 0 auto 35px; max-width: 700px; }}
@@ -306,33 +306,46 @@ namespace JohnHenryFashionWeb.Controllers
                                             </div>
                                         </div>
 
-                                        <!-- Features -->
-                                        <table class='features-grid' cellpadding='0' cellspacing='0' style='width: 100%; margin: 40px 0;'>
+                                        <!-- Features - Flex Grid Layout -->
+                                        <table role='presentation' cellpadding='0' cellspacing='0' style='width: 100%; margin: 40px 0;'>
                                             <tr>
-                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
-                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>★</div>
-                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Thiết Kế Độc Đáo</div>
-                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Phong cách hiện đại</div>
-                                                </td>
-                                                <td style='width: 4%;'></td>
-                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
-                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>✓</div>
-                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Chất Lượng Cao</div>
-                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Vải cao cấp thoải mái</div>
-                                                </td>
-                                            </tr>
-                                            <tr><td colspan='3' style='height: 25px;'></td></tr>
-                                            <tr>
-                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
-                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>⚡</div>
-                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Giao Hàng Nhanh</div>
-                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Toàn quốc 24-48h</div>
-                                                </td>
-                                                <td style='width: 4%;'></td>
-                                                <td class='feature-item' style='width: 48%; padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; vertical-align: top;'>
-                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>↻</div>
-                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Đổi Trả Dễ Dàng</div>
-                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Trong vòng 7 ngày</div>
+                                                <td style='padding: 0;'>
+                                                    <table role='presentation' cellpadding='0' cellspacing='0' style='width: 100%; border-collapse: collapse;'>
+                                                        <!-- Row 1 -->
+                                                        <tr>
+                                                            <td style='width: 50%; padding: 12.5px; vertical-align: top;'>
+                                                                <div class='feature-item' style='padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; height: 100%; box-sizing: border-box;'>
+                                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>★</div>
+                                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Thiết Kế Độc Đáo</div>
+                                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Phong cách hiện đại</div>
+                                                                </div>
+                                                            </td>
+                                                            <td style='width: 50%; padding: 12.5px; vertical-align: top;'>
+                                                                <div class='feature-item' style='padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; height: 100%; box-sizing: border-box;'>
+                                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>✓</div>
+                                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Chất Lượng Cao</div>
+                                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Vải cao cấp thoải mái</div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <!-- Row 2 -->
+                                                        <tr>
+                                                            <td style='width: 50%; padding: 12.5px; vertical-align: top;'>
+                                                                <div class='feature-item' style='padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; height: 100%; box-sizing: border-box;'>
+                                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>⚡</div>
+                                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Giao Hàng Nhanh</div>
+                                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Toàn quốc 24-48h</div>
+                                                                </div>
+                                                            </td>
+                                                            <td style='width: 50%; padding: 12.5px; vertical-align: top;'>
+                                                                <div class='feature-item' style='padding: 40px 25px; background: white; border-radius: 16px; text-align: center; border: 2px solid #f0f0f0; height: 100%; box-sizing: border-box;'>
+                                                                    <div class='feature-icon' style='width: 75px; height: 75px; margin: 0 auto 18px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 50%; color: white; font-size: 34px; font-weight: bold; box-shadow: 0 6px 25px rgba(220,53,69,0.35); line-height: 75px; text-align: center;'>↻</div>
+                                                                    <div class='feature-title' style='font-weight: 700; color: #1a1a2e; font-size: 18px; margin-bottom: 8px;'>Đổi Trả Dễ Dàng</div>
+                                                                    <div class='feature-desc' style='color: #6c757d; font-size: 15px;'>Trong vòng 7 ngày</div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                         </table>

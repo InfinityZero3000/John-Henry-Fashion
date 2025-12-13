@@ -761,6 +761,59 @@ namespace JohnHenryFashionWeb.Controllers
             return slug;
         }
 
+        [HttpPost("blog/upload-image")]
+        public async Task<IActionResult> UploadBlogImage(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Json(new { error = "Không có file được chọn" });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return Json(new { error = "Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp)" });
+                }
+
+                // Validate file size (max 5MB)
+                if (file.Length > 5 * 1024 * 1024)
+                {
+                    return Json(new { error = "File ảnh không được vượt quá 5MB" });
+                }
+
+                // Generate unique filename
+                var fileName = $"{Guid.NewGuid()}{extension}";
+                var uploadPath = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "blog-images");
+                
+                // Create directory if not exists
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                var filePath = Path.Combine(uploadPath, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Return URL for TinyMCE
+                var fileUrl = $"/uploads/blog-images/{fileName}";
+                return Json(new { location = fileUrl });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading blog image");
+                return Json(new { error = "Có lỗi xảy ra khi upload ảnh" });
+            }
+        }
+
         #endregion
 
         #endregion

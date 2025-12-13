@@ -29,14 +29,6 @@ namespace JohnHenryFashionWeb.Controllers
             ViewData["Title"] = "Quản lý Marketing";
 
             // Thống kê
-            var totalBanners = await _context.MarketingBanners.CountAsync();
-            var activeBanners = await _context.MarketingBanners.CountAsync(b => b.IsActive);
-            var totalBlogPosts = await _context.BlogPosts.CountAsync();
-            var publishedBlogPosts = await _context.BlogPosts.CountAsync(b => b.Status == "published");
-            
-            var totalPromotions = await _context.SystemPromotions.CountAsync();
-            var activePromotions = await _context.SystemPromotions.CountAsync(p => p.IsActive && p.StartDate <= DateTime.UtcNow && p.EndDate >= DateTime.UtcNow);
-            
             var totalFlashSales = await _context.FlashSales.CountAsync();
             var activeFlashSales = await _context.FlashSales.CountAsync(f => f.IsActive && f.StartDate <= DateTime.UtcNow && f.EndDate >= DateTime.UtcNow);
             
@@ -46,209 +38,15 @@ namespace JohnHenryFashionWeb.Controllers
             var totalPushCampaigns = await _context.PushNotificationCampaigns.CountAsync();
             var sentPushCampaigns = await _context.PushNotificationCampaigns.CountAsync(p => p.Status == "sent");
 
-            // Recent banners
-            var recentBanners = await _context.MarketingBanners
-                .OrderByDescending(b => b.CreatedAt)
-                .Take(5)
-                .ToListAsync();
-
-            // Recent blog posts
-            var recentBlogPosts = await _context.BlogPosts
-                .OrderByDescending(b => b.CreatedAt)
-                .Take(5)
-                .ToListAsync();
-
-            ViewBag.TotalBanners = totalBanners;
-            ViewBag.ActiveBanners = activeBanners;
-            ViewBag.TotalBlogPosts = totalBlogPosts;
-            ViewBag.PublishedBlogPosts = publishedBlogPosts;
-            ViewBag.TotalPromotions = totalPromotions;
-            ViewBag.ActivePromotions = activePromotions;
             ViewBag.TotalFlashSales = totalFlashSales;
             ViewBag.ActiveFlashSales = activeFlashSales;
             ViewBag.TotalEmailCampaigns = totalEmailCampaigns;
             ViewBag.SentEmailCampaigns = sentEmailCampaigns;
             ViewBag.TotalPushCampaigns = totalPushCampaigns;
             ViewBag.SentPushCampaigns = sentPushCampaigns;
-            ViewBag.RecentBanners = recentBanners;
-            ViewBag.RecentBlogPosts = recentBlogPosts;
 
             return View("~/Views/Admin/Marketing.cshtml");
         }
-
-        #region Banners
-        [HttpGet("banners")]
-        public async Task<IActionResult> Banners()
-        {
-            var banners = await _context.MarketingBanners
-                .OrderBy(b => b.SortOrder)
-                .ToListAsync();
-            return View(banners);
-        }
-
-        [HttpGet("banner/create")]
-        public IActionResult CreateBanner()
-        {
-            return View(new MarketingBanner());
-        }
-
-        [HttpPost("banner/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateBanner(MarketingBanner banner)
-        {
-            if (!ModelState.IsValid) return View(banner);
-            banner.Id = Guid.NewGuid();
-            banner.CreatedAt = DateTime.UtcNow;
-            banner.UpdatedAt = DateTime.UtcNow;
-            _context.MarketingBanners.Add(banner);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"Banner created: {banner.Title} by {User.Identity?.Name}");
-            TempData["SuccessMessage"] = "Banner đã được tạo";
-            return RedirectToAction("Banners", "Admin");
-        }
-
-        [HttpGet("banner/{id}")]
-        public async Task<IActionResult> EditBanner(Guid id)
-        {
-            var banner = await _context.MarketingBanners.FindAsync(id);
-            if (banner == null) return NotFound();
-            return View(banner);
-        }
-
-        [HttpPost("banner/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditBanner(Guid id, MarketingBanner banner)
-        {
-            var existing = await _context.MarketingBanners.FindAsync(id);
-            if (existing == null) return NotFound();
-            if (!ModelState.IsValid) return View(banner);
-            existing.Title = banner.Title;
-            existing.Description = banner.Description;
-            existing.ImageUrl = banner.ImageUrl;
-            existing.MobileImageUrl = banner.MobileImageUrl;
-            existing.LinkUrl = banner.LinkUrl;
-            existing.OpenInNewTab = banner.OpenInNewTab;
-            existing.Position = banner.Position;
-            existing.TargetPage = banner.TargetPage;
-            existing.SortOrder = banner.SortOrder;
-            existing.IsActive = banner.IsActive;
-            existing.StartDate = banner.StartDate;
-            existing.EndDate = banner.EndDate;
-            existing.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Banner đã được cập nhật";
-            return RedirectToAction("Banners", "Admin");
-        }
-
-        [HttpPost("banner/{id}/delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteBanner(Guid id)
-        {
-            var existing = await _context.MarketingBanners.FindAsync(id);
-            if (existing == null) return NotFound();
-            _context.MarketingBanners.Remove(existing);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Banner đã được xóa";
-            return RedirectToAction("Banners", "Admin");
-        }
-        #endregion
-
-        #region Promotions
-        [HttpGet("promotions")]
-        public async Task<IActionResult> Promotions()
-        {
-            var promos = await _context.SystemPromotions.OrderByDescending(p => p.StartDate).ToListAsync();
-            return View(promos);
-        }
-
-        [HttpGet("promotion/create")]
-        public IActionResult CreatePromotion() => View(new SystemPromotion());
-
-        [HttpPost("promotion/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreatePromotion(SystemPromotion promo)
-        {
-            if (!ModelState.IsValid)
-            {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    _logger.LogWarning($"ModelState Error: {error.ErrorMessage}");
-                }
-                TempData["ErrorMessage"] = "Vui lòng kiểm tra lại thông tin";
-                return View(promo);
-            }
-
-            try
-            {
-                promo.Id = Guid.NewGuid();
-                promo.CreatedAt = DateTime.UtcNow;
-                promo.UpdatedAt = DateTime.UtcNow;
-                
-                // Ensure dates are in UTC
-                if (promo.StartDate.Kind == DateTimeKind.Unspecified)
-                    promo.StartDate = DateTime.SpecifyKind(promo.StartDate, DateTimeKind.Utc);
-                if (promo.EndDate.Kind == DateTimeKind.Unspecified)
-                    promo.EndDate = DateTime.SpecifyKind(promo.EndDate, DateTimeKind.Utc);
-
-                _context.SystemPromotions.Add(promo);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Promotion created";
-                return RedirectToAction(nameof(Promotions));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating promotion");
-                TempData["ErrorMessage"] = $"Lỗi khi tạo: {ex.Message}";
-                return View(promo);
-            }
-        }
-
-        [HttpGet("promotion/{id}")]
-        public async Task<IActionResult> EditPromotion(Guid id)
-        {
-            var promo = await _context.SystemPromotions.FindAsync(id);
-            if (promo == null) return NotFound();
-            return View(promo);
-        }
-
-        [HttpPost("promotion/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPromotion(Guid id, SystemPromotion promo)
-        {
-            var existing = await _context.SystemPromotions.FindAsync(id);
-            if (existing == null) return NotFound();
-            if (!ModelState.IsValid) return View(promo);
-            existing.Name = promo.Name;
-            existing.Code = promo.Code;
-            existing.Description = promo.Description;
-            existing.Type = promo.Type;
-            existing.Value = promo.Value;
-            existing.MinOrderAmount = promo.MinOrderAmount;
-            existing.MaxDiscountAmount = promo.MaxDiscountAmount;
-            existing.UsageLimit = promo.UsageLimit;
-            existing.UsageLimitPerUser = promo.UsageLimitPerUser;
-            existing.StartDate = promo.StartDate;
-            existing.EndDate = promo.EndDate;
-            existing.IsActive = promo.IsActive;
-            existing.BannerImageUrl = promo.BannerImageUrl;
-            existing.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Promotion updated";
-            return RedirectToAction(nameof(Promotions));
-        }
-
-        [HttpPost("promotion/{id}/delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePromotion(Guid id)
-        {
-            var existing = await _context.SystemPromotions.FindAsync(id);
-            if (existing == null) return NotFound();
-            _context.SystemPromotions.Remove(existing);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Promotion deleted";
-            return RedirectToAction(nameof(Promotions));
-        }
-        #endregion
 
         #region Email Campaigns
         [HttpGet("emails")]
