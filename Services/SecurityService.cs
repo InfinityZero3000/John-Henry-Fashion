@@ -37,19 +37,22 @@ namespace JohnHenryFashionWeb.Services
         private readonly ILogger<SecurityService> _logger;
         private readonly ICacheService _cacheService;
         private readonly IConfiguration _configuration;
+        private readonly ISystemConfigService _systemConfig;
 
         public SecurityService(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             ILogger<SecurityService> logger,
             ICacheService cacheService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ISystemConfigService systemConfig)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
             _cacheService = cacheService;
             _configuration = configuration;
+            _systemConfig = systemConfig;
         }
 
         public Task<bool> IsPasswordValidAsync(string password)
@@ -180,7 +183,7 @@ namespace JohnHenryFashionWeb.Services
                                s.CreatedAt > DateTime.UtcNow.AddMinutes(-15))
                     .CountAsync();
 
-                var maxAttempts = _configuration.GetValue<int>("Security:MaxLoginAttempts", 5);
+                var maxAttempts = await _systemConfig.GetSettingAsync<int>("max_login_attempts", 5);
                 var isBlocked = recentFailedAttempts >= maxAttempts;
 
                 if (isBlocked)
@@ -204,7 +207,7 @@ namespace JohnHenryFashionWeb.Services
             return new LoginAttemptResult
             {
                 IsBlocked = false,
-                RemainingAttempts = _configuration.GetValue<int>("Security:MaxLoginAttempts", 5)
+                RemainingAttempts = await _systemConfig.GetSettingAsync<int>("max_login_attempts", 5)
             };
         }
 

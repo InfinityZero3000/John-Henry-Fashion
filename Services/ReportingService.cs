@@ -89,7 +89,10 @@ namespace JohnHenryFashionWeb.Services
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Product)
                             .ThenInclude(p => p.Category)
-                    .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate);
+                    .Where(o => o.CreatedAt >= startDate 
+                        && o.CreatedAt <= endDate
+                        && o.PaymentStatus == "paid"
+                        && o.Status != "cancelled");
 
                 if (categoryId.HasValue)
                 {
@@ -236,13 +239,18 @@ namespace JohnHenryFashionWeb.Services
                 var today = now.Date;
                 var yesterday = today.AddDays(-1);
 
-                // Get today's data
+                // Get today's data - CHỈ tính đơn hàng đã thanh toán thành công
                 var todayOrders = await _context.Orders
-                    .Where(o => o.CreatedAt >= today)
+                    .Where(o => o.CreatedAt >= today 
+                        && o.PaymentStatus == "paid" 
+                        && o.Status != "cancelled")
                     .ToListAsync();
 
                 var yesterdayOrders = await _context.Orders
-                    .Where(o => o.CreatedAt >= yesterday && o.CreatedAt < today)
+                    .Where(o => o.CreatedAt >= yesterday 
+                        && o.CreatedAt < today
+                        && o.PaymentStatus == "paid" 
+                        && o.Status != "cancelled")
                     .ToListAsync();
 
                 // Get visitor data from analytics
@@ -361,7 +369,10 @@ namespace JohnHenryFashionWeb.Services
                 // Fallback to Orders table if no SalesReports
                 _logger.LogInformation("No SalesReports found, falling back to Orders table");
                 var orders = await _context.Orders
-                    .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate)
+                    .Where(o => o.CreatedAt >= startDate 
+                        && o.CreatedAt <= endDate
+                        && o.PaymentStatus == "paid"
+                        && o.Status != "cancelled")
                     .ToListAsync();
 
                 if (!orders.Any())
@@ -501,7 +512,10 @@ namespace JohnHenryFashionWeb.Services
                 // Fallback to Orders table if no SalesReports
                 _logger.LogInformation("No SalesReports found, falling back to Orders table");
                 var orders = await _context.Orders
-                    .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate)
+                    .Where(o => o.CreatedAt >= startDate 
+                        && o.CreatedAt <= endDate
+                        && o.PaymentStatus == "paid"
+                        && o.Status != "cancelled")
                     .ToListAsync();
 
                 if (!orders.Any())
@@ -702,7 +716,10 @@ namespace JohnHenryFashionWeb.Services
             {
                 // Get orders first, then process in memory to avoid Entity Framework translation issues
                 var orders = await _context.Orders
-                    .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate)
+                    .Where(o => o.CreatedAt >= startDate 
+                        && o.CreatedAt <= endDate
+                        && o.PaymentStatus == "paid"
+                        && o.Status != "cancelled")
                     .Select(o => new
                     {
                         o.UserId,
@@ -968,9 +985,11 @@ namespace JohnHenryFashionWeb.Services
                 worksheet.Cells[row, 2].Value = customer.Email;
                 worksheet.Cells[row, 3].Value = customer.CreatedAt;
                 
-                // Calculate order stats
+                // Calculate order stats - chỉ tính đơn hàng đã thanh toán
                 var orderStats = await _context.Orders
-                    .Where(o => o.UserId == customer.Id)
+                    .Where(o => o.UserId == customer.Id 
+                        && o.PaymentStatus == "paid"
+                        && o.Status != "cancelled")
                     .GroupBy(o => o.UserId)
                     .Select(g => new { Count = g.Count(), Total = g.Sum(o => o.TotalAmount) })
                     .FirstOrDefaultAsync();
@@ -1105,9 +1124,11 @@ namespace JohnHenryFashionWeb.Services
             var endDate = DateTime.UtcNow;
             var startDate = endDate.AddDays(-7);
 
-            // Get raw data first, then process in memory
+            // Get raw data first, then process in memory - chỉ từ đơn hàng đã thanh toán
             var orderItemsData = await _context.OrderItems
-                .Where(oi => oi.Order.CreatedAt >= startDate)
+                .Where(oi => oi.Order.CreatedAt >= startDate
+                    && oi.Order.PaymentStatus == "paid"
+                    && oi.Order.Status != "cancelled")
                 .Select(oi => new 
                 {
                     ProductId = oi.ProductId,

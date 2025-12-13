@@ -191,6 +191,52 @@ namespace JohnHenryFashionWeb.Services
                     Category = "general",
                     Description = "Instagram page URL",
                     IsEncrypted = false
+                },
+                // Security Settings
+                new SystemConfiguration
+                {
+                    Key = "max_login_attempts",
+                    Value = "5",
+                    Type = "number",
+                    Category = "security",
+                    Description = "Maximum login attempts before account lockout",
+                    IsEncrypted = false
+                },
+                new SystemConfiguration
+                {
+                    Key = "session_timeout_minutes",
+                    Value = "30",
+                    Type = "number",
+                    Category = "security",
+                    Description = "Session timeout in minutes",
+                    IsEncrypted = false
+                },
+                new SystemConfiguration
+                {
+                    Key = "password_expiry_days",
+                    Value = "90",
+                    Type = "number",
+                    Category = "security",
+                    Description = "Password expiration period in days",
+                    IsEncrypted = false
+                },
+                new SystemConfiguration
+                {
+                    Key = "require_2fa",
+                    Value = "false",
+                    Type = "boolean",
+                    Category = "security",
+                    Description = "Require two-factor authentication for all users",
+                    IsEncrypted = false
+                },
+                new SystemConfiguration
+                {
+                    Key = "lockout_duration_minutes",
+                    Value = "15",
+                    Type = "number",
+                    Category = "security",
+                    Description = "Account lockout duration after max failed attempts",
+                    IsEncrypted = false
                 }
             };
 
