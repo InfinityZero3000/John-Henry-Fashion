@@ -5,64 +5,90 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="admin-layout-container">
-    <div class="admin-content-header">
-        <div>
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
             <h1 class="admin-page-title">
-                <i data-lucide="bell"></i> Push Notification Campaigns
+                <i data-lucide="bell"></i>
+                Push Notification Campaigns
             </h1>
             <p class="admin-page-description">Quản lý chiến dịch push notification</p>
         </div>
-        <a href="/admin/marketing/push/create" class="admin-btn admin-btn-primary">
-            <i data-lucide="plus"></i> Tạo Campaign
-        </a>
+        <div class="admin-page-header-actions">
+            <a href="/admin/marketing/push/create" class="admin-btn admin-btn-primary">
+                <i data-lucide="plus"></i>
+                Tạo Campaign
+            </a>
+        </div>
     </div>
 
-    <div class="admin-stats-row">
-        <div class="admin-stat-card admin-stat-primary">
-            <div class="admin-stat-icon">
+    <!-- Stats Cards -->
+    <div class="admin-stats-grid" style="margin-bottom: 2rem;">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
                 <i data-lucide="bell"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-label">Tổng Campaigns</div>
                 <div class="admin-stat-value">@Model.Count</div>
+                <div class="admin-stat-label">Tổng Campaigns</div>
             </div>
         </div>
-        <div class="admin-stat-card admin-stat-success">
-            <div class="admin-stat-icon">
+        
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
                 <i data-lucide="send"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-label">Thông báo đã gửi</div>
                 <div class="admin-stat-value">@Model.Sum(p => p.SentCount)</div>
+                <div class="admin-stat-label">Thông báo đã gửi</div>
             </div>
         </div>
-        <div class="admin-stat-card admin-stat-info">
-            <div class="admin-stat-icon">
+        
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
                 <i data-lucide="users"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-label">Tổng người nhận</div>
                 <div class="admin-stat-value">@Model.Sum(p => p.TotalRecipients)</div>
+                <div class="admin-stat-label">Tổng người nhận</div>
+            </div>
+        </div>
+        
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i data-lucide="mouse-pointer-click"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.Sum(p => p.ClickCount)</div>
+                <div class="admin-stat-label">Tổng clicks</div>
             </div>
         </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="admin-alert admin-alert-success" style="margin-bottom: 1.5rem;">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
         </div>
     }
 
+    <!-- Campaigns Table -->
     <div class="admin-card">
+        <div class="admin-card-header">
+            <div>
+                <h3 class="admin-card-title">Danh sách Campaigns</h3>
+                <p class="admin-card-description">@Model.Count campaigns tổng cộng</p>
+            </div>
+        </div>
         <div class="admin-card-body">
             @if (!Model.Any())
             {
-                <div class="text-center py-5">
-                    <i data-lucide="inbox" style="width: 64px; height: 64px; color: var(--admin-text-secondary); margin-bottom: 1rem;"></i>
-                    <p class="text-muted mb-0">Chưa có campaign nào.</p>
+                <div style="text-align: center; padding: 4rem 2rem; color: var(--admin-text-secondary);">
+                    <i data-lucide="inbox" style="width: 64px; height: 64px; margin-bottom: 1.5rem; opacity: 0.5;"></i>
+                    <p style="font-size: 1rem; margin: 0;">Chưa có campaign nào.</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem; opacity: 0.8;">Tạo campaign đầu tiên để gửi thông báo đến khách hàng</p>
                 </div>
             }
             else
@@ -71,12 +97,12 @@
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Tiêu đề & Nội dung</th>
-                                <th>Đối tượng</th>
-                                <th>Thống kê</th>
-                                <th>Lịch gửi</th>
-                                <th>Trạng thái</th>
-                                <th style="width: 140px;">Thao tác</th>
+                                <th style="min-width: 250px;">Tiêu đề & Nội dung</th>
+                                <th style="min-width: 120px;">Đối tượng</th>
+                                <th style="min-width: 180px;">Thống kê</th>
+                                <th style="min-width: 160px;">Lịch gửi</th>
+                                <th style="min-width: 100px;">Trạng thái</th>
+                                <th style="width: 150px; text-align: center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,25 +110,35 @@
                             {
                                 <tr>
                                     <td>
-                                        <div style="font-weight: 500; color: var(--admin-text-primary); margin-bottom: 0.25rem;">
+                                        <div style="font-weight: 500; color: var(--admin-text-primary); margin-bottom: 0.5rem;">
                                             @push.Title
                                         </div>
-                                        <div style="color: var(--admin-text-secondary); font-size: 0.875rem;">
-                                            @(push.Message.Length > 60 ? push.Message.Substring(0, 60) + "..." : push.Message)
+                                        <div style="color: var(--admin-text-secondary); font-size: 0.875rem; line-height: 1.4;">
+                                            @(push.Message.Length > 80 ? push.Message.Substring(0, 80) + "..." : push.Message)
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="admin-badge admin-badge-secondary">
-                                            <i data-lucide="users"></i> @push.TargetAudience
+                                        <span class="admin-badge admin-badge-secondary" style="white-space: nowrap;">
+                                            <i data-lucide="users"></i>
+                                            @push.TargetAudience
                                         </span>
                                     </td>
                                     <td>
                                         @if (push.SentCount > 0)
                                         {
-                                            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem;">
-                                                <span><i data-lucide="send" style="width: 14px; height: 14px;"></i> @push.SentCount / @push.TotalRecipients gửi</span>
-                                                <span><i data-lucide="eye" style="width: 14px; height: 14px;"></i> @push.OpenCount mở</span>
-                                                <span><i data-lucide="mouse-pointer-click" style="width: 14px; height: 14px;"></i> @push.ClickCount clicks</span>
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                    <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                                                    <span>@push.SentCount / @push.TotalRecipients gửi</span>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                                    <span>@push.OpenCount mở</span>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                    <i data-lucide="mouse-pointer-click" style="width: 14px; height: 14px;"></i>
+                                                    <span>@push.ClickCount clicks</span>
+                                                </div>
                                             </div>
                                         }
                                         else
@@ -113,15 +149,17 @@
                                     <td>
                                         @if (push.ScheduledAt.HasValue)
                                         {
-                                            <span style="font-size: 0.875rem;">
-                                                <i data-lucide="clock"></i> @push.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")
-                                            </span>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                                                <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--admin-text-secondary);"></i>
+                                                <span>@push.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                            </div>
                                         }
                                         else if (push.SentAt.HasValue)
                                         {
-                                            <span style="font-size: 0.875rem; color: var(--admin-success-color);">
-                                                <i data-lucide="check-circle"></i> @push.SentAt.Value.ToString("dd/MM/yyyy HH:mm")
-                                            </span>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #10b981;">
+                                                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                                                <span>@push.SentAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                            </div>
                                         }
                                         else
                                         {
@@ -141,7 +179,7 @@
                                         <span class="admin-badge @badgeClass">@push.Status</span>
                                     </td>
                                     <td>
-                                        <div class="admin-table-actions">
+                                        <div class="admin-table-actions" style="justify-content: center; gap: 0.5rem;">
                                             <a href="/admin/marketing/push/@push.Id" class="admin-btn admin-btn-sm admin-btn-secondary" title="Chỉnh sửa">
                                                 <i data-lucide="edit-2"></i>
                                             </a>
