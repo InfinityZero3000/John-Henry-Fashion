@@ -1413,6 +1413,12 @@
             positionDisplay.value = 'Lưu vào kho banner';
         }
         
+        // Ensure IsActive checkbox is checked by default
+        const isActiveCheckbox = document.getElementById('isActive');
+        if (isActiveCheckbox) {
+            isActiveCheckbox.checked = true;
+        }
+        
         // Set default start date to now
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());

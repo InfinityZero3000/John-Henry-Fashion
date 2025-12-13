@@ -1,0 +1,452 @@
+@{
+    ViewData["Title"] = "Thông báo";
+    ViewData["CurrentSection"] = "Notifications";
+    ViewData["PageIcon"] = "bell";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h1 class="admin-page-title">
+                    <i data-lucide="bell"></i>
+                    Thông báo
+                </h1>
+                <p class="admin-page-description">Theo dõi tất cả hoạt động và cập nhật hệ thống</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="admin-btn admin-btn-secondary" onclick="markAllAsRead()">
+                    <i data-lucide="check-check"></i>
+                    Đánh dấu tất cả đã đọc
+                </button>
+                <button class="admin-btn admin-btn-secondary" onclick="clearAllNotifications()">
+                    <i data-lucide="trash-2"></i>
+                    Xóa tất cả
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="admin-tabs" style="margin-bottom: 2rem;">
+        <button class="admin-tab active" data-filter="all" onclick="filterNotifications('all', this)">
+            <i data-lucide="inbox"></i>
+            Tất cả
+            <span class="admin-badge admin-badge-secondary" id="all-count">0</span>
+        </button>
+        <button class="admin-tab" data-filter="unread" onclick="filterNotifications('unread', this)">
+            <i data-lucide="circle-dot"></i>
+            Chưa đọc
+            <span class="admin-badge admin-badge-danger" id="unread-count">0</span>
+        </button>
+        <button class="admin-tab" data-filter="order" onclick="filterNotifications('order', this)">
+            <i data-lucide="shopping-cart"></i>
+            Đơn hàng
+        </button>
+        <button class="admin-tab" data-filter="product" onclick="filterNotifications('product', this)">
+            <i data-lucide="package"></i>
+            Sản phẩm
+        </button>
+        <button class="admin-tab" data-filter="system" onclick="filterNotifications('system', this)">
+            <i data-lucide="settings"></i>
+            Hệ thống
+        </button>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="admin-card">
+        <div class="admin-card-body" style="padding: 0;">
+            <div id="notifications-container">
+                <!-- Loading -->
+                <div id="loading-state" style="padding: 4rem; text-align: center;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p style="margin-top: 1rem; color: var(--admin-text-secondary);">Đang tải thông báo...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" style="padding: 4rem; text-align: center; display: none;">
+                    <i data-lucide="inbox" style="width: 64px; height: 64px; color: var(--admin-text-secondary); opacity: 0.3; margin-bottom: 1rem;"></i>
+                    <p style="color: var(--admin-text-secondary); font-size: 1rem; margin: 0;">Không có thông báo nào</p>
+                </div>
+
+                <!-- Notifications List -->
+                <div id="notifications-list" style="display: none;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let allNotifications = [];
+    let currentFilter = 'all';
+
+    // Load notifications on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+        loadNotifications();
+    });
+
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/api/notifications');
+            const result = await response.json();
+
+            if (result.success) {
+                allNotifications = result.data;
+                displayNotifications(allNotifications);
+                updateCounts();
+            } else {
+                showError('Không thể tải thông báo');
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+            showError('Có lỗi xảy ra khi tải thông báo');
+        }
+    }
+
+    function displayNotifications(notifications) {
+        const container = document.getElementById('notifications-list');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+
+        loadingState.style.display = 'none';
+
+        if (!notifications || notifications.length === 0) {
+            emptyState.style.display = 'block';
+            container.style.display = 'none';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        container.style.display = 'block';
+
+        container.innerHTML = notifications.map(notification => `
+            <div class="notification-item ${notification.isRead ? 'read' : 'unread'}" data-id="${notification.id}" data-type="${notification.type}">
+                <div class="notification-icon ${getIconClass(notification.type)}">
+                    <i data-lucide="${getIcon(notification.type)}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <h4>${notification.title}</h4>
+                        <span class="notification-time">${notification.timeAgo}</span>
+                    </div>
+                    <p class="notification-message">${notification.message}</p>
+                    ${notification.actionUrl ? `<a href="${notification.actionUrl}" class="notification-action">Xem chi tiết</a>` : ''}
+                </div>
+                <div class="notification-actions">
+                    ${!notification.isRead ? `<button class="admin-btn admin-btn-sm admin-btn-secondary" onclick="markAsRead(${notification.id})" title="Đánh dấu đã đọc"><i data-lucide="check"></i></button>` : ''}
+                    <button class="admin-btn admin-btn-sm admin-btn-danger" onclick="deleteNotification(${notification.id})" title="Xóa"><i data-lucide="trash-2"></i></button>
+                </div>
+            </div>
+        `).join('');
+
+        lucide.createIcons();
+    }
+
+    function filterNotifications(filter, button) {
+        currentFilter = filter;
+
+        // Update active tab
+        document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+        button.classList.add('active');
+
+        // Filter notifications
+        let filtered = allNotifications;
+        if (filter === 'unread') {
+            filtered = allNotifications.filter(n => !n.isRead);
+        } else if (filter !== 'all') {
+            filtered = allNotifications.filter(n => n.type === filter);
+        }
+
+        displayNotifications(filtered);
+    }
+
+    function updateCounts() {
+        const allCount = allNotifications.length;
+        const unreadCount = allNotifications.filter(n => !n.isRead).length;
+
+        document.getElementById('all-count').textContent = allCount;
+        document.getElementById('unread-count').textContent = unreadCount;
+    }
+
+    async function markAsRead(id) {
+        try {
+            const response = await fetch(`/api/notifications/${id}/mark-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Update local data
+                const notification = allNotifications.find(n => n.id === id);
+                if (notification) {
+                    notification.isRead = true;
+                }
+                
+                // Re-filter and display
+                filterNotifications(currentFilter, document.querySelector(`.admin-tab[data-filter="${currentFilter}"]`));
+                updateCounts();
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    }
+
+    async function markAllAsRead() {
+        if (!confirm('Đánh dấu tất cả thông báo là đã đọc?')) return;
+
+        try {
+            const response = await fetch('/api/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                loadNotifications();
+            }
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
+    }
+
+    async function deleteNotification(id) {
+        if (!confirm('Xóa thông báo này?')) return;
+
+        try {
+            const response = await fetch(`/api/notifications/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Remove from local data
+                allNotifications = allNotifications.filter(n => n.id !== id);
+                
+                // Re-filter and display
+                filterNotifications(currentFilter, document.querySelector(`.admin-tab[data-filter="${currentFilter}"]`));
+                updateCounts();
+            }
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+        }
+    }
+
+    async function clearAllNotifications() {
+        if (!confirm('Xóa tất cả thông báo? Hành động này không thể hoàn tác!')) return;
+
+        try {
+            const deletePromises = allNotifications.map(n => 
+                fetch(`/api/notifications/${n.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            );
+
+            await Promise.all(deletePromises);
+            loadNotifications();
+        } catch (error) {
+            console.error('Error clearing all notifications:', error);
+            alert('Có lỗi xảy ra khi xóa thông báo');
+        }
+    }
+
+    function getIcon(type) {
+        const icons = {
+            'order': 'shopping-cart',
+            'product': 'package',
+            'system': 'settings',
+            'welcome': 'smile',
+            'admin_order': 'shopping-bag'
+        };
+        return icons[type] || 'bell';
+    }
+
+    function getIconClass(type) {
+        const classes = {
+            'order': 'primary',
+            'product': 'warning',
+            'system': 'info',
+            'welcome': 'success'
+        };
+        return classes[type] || 'secondary';
+    }
+
+    function showError(message) {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('notifications-list').innerHTML = `
+            <div style="padding: 2rem; text-align: center; color: var(--status-danger);">
+                <i data-lucide="alert-circle" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+                <p>${message}</p>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+</script>
+
+<style>
+    .admin-tabs {
+        display: flex;
+        gap: 0.5rem;
+        border-bottom: 1px solid var(--admin-border);
+        overflow-x: auto;
+    }
+
+    .admin-tab {
+        padding: 0.75rem 1.25rem;
+        border: none;
+        background: transparent;
+        color: var(--admin-text-secondary);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .admin-tab:hover {
+        color: var(--admin-text);
+        background: var(--admin-bg-hover);
+    }
+
+    .admin-tab.active {
+        color: var(--admin-primary);
+        border-bottom-color: var(--admin-primary);
+    }
+
+    .admin-tab i {
+        width: 16px;
+        height: 16px;
+    }
+
+    .notification-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--admin-border);
+        transition: background 0.2s;
+    }
+
+    .notification-item:hover {
+        background: var(--admin-bg-hover);
+    }
+
+    .notification-item.unread {
+        background: rgba(220, 53, 69, 0.03);
+    }
+
+    .notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notification-icon.primary {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--admin-primary);
+    }
+
+    .notification-icon.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--status-success);
+    }
+
+    .notification-icon.warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--status-warning);
+    }
+
+    .notification-icon.info {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--status-info);
+    }
+
+    .notification-icon.secondary {
+        background: var(--admin-bg-secondary);
+        color: var(--admin-text-secondary);
+    }
+
+    .notification-icon i {
+        width: 24px;
+        height: 24px;
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .notification-header h4 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--admin-text);
+        margin: 0;
+    }
+
+    .notification-time {
+        font-size: 0.75rem;
+        color: var(--admin-text-secondary);
+        white-space: nowrap;
+    }
+
+    .notification-message {
+        font-size: 0.875rem;
+        color: var(--admin-text-secondary);
+        line-height: 1.5;
+        margin: 0 0 0.75rem 0;
+    }
+
+    .notification-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: var(--admin-primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .notification-action:hover {
+        text-decoration: underline;
+    }
+
+    .notification-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+</style>
+}

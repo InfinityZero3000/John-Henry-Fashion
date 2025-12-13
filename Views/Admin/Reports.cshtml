@@ -1,31 +1,321 @@
 @model JohnHenryFashionWeb.ViewModels.ReportsViewModel
 @{
     ViewData["Title"] = "Báo cáo";
-    ViewData["CurrentSection"] = "Analytics";
+    ViewData["CurrentSection"] = "Reports";
     ViewData["PageIcon"] = "bar-chart-2";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 @section Styles {
     <style>
-        .table th {
-            border-top: none;
-            font-weight: 600;
-            color: #495057;
-            background-color: #f8f9fa;
+        .admin-page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
-
-        .table td {
-            vertical-align: middle;
+        
+        .admin-page-header-content h1.admin-page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
-
-        .chart-container {
-            height: 400px;
+        
+        .admin-page-description {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin: 0.5rem 0 0 0;
+        }
+        
+        .admin-page-header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .admin-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f8f9fa;
-            border-radius: 0.375rem;
+            flex-shrink: 0;
+        }
+        
+        .admin-stat-icon i {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .admin-stat-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+        
+        .admin-stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-stat-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .admin-stat-change.positive {
+            color: #10b981;
+        }
+        
+        .admin-stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .admin-stat-change.neutral {
+            color: #6b7280;
+        }
+        
+        .admin-stat-change i {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .admin-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .admin-card-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0.25rem 0 0 0;
+        }
+        
+        .admin-card-body {
+            padding: 1.5rem;
+        }
+        
+        .admin-icon-btn {
+            background: transparent;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-icon-btn:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .admin-link {
+            color: #DC3545;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s ease;
+        }
+        
+        .admin-link:hover {
+            color: #b91c1c;
+        }
+        
+        .admin-link i {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: none;
+            margin: 0;
+        }
+        
+        .admin-tab {
+            background: transparent;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9375rem;
+        }
+        
+        .admin-tab:hover {
+            color: #DC3545;
+            background: rgba(220, 53, 69, 0.05);
+        }
+        
+        .admin-tab.active {
+            color: #DC3545;
+            border-bottom-color: #DC3545;
+        }
+        
+        .admin-tab i {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .admin-tab-content {
+            display: none;
+        }
+        
+        .admin-tab-content.active {
+            display: block;
+        }
+        
+        .admin-table-container {
+            overflow-x: auto;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admin-table thead th {
+            padding: 0.875rem 1rem;
+            background: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        
+        .admin-table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .admin-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .admin-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+        
+        .admin-badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .admin-badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .admin-badge-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .admin-badge i {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .admin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .admin-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .admin-list-item:last-child {
+            border-bottom: none;
         }
     </style>
 }
@@ -38,9 +328,17 @@
                 <i data-lucide="bar-chart-2"></i>
                 Báo cáo & Phân tích
             </h1>
-            <p class="admin-page-description">Theo dõi hiệu suất kinh doanh và phân tích dữ liệu</p>
+            <p class="admin-page-description">Theo dõi hiệu suất kinh doanh và phân tích dữ liệu chi tiết</p>
         </div>
         <div class="admin-page-header-actions">
+            <select class="admin-form-select" style="width: auto;" id="dateRangeSelect">
+                <option value="today">Hôm nay</option>
+                <option value="yesterday">Hôm qua</option>
+                <option value="week" selected>7 ngày qua</option>
+                <option value="month">30 ngày qua</option>
+                <option value="quarter">3 tháng qua</option>
+                <option value="year">Năm nay</option>
+            </select>
             <button class="admin-btn admin-btn-success" onclick="exportReport('excel')">
                 <i data-lucide="download"></i>
                 Xuất Excel
@@ -51,545 +349,239 @@
             </button>
         </div>
     </div>
-        <!-- Date Range Filter -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-calendar-alt me-2"></i>Chọn khoảng thời gian
-                        </h5>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary active" data-range="today">Hôm nay</button>
-                            <button type="button" class="btn btn-outline-primary" data-range="yesterday">Hôm qua</button>
-                            <button type="button" class="btn btn-outline-primary" data-range="week">7 ngày qua</button>
-                            <button type="button" class="btn btn-outline-primary" data-range="month">30 ngày qua</button>
-                            <button type="button" class="btn btn-outline-primary" data-range="quarter">3 tháng qua</button>
-                            <button type="button" class="btn btn-outline-primary" data-range="year">Năm nay</button>
+
+    <!-- KPI Cards -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.KPIData.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
+                <div class="admin-stat-label">Tổng doanh thu</div>
+                <div class="admin-stat-change @(Model.KPIData.RevenueGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.RevenueGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.RevenueGrowth >= 0 ? "+" : "")@Model.KPIData.RevenueGrowth.ToString("F1")%
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
+                <i data-lucide="shopping-cart"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.KPIData.CompletedOrders</div>
+                <div class="admin-stat-label">Tổng đơn hàng</div>
+                <div class="admin-stat-change @(Model.KPIData.OrdersGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.OrdersGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.OrdersGrowth >= 0 ? "+" : "")@Model.KPIData.OrdersGrowth.ToString("F1")%
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.KPIData.NewCustomers</div>
+                <div class="admin-stat-label">Khách hàng mới</div>
+                <div class="admin-stat-change @(Model.KPIData.CustomersGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.CustomersGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.CustomersGrowth >= 0 ? "+" : "")@Model.KPIData.CustomersGrowth.ToString("F1")%
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: var(--jh-red-10); color: var(--jh-red);">
+                <i data-lucide="trending-up"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.KPIData.ConversionRate.ToString("F1")%</div>
+                <div class="admin-stat-label">Tỷ lệ chuyển đổi</div>
+                <div class="admin-stat-change neutral">
+                    <i data-lucide="minus"></i>
+                    0%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 mt-3">
+        <!-- Revenue Chart -->
+        <div class="col-lg-8">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Xu hướng doanh thu</h3>
+                        <p class="admin-card-description">Biểu đồ doanh thu theo thời gian</p>
+                    </div>
+                    <button class="admin-icon-btn">
+                        <i data-lucide="more-vertical"></i>
+                    </button>
+                </div>
+                <div class="admin-card-body">
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--admin-bg); border-radius: 0.5rem;">
+                        <div style="text-align: center; color: var(--admin-text-secondary);">
+                            <i data-lucide="bar-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Biểu đồ doanh thu sẽ hiển thị ở đây</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Key Performance Indicators -->
-        <div class="row mb-4">
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card bg-success text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h4 class="mb-0">@Model.KPIData.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</h4>
-                                <p class="mb-0">Tổng doanh thu</p>
-                                <small>
-                                    <i class="fas fa-arrow-@(Model.KPIData.RevenueGrowth >= 0 ? "up" : "down")"></i>
-                                    @(Model.KPIData.RevenueGrowth >= 0 ? "+" : "")@Model.KPIData.RevenueGrowth.ToString("F1")% so với kỳ trước
-                                </small>
-                            </div>
-                            <div>
-                                <i class="fas fa-dollar-sign fa-2x"></i>
-                            </div>
-                        </div>
+        <!-- Top Products -->
+        <div class="col-lg-4">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Sản phẩm bán chạy</h3>
+                        <p class="admin-card-description">Top 5 sản phẩm</p>
                     </div>
+                    <a href="/admin/products" class="admin-link">
+                        Xem tất cả
+                        <i data-lucide="arrow-right"></i>
+                    </a>
                 </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h4 class="mb-0">@Model.KPIData.CompletedOrders.ToString("N0")</h4>
-                                <p class="mb-0">Đơn hàng hoàn thành</p>
-                                <small>
-                                    <i class="fas fa-arrow-@(Model.KPIData.OrdersGrowth >= 0 ? "up" : "down")"></i>
-                                    @(Model.KPIData.OrdersGrowth >= 0 ? "+" : "")@Model.KPIData.OrdersGrowth.ToString("F1")% so với kỳ trước
-                                </small>
-                            </div>
-                            <div>
-                                <i class="fas fa-shopping-cart fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card bg-info text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h4 class="mb-0">@Model.KPIData.NewCustomers.ToString("N0")</h4>
-                                <p class="mb-0">Khách hàng mới</p>
-                                <small>
-                                    <i class="fas fa-arrow-@(Model.KPIData.CustomersGrowth >= 0 ? "up" : "down")"></i>
-                                    @(Model.KPIData.CustomersGrowth >= 0 ? "+" : "")@Model.KPIData.CustomersGrowth.ToString("F1")% so với kỳ trước
-                                </small>
-                            </div>
-                            <div>
-                                <i class="fas fa-users fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card bg-warning text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                                <h4 class="mb-0">@Model.KPIData.ConversionRate.ToString("F1")%</h4>
-                                <p class="mb-0">Tỷ lệ chuyển đổi</p>
-                                <small>
-                                    <i class="fas fa-arrow-@(Model.KPIData.ConversionGrowth >= 0 ? "up" : "down")"></i>
-                                    @(Model.KPIData.ConversionGrowth >= 0 ? "+" : "")@Model.KPIData.ConversionGrowth.ToString("F1")% so với kỳ trước
-                                </small>
-                            </div>
-                            <div>
-                                <i class="fas fa-chart-line fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Export Options -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-download me-2"></i>Xuất báo cáo
-                        </h5>
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-outline-success" onclick="exportReport('excel')">
-                                <i class="fas fa-file-excel me-1"></i>Excel
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="exportReport('pdf')">
-                                <i class="fas fa-file-pdf me-1"></i>PDF
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="exportReport('csv')">
-                                <i class="fas fa-file-csv me-1"></i>CSV
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="row mb-4">
-            <!-- Revenue Chart -->
-            <div class="col-lg-8 mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-chart-area me-2"></i>Xu hướng doanh thu
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <p class="text-muted text-center">Biểu đồ doanh thu sẽ hiển thị tại đây</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Top Products -->
-            <div class="col-lg-4 mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-trophy me-2"></i>Sản phẩm bán chạy
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <p class="text-muted text-center">Top sản phẩm sẽ hiển thị tại đây</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Analytics Tabs -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <ul class="nav nav-tabs card-header-tabs" id="analyticsTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales" type="button" role="tab">
-                                    <i class="fas fa-chart-line me-1"></i>Bán hàng
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="customers-tab" data-bs-toggle="tab" data-bs-target="#customers" type="button" role="tab">
-                                    <i class="fas fa-users me-1"></i>Khách hàng
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
-                                    <i class="fas fa-box me-1"></i>Sản phẩm
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="marketing-tab" data-bs-toggle="tab" data-bs-target="#marketing" type="button" role="tab">
-                                    <i class="fas fa-bullhorn me-1"></i>Marketing
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body">
-                        <div class="tab-content" id="analyticsTabContent">
-                            <!-- Sales Analytics Tab -->
-                            <div class="tab-pane fade show active" id="sales" role="tabpanel">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Chỉ số</th>
-                                                <th>Giá trị</th>
-                                                <th>Thay đổi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Doanh thu</td>
-                                                <td>@Model.SalesAnalytics.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
-                                                <td><span class="badge bg-success">+@Model.SalesAnalytics.GrowthRate.ToString("F1")%</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                <div class="admin-card-body">
+                    <div class="admin-list">
+                        @if (Model.TopProductsData != null && Model.TopProductsData.Any())
+                        {
+                            @foreach (var product in Model.TopProductsData.Take(5))
+                            {
+                                <div class="admin-list-item">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="font-weight: 500; color: var(--admin-text-primary);">@product.Label</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-weight: 600; color: #DC3545;">@product.Value.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
+                                        <div style="font-size: 0.875rem; color: var(--admin-text-secondary);">@((int)product.Value) đã bán</div>
+                                    </div>
                                 </div>
+                            }
+                        }
+                        else
+                        {
+                            <div style="text-align: center; padding: 2rem; color: var(--admin-text-secondary);">
+                                Chưa có dữ liệu
                             </div>
-                            <!-- Other tabs content simplified -->
-                            <div class="tab-pane fade" id="customers" role="tabpanel">
-                                <p class="text-muted">Thống kê khách hàng sẽ hiển thị tại đây</p>
-                            </div>
-                            <div class="tab-pane fade" id="products" role="tabpanel">
-                                <p class="text-muted">Thống kê sản phẩm sẽ hiển thị tại đây</p>
-                            </div>
-                            <div class="tab-pane fade" id="marketing" role="tabpanel">
-                                <p class="text-muted">Thống kê marketing sẽ hiển thị tại đây</p>
-                            </div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-                        <div class="metric-trend @(Model.SalesAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.SalesAnalytics.GrowthRate >= 0 ? "+" : "")@Model.SalesAnalytics.GrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.SalesAnalytics.TotalOrders.ToString("N0")</div>
-                        <div class="metric-label">Đơn hàng</div>
-                        <div class="metric-trend @(Model.SalesAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.SalesAnalytics.GrowthRate >= 0 ? "+" : "")@Model.SalesAnalytics.GrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.SalesAnalytics.AverageOrderValue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
-                        <div class="metric-label">Giá trị trung bình</div>
-                        <div class="metric-trend @(Model.SalesAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.SalesAnalytics.GrowthRate >= 0 ? "+" : "")@((Model.SalesAnalytics.GrowthRate * 0.5m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.SalesAnalytics.MonthlyGrowthRate.ToString("F1")%</div>
-                        <div class="metric-label">Tăng trưởng</div>
-                        <div class="metric-trend @(Model.SalesAnalytics.MonthlyGrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.SalesAnalytics.MonthlyGrowthRate >= 0 ? "+" : "")@Model.SalesAnalytics.MonthlyGrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">Doanh thu theo danh mục</div>
-                        </div>
-                        <canvas id="categorySalesChart" height="300"></canvas>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">Phương thức thanh toán</div>
-                        </div>
-                        <canvas id="paymentMethodChart" height="300"></canvas>
-                    </div>
-                </div>
+
+    <!-- Analytics Tabs -->
+    <div class="admin-card mt-3">
+        <div class="admin-card-header" style="border-bottom: 1px solid var(--admin-border); padding-bottom: 0;">
+            <div class="admin-tabs" style="margin: 0;">
+                <button class="admin-tab active" data-tab="sales" style="padding: 1rem 1.5rem; border-bottom: 2px solid transparent;">
+                    <i data-lucide="shopping-bag"></i>
+                    Bán hàng
+                </button>
+                <button class="admin-tab" data-tab="customers" style="padding: 1rem 1.5rem; border-bottom: 2px solid transparent;">
+                    <i data-lucide="users"></i>
+                    Khách hàng
+                </button>
+                <button class="admin-tab" data-tab="products" style="padding: 1rem 1.5rem; border-bottom: 2px solid transparent;">
+                    <i data-lucide="package"></i>
+                    Sản phẩm
+                </button>
+                <button class="admin-tab" data-tab="marketing" style="padding: 1rem 1.5rem; border-bottom: 2px solid transparent;">
+                    <i data-lucide="megaphone"></i>
+                    Marketing
+                </button>
             </div>
         </div>
-
-        <!-- Customer Analytics Tab -->
-        <div class="tab-pane fade" id="customers" role="tabpanel">
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.CustomerAnalytics.TotalCustomers.ToString("N0")</div>
-                        <div class="metric-label">Tổng khách hàng</div>
-                        <div class="metric-trend @(Model.CustomerAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.CustomerAnalytics.GrowthRate >= 0 ? "+" : "")@Model.CustomerAnalytics.GrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.CustomerAnalytics.NewCustomers.ToString("N0")</div>
-                        <div class="metric-label">Khách hàng mới</div>
-                        <div class="metric-trend @(Model.CustomerAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.CustomerAnalytics.GrowthRate >= 0 ? "+" : "")@((Model.CustomerAnalytics.GrowthRate * 1.4m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.CustomerAnalytics.ReturnRate.ToString("F1")%</div>
-                        <div class="metric-label">Tỷ lệ quay lại</div>
-                        <div class="metric-trend @(Model.CustomerAnalytics.ReturnRate >= 60 ? "trend-up" : "trend-down")">@(Model.CustomerAnalytics.ReturnRate >= 60 ? "+" : "")@((Model.CustomerAnalytics.ReturnRate * 0.08m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.CustomerAnalytics.CustomerLifetimeValue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
-                        <div class="metric-label">Giá trị trọn đời</div>
-                        <div class="metric-trend @(Model.CustomerAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.CustomerAnalytics.GrowthRate >= 0 ? "+" : "")@((Model.CustomerAnalytics.GrowthRate * 0.6m).ToString("F1"))%</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="comparison-table">
-                <table class="table table-modern">
-                    <thead>
-                        <tr>
-                            <th>Phân khúc khách hàng</th>
-                            <th>Số lượng</th>
-                            <th>Tỷ lệ</th>
-                            <th>Doanh thu</th>
-                            <th>AOV</th>
-                            <th>Xu hướng</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.CustomerSegments != null && Model.CustomerSegments.Any())
-                        {
-                            @foreach (var segment in Model.CustomerSegments.Take(3))
-                            {
-                                <tr>
-                                    <td><strong>@segment.Name</strong></td>
-                                    <td>@segment.Count.ToString("N0")</td>
-                                    <td>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar" style="width: @(segment.Percentage)%;"></div>
-                                        </div>
-                                        <small>@segment.Percentage.ToString("F0")%</small>
-                                    </td>
-                                    <td>@segment.Revenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
-                                    <td>@segment.AverageOrderValue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
-                                    <td><span class="badge @(segment.GrowthRate >= 0 ? "bg-success" : "bg-danger")">@(segment.GrowthRate >= 0 ? "+" : "")@segment.GrowthRate.ToString("F0")%</span></td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
+        <div class="admin-card-body" style="padding: 1.5rem;">
+            <!-- Sales Analytics Tab -->
+            <div class="admin-tab-content active" id="tab-sales">
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
                             <tr>
-                                <td><strong>VIP</strong></td>
-                                <td>245</td>
+                                <th style="width: 40%;">Chỉ số</th>
+                                <th style="width: 30%; text-align: right;">Giá trị</th>
+                                <th style="width: 30%; text-align: right;">Thay đổi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
                                 <td>
-                                    <div class="progress-bar-container">
-                                        <div class="progress-bar" style="width: 85%;"></div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <i data-lucide="dollar-sign" style="width: 16px; height: 16px; color: var(--admin-text-secondary);"></i>
+                                        <span>Doanh thu</span>
                                     </div>
-                                    <small>85%</small>
                                 </td>
-                                <td>1.200.000 ₫</td>
-                                <td>4.900.000 ₫</td>
-                                <td><span class="badge bg-success">+12%</span></td>
+                                <td style="font-weight: 600; text-align: right;">@Model.SalesAnalytics.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                <td style="text-align: right;">
+                                    <span class="admin-badge admin-badge-@(Model.SalesAnalytics.GrowthRate >= 0 ? "success" : "danger")">
+                                        <i data-lucide="@(Model.SalesAnalytics.GrowthRate >= 0 ? "trending-up" : "trending-down")" style="width: 12px; height: 12px;"></i>
+                                        @(Model.SalesAnalytics.GrowthRate >= 0 ? "+" : "")@Model.SalesAnalytics.GrowthRate.ToString("F1")%
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
-                                <td><strong>Thường xuyên</strong></td>
-                                <td>1,567</td>
                                 <td>
-                                    <div class="progress-bar-container">
-                                        <div class="progress-bar" style="width: 65%;"></div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <i data-lucide="shopping-cart" style="width: 16px; height: 16px; color: var(--admin-text-secondary);"></i>
+                                        <span>Đơn hàng</span>
                                     </div>
-                                    <small>65%</small>
                                 </td>
-                                <td>800.000 ₫</td>
-                                <td>2.100.000 ₫</td>
-                                <td><span class="badge bg-success">+8%</span></td>
+                                <td style="font-weight: 600; text-align: right;">@Model.SalesAnalytics.TotalOrders.ToString("N0")</td>
+                                <td style="text-align: right;">
+                                    <span class="admin-badge admin-badge-@(Model.SalesAnalytics.GrowthRate >= 0 ? "success" : "danger")">
+                                        <i data-lucide="@(Model.SalesAnalytics.GrowthRate >= 0 ? "trending-up" : "trending-down")" style="width: 12px; height: 12px;"></i>
+                                        @(Model.SalesAnalytics.GrowthRate >= 0 ? "+" : "")@Model.SalesAnalytics.GrowthRate.ToString("F1")%
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
-                                <td><strong>Mới</strong></td>
-                                <td>2,890</td>
                                 <td>
-                                    <div class="progress-bar-container">
-                                        <div class="progress-bar" style="width: 35%;"></div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <i data-lucide="trending-up" style="width: 16px; height: 16px; color: var(--admin-text-secondary);"></i>
+                                        <span>Giá trị trung bình đơn hàng</span>
                                     </div>
-                                    <small>35%</small>
                                 </td>
-                                <td>400.000 ₫</td>
-                                <td>890.000 ₫</td>
-                                <td><span class="badge bg-warning">+22%</span></td>
+                                <td style="font-weight: 600; text-align: right;">@Model.SalesAnalytics.AverageOrderValue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                <td style="text-align: right;">
+                                    <span class="admin-badge admin-badge-info">
+                                        <i data-lucide="minus" style="width: 12px; height: 12px;"></i>
+                                        @((Model.SalesAnalytics.GrowthRate * 0.5m).ToString("F1"))%
+                                    </span>
+                                </td>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Product Analytics Tab -->
-        <div class="tab-pane fade" id="products" role="tabpanel">
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.ProductAnalytics.TotalProducts.ToString("N0")</div>
-                        <div class="metric-label">Tổng sản phẩm</div>
-                        <div class="metric-trend @(Model.ProductAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.ProductAnalytics.GrowthRate >= 0 ? "+" : "")@Model.ProductAnalytics.GrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.ProductAnalytics.NewProducts.ToString("N0")</div>
-                        <div class="metric-label">Sản phẩm mới</div>
-                        <div class="metric-trend @(Model.ProductAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.ProductAnalytics.GrowthRate >= 0 ? "+" : "")@((Model.ProductAnalytics.GrowthRate * 3.5m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.ProductAnalytics.OutOfStock.ToString("N0")</div>
-                        <div class="metric-label">Hết hàng</div>
-                        <div class="metric-trend @(Model.ProductAnalytics.OutOfStock <= 50 ? "trend-up" : "trend-down")">@(Model.ProductAnalytics.OutOfStock <= 50 ? "+" : "-")@((Model.ProductAnalytics.OutOfStock * 0.05m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.ProductAnalytics.AvailabilityRate.ToString("F1")%</div>
-                        <div class="metric-label">Tỷ lệ có sẵn</div>
-                        <div class="metric-trend @(Model.ProductAnalytics.AvailabilityRate >= 90 ? "trend-up" : "trend-down")">@(Model.ProductAnalytics.AvailabilityRate >= 90 ? "+" : "")@((Model.ProductAnalytics.AvailabilityRate * 0.025m).ToString("F1"))%</div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-                        <div class="row">
-                <div class="col-lg-6">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">Hiệu suất theo danh mục</div>
-                        </div>
-                        <canvas id="categoryPerformanceChart" height="300"></canvas>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">Vòng đời sản phẩm</div>
-                        </div>
-                        <canvas id="productLifecycleChart" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Marketing Analytics Tab -->
-        <div class="tab-pane fade" id="marketing" role="tabpanel">
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.TotalVisits.ToString("N0")</div>
-                        <div class="metric-label">Lượt truy cập</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.GrowthRate >= 0 ? "+" : "")@Model.MarketingAnalytics.GrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.ConversionRate.ToString("F1")%</div>
-                        <div class="metric-label">Tỷ lệ chuyển đổi</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.ConversionRate >= 4 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.ConversionRate >= 4 ? "+" : "")@((Model.MarketingAnalytics.ConversionRate * 0.2m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.AdvertisingCost.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
-                        <div class="metric-label">Chi phí quảng cáo</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.AdvertisingCost <= 50000 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.AdvertisingCost <= 50000 ? "-" : "+")@((Model.MarketingAnalytics.AdvertisingCost * 0.0001m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.ROAS.ToString("F1")x</div>
-                        <div class="metric-label">ROAS</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.ROAS >= 6 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.ROAS >= 6 ? "+" : "")@((Model.MarketingAnalytics.ROAS * 0.15m).ToString("F1"))x</div>
-                    </div>
+            <!-- Customers Tab -->
+            <div class="admin-tab-content" id="tab-customers">
+                <div style="text-align: center; padding: 3rem; color: var(--admin-text-secondary);">
+                    <i data-lucide="users" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Thống kê khách hàng sẽ hiển thị tại đây</p>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">Nguồn traffic</div>
-                        </div>
-                        <canvas id="trafficSourceChart" height="300"></canvas>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">ROI theo kênh</div>
-                        </div>
-                        <canvas id="channelROIChart" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Marketing Analytics Tab -->
-        <div class="tab-pane fade" id="marketing" role="tabpanel">
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.TotalVisits.ToString("N0")</div>
-                        <div class="metric-label">Lượt truy cập</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.GrowthRate >= 0 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.GrowthRate >= 0 ? "+" : "")@Model.MarketingAnalytics.GrowthRate.ToString("F1")%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.ConversionRate.ToString("F1")%</div>
-                        <div class="metric-label">Tỷ lệ chuyển đổi</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.ConversionRate >= 4 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.ConversionRate >= 4 ? "+" : "")@((Model.MarketingAnalytics.ConversionRate * 0.2m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.AdvertisingCost.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
-                        <div class="metric-label">Chi phí quảng cáo</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.AdvertisingCost <= 50000 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.AdvertisingCost <= 50000 ? "-" : "+")@((Model.MarketingAnalytics.AdvertisingCost * 0.0001m).ToString("F1"))%</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="metric-card">
-                        <div class="metric-value">@Model.MarketingAnalytics.ROAS.ToString("F1")x</div>
-                        <div class="metric-label">ROAS</div>
-                        <div class="metric-trend @(Model.MarketingAnalytics.ROAS >= 6 ? "trend-up" : "trend-down")">@(Model.MarketingAnalytics.ROAS >= 6 ? "+" : "")@((Model.MarketingAnalytics.ROAS * 0.15m).ToString("F1"))x</div>
-                    </div>
+            <!-- Products Tab -->
+            <div class="admin-tab-content" id="tab-products">
+                <div style="text-align: center; padding: 3rem; color: var(--admin-text-secondary);">
+                    <i data-lucide="package" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Thống kê sản phẩm sẽ hiển thị tại đây</p>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">Nguồn traffic</div>
-                        </div>
-                        <canvas id="trafficSourceChart" height="300"></canvas>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <div class="chart-title">ROI theo kênh</div>
-                        </div>
-                        <canvas id="channelROIChart" height="300"></canvas>
-                    </div>
+            <!-- Marketing Tab -->
+            <div class="admin-tab-content" id="tab-marketing">
+                <div style="text-align: center; padding: 3rem; color: var(--admin-text-secondary);">
+                    <i data-lucide="megaphone" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Thống kê marketing sẽ hiển thị tại đây</p>
                 </div>
             </div>
         </div>
@@ -601,300 +593,51 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Initialize charts
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-            initializeCharts();
-            setupEventHandlers();
+        // Tab switching with improved styling
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Update active tab with border highlight
+                document.querySelectorAll('.admin-tab').forEach(t => {
+                    t.classList.remove('active');
+                    t.style.borderBottom = '2px solid transparent';
+                    t.style.color = 'var(--admin-text-secondary)';
+                });
+                this.classList.add('active');
+                this.style.borderBottom = '2px solid #DC3545';
+                this.style.color = '#DC3545';
+                
+                // Update active content
+                document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('tab-' + tabName).classList.add('active');
+                
+                // Reinitialize icons
+                lucide.createIcons();
+            });
         });
 
-        function initializeCharts() {
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.RevenueChartData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        label: 'Doanh thu',
-                        data: [@Html.Raw(string.Join(",", Model.RevenueChartData.Select(d => d.Value.ToString())))],
-                        borderColor: 'rgb(99, 102, 241)',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return new Intl.NumberFormat('vi-VN', {
-                                        style: 'currency',
-                                        currency: 'VND',
-                                        minimumFractionDigits: 0
-                                    }).format(value);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Top Products Chart
-            const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
-            new Chart(topProductsCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.TopProductsData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        data: [@Html.Raw(string.Join(",", Model.TopProductsData.Select(d => d.Value.ToString())))],
-                        backgroundColor: [
-                            '#10b981',
-                            '#3b82f6',
-                            '#8b5cf6',
-                            '#f59e0b',
-                            '#ef4444'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { padding: 20 }
-                        }
-                    }
-                }
-            });
-
-            // Category Sales Chart
-            const categorySalesCtx = document.getElementById('categorySalesChart').getContext('2d');
-            new Chart(categorySalesCtx, {
-                type: 'bar',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.CategorySalesData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        label: 'Doanh thu',
-                        data: [@Html.Raw(string.Join(",", Model.CategorySalesData.Select(d => d.Value.ToString())))],
-                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                        borderColor: 'rgb(99, 102, 241)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            // Payment Method Chart
-            const paymentCtx = document.getElementById('paymentMethodChart').getContext('2d');
-            new Chart(paymentCtx, {
-                type: 'pie',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.PaymentMethodData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        data: [@Html.Raw(string.Join(",", Model.PaymentMethodData.Select(d => d.Value.ToString())))],
-                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-
-            // Category Performance Chart
-            const categoryPerformanceCtx = document.getElementById('categoryPerformanceChart').getContext('2d');
-            new Chart(categoryPerformanceCtx, {
-                type: 'radar',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.CategoryPerformanceData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        label: 'Hiệu suất',
-                        data: [@Html.Raw(string.Join(",", Model.CategoryPerformanceData.Select(d => d.Value.ToString())))],
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        borderColor: 'rgb(99, 102, 241)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            // Product Lifecycle Chart
-            const productLifecycleCtx = document.getElementById('productLifecycleChart').getContext('2d');
-            new Chart(productLifecycleCtx, {
-                type: 'line',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.ProductLifecycleData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        label: 'Vòng đời sản phẩm',
-                        data: [@Html.Raw(string.Join(",", Model.ProductLifecycleData.Select(d => d.Value.ToString())))],
-                        borderColor: 'rgb(139, 92, 246)',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            // Traffic Source Chart
-            const trafficSourceCtx = document.getElementById('trafficSourceChart').getContext('2d');
-            new Chart(trafficSourceCtx, {
-                type: 'bar',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.TrafficSourceData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        label: 'Lượt truy cập',
-                        data: [@Html.Raw(string.Join(",", Model.TrafficSourceData.Select(d => d.Value.ToString())))],
-                        backgroundColor: [
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(245, 158, 11, 0.8)',
-                            'rgba(139, 92, 246, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            // Channel ROI Chart
-            const channelROICtx = document.getElementById('channelROIChart').getContext('2d');
-            new Chart(channelROICtx, {
-                type: 'doughnut',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.ChannelROIData.Select(d => "'" + d.Label + "'")))],
-                    datasets: [{
-                        data: [@Html.Raw(string.Join(",", Model.ChannelROIData.Select(d => d.Value.ToString())))],
-                        backgroundColor: [
-                            '#10b981',
-                            '#3b82f6',
-                            '#f59e0b',
-                            '#8b5cf6'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
+        // Set initial active tab style
+        const activeTab = document.querySelector('.admin-tab.active');
+        if (activeTab) {
+            activeTab.style.borderBottom = '2px solid #DC3545';
+            activeTab.style.color = '#DC3545';
         }
 
-        function setupEventHandlers() {
-            // Date range selector
-            document.querySelectorAll('.date-range-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.date-range-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const range = this.dataset.range;
-                    loadDataForRange(range);
-                });
-            });
-
-            // Chart controls
-            document.querySelectorAll('.chart-control').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const parent = this.closest('.chart-controls');
-                    parent.querySelectorAll('.chart-control').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const metric = this.dataset.metric;
-                    updateChart(metric);
-                });
-            });
-        }
-
-        function loadDataForRange(range) {
-            // Simulate API call to load data for selected range
-            console.log('Loading data for range:', range);
-            
-            // Show loading indicator
-            showLoading();
-            
-            // Simulate network delay
-            setTimeout(() => {
-                hideLoading();
-                updateChartsWithNewData(range);
-            }, 1000);
-        }
-
-        function updateChart(metric) {
-            console.log('Updating chart for metric:', metric);
-            // Update chart based on selected metric
-        }
+        // Date range change
+        document.getElementById('dateRangeSelect')?.addEventListener('change', function() {
+            console.log('Date range changed to:', this.value);
+            // TODO: Reload data with new date range
+        });
 
         function exportReport(format) {
-            console.log('Exporting report in format:', format);
-            
-            // Show loading
-            showLoading();
-            
-            // Simulate export process
-            setTimeout(() => {
-                hideLoading();
-                alert(`Báo cáo ${format.toUpperCase()} đã được xuất thành công!`);
-            }, 2000);
+            console.log('Exporting report as:', format);
+            alert('Chức năng xuất báo cáo ' + format.toUpperCase() + ' sẽ được phát triển sau.');
         }
 
         function scheduleReport() {
-            // Open schedule modal or redirect to scheduling page
-            alert('Chức năng lập lịch báo cáo sẽ được triển khai sớm!');
+            console.log('Scheduling report');
+            alert('Chức năng lập lịch báo cáo sẽ được phát triển sau.');
         }
-
-        function showLoading() {
-            // Implement loading indicator
-            console.log('Showing loading...');
-        }
-
-        function hideLoading() {
-            // Hide loading indicator
-            console.log('Hiding loading...');
-        }
-
-        function updateChartsWithNewData(range) {
-            // Update all charts with new data based on date range
-            console.log('Updating charts with new data for range:', range);
-        }
-
-        // Auto-refresh data every 5 minutes
-        setInterval(() => {
-            const activeRange = document.querySelector('.date-range-btn.active').dataset.range;
-            loadDataForRange(activeRange);
-        }, 300000);
     </script>
 }

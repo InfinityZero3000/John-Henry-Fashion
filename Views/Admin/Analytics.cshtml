@@ -1,0 +1,473 @@
+@{
+    ViewData["Title"] = "Phân tích";
+    ViewData["CurrentSection"] = "Analytics";
+    ViewData["PageIcon"] = "trending-up";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .admin-page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .admin-page-header-content h1.admin-page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .admin-page-description {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin: 0.5rem 0 0 0;
+        }
+        
+        .admin-page-header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .admin-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .admin-stat-icon i {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .admin-stat-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+        
+        .admin-stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-stat-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .admin-stat-change.positive {
+            color: #10b981;
+        }
+        
+        .admin-stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .admin-stat-change.neutral {
+            color: #6b7280;
+        }
+        
+        .admin-stat-change i {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .admin-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .admin-card-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0.25rem 0 0 0;
+        }
+        
+        .admin-card-body {
+            padding: 1.5rem;
+        }
+        
+        .admin-icon-btn {
+            background: transparent;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-icon-btn:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .admin-link {
+            color: #DC3545;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s ease;
+        }
+        
+        .admin-link:hover {
+            color: #b91c1c;
+        }
+        
+        .admin-link i {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .admin-table-container {
+            overflow-x: auto;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admin-table thead th {
+            padding: 0.875rem 1rem;
+            background: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        
+        .admin-table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .admin-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .admin-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+}
+
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
+            <h1 class="admin-page-title">
+                <i data-lucide="trending-up"></i>
+                Phân tích dữ liệu
+            </h1>
+            <p class="admin-page-description">Theo dõi và phân tích hiệu suất kinh doanh</p>
+        </div>
+        <div class="admin-page-header-actions">
+            <select class="admin-form-select" style="width: auto;" onchange="updateDateRange(this.value)">
+                <option value="today">Hôm nay</option>
+                <option value="yesterday">Hôm qua</option>
+                <option value="7days" selected>7 ngày qua</option>
+                <option value="30days">30 ngày qua</option>
+                <option value="3months">3 tháng qua</option>
+                <option value="year">Năm nay</option>
+            </select>
+            <button class="admin-btn admin-btn-primary" onclick="refreshAnalytics()">
+                <i data-lucide="refresh-cw"></i>
+                Làm mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: var(--jh-red-10); color: var(--jh-red);">
+                <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">0 ₫</div>
+                <div class="admin-stat-label">Doanh thu</div>
+                <div class="admin-stat-change positive">
+                    <i data-lucide="trending-up"></i>
+                    +0%
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
+                <i data-lucide="shopping-cart"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">0</div>
+                <div class="admin-stat-label">Đơn hàng</div>
+                <div class="admin-stat-change positive">
+                    <i data-lucide="trending-up"></i>
+                    +0%
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">0</div>
+                <div class="admin-stat-label">Khách hàng mới</div>
+                <div class="admin-stat-change positive">
+                    <i data-lucide="trending-up"></i>
+                    +0%
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i data-lucide="percent"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">0%</div>
+                <div class="admin-stat-label">Tỷ lệ chuyển đổi</div>
+                <div class="admin-stat-change neutral">
+                    <i data-lucide="minus"></i>
+                    0%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 mt-3">
+        <!-- Revenue Chart -->
+        <div class="col-lg-6">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Doanh thu theo thời gian</h3>
+                        <p class="admin-card-description">Biểu đồ doanh thu 30 ngày qua</p>
+                    </div>
+                    <button class="admin-icon-btn">
+                        <i data-lucide="more-vertical"></i>
+                    </button>
+                </div>
+                <div class="admin-card-body">
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--admin-bg); border-radius: 0.5rem;">
+                        <div style="text-align: center; color: var(--admin-text-secondary);">
+                            <i data-lucide="bar-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Biểu đồ doanh thu sẽ hiển thị ở đây</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Chart -->
+        <div class="col-lg-6">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Đơn hàng theo trạng thái</h3>
+                        <p class="admin-card-description">Phân bổ đơn hàng</p>
+                    </div>
+                    <button class="admin-icon-btn">
+                        <i data-lucide="more-vertical"></i>
+                    </button>
+                </div>
+                <div class="admin-card-body">
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--admin-bg); border-radius: 0.5rem;">
+                        <div style="text-align: center; color: var(--admin-text-secondary);">
+                            <i data-lucide="pie-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Biểu đồ phân bổ đơn hàng sẽ hiển thị ở đây</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="row g-3 mt-3">
+        <!-- Top Products -->
+        <div class="col-lg-6">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Sản phẩm bán chạy</h3>
+                        <p class="admin-card-description">Top 10 sản phẩm</p>
+                    </div>
+                    <a href="/admin/products" class="admin-link">
+                        Xem tất cả
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%;">
+                                        <i data-lucide="package" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+                                        Sản phẩm
+                                    </th>
+                                    <th style="width: 25%; text-align: center;">
+                                        <i data-lucide="shopping-cart" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+                                        Đã bán
+                                    </th>
+                                    <th style="width: 25%; text-align: right;">
+                                        <i data-lucide="dollar-sign" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+                                        Doanh thu
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 2rem; color: var(--admin-text-secondary);">
+                                        <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                        <div>Chưa có dữ liệu</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Customers -->
+        <div class="col-lg-6">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Khách hàng thân thiết</h3>
+                        <p class="admin-card-description">Top 10 khách hàng</p>
+                    </div>
+                    <a href="/admin/users" class="admin-link">
+                        Xem tất cả
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+                <div class="admin-card-body">
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%;">
+                                        <i data-lucide="user" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+                                        Khách hàng
+                                    </th>
+                                    <th style="width: 25%; text-align: center;">
+                                        <i data-lucide="shopping-bag" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+                                        Đơn hàng
+                                    </th>
+                                    <th style="width: 25%; text-align: right;">
+                                        <i data-lucide="dollar-sign" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+                                        Chi tiêu
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 2rem; color: var(--admin-text-secondary);">
+                                        <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                        <div>Chưa có dữ liệu</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function updateDateRange(range) {
+            console.log('Date range changed to:', range);
+            // TODO: Implement date range update
+        }
+
+        function refreshAnalytics() {
+            console.log('Refreshing analytics...');
+            location.reload();
+        }
+    </script>
+}
