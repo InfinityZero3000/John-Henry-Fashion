@@ -257,6 +257,9 @@ builder.Services.AddScoped<JohnHenryFashionWeb.Services.SeedDataService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IVietnameseAddressService, JohnHenryFashionWeb.Services.VietnameseAddressService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IContentModerationService, JohnHenryFashionWeb.Services.ContentModerationService>();
 
+// Add Payment Validator Helper
+builder.Services.AddScoped<JohnHenryFashionWeb.Helpers.PaymentValidator>();
+
 // Add Application Insights
 builder.Services.AddApplicationInsightsTelemetry();
 
