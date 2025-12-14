@@ -9,10 +9,12 @@
     <!-- Page Header -->
     <div class="admin-page-header">
         <div class="admin-flex-between">
-            <h1 class="admin-page-title">
-                <i data-lucide="user"></i>
-                Chi tiết người dùng
-            </h1>
+            <div>
+                <h1 class="admin-page-title">
+                    <i data-lucide="user"></i>
+                    Chi tiết người dùng
+                </h1>
+            </div>
             <div style="display: flex; gap: 0.5rem;">
                 <a href="@Url.Action("EditUser", new { id = Model.User.Id })" class="admin-btn admin-btn-primary">
                     <i data-lucide="edit"></i>
@@ -94,6 +96,61 @@
             </div>
         </div>
     }
+
+    <!-- Statistics Cards -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng đơn hàng</h3>
+                    <p class="value">@Model.OrderCount</p>
+                    <p class="change">Đơn hàng đã đặt</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng chi tiêu</h3>
+                    <p class="value">@Model.TotalSpent.ToString("N0") đ</p>
+                    <p class="change">Giá trị đơn hàng</p>
+                </div>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Trạng thái tài khoản</h3>
+                    <p class="value">@(Model.User.IsActive ? "Hoạt động" : "Đã khóa")</p>
+                    <p class="change">@(Model.IsLockedOut ? "Đang bị khóa tạm thời" : "Bình thường")</p>
+                </div>
+                <div class="admin-stat-card-icon @(Model.User.IsActive ? "success" : "danger")">
+                    <i data-lucide="@(Model.User.IsActive ? "user-check" : "user-x")"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Bảo mật</h3>
+                    <p class="value">@Model.FailedLoginAttempts / 3</p>
+                    <p class="change">@(Model.FailedLoginAttempts >= 3 ? "Đã vượt giới hạn" : "Số lần sai")</p>
+                </div>
+                <div class="admin-stat-card-icon @(Model.FailedLoginAttempts >= 3 ? "danger" : "info")">
+                    <i data-lucide="shield"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row g-4">
         <!-- Left Column: User Info -->
@@ -197,7 +254,7 @@
             <!-- Lockout Information Card -->
             @if (Model.IsLockedOut || Model.FailedLoginAttempts > 0)
             {
-                <div class="admin-card mt-4 @(Model.IsLockedOut ? "border-warning" : "")">
+                <div class="admin-card mt-4">
                     <div class="admin-card-header @(Model.IsLockedOut ? "bg-warning text-dark" : "")">
                         <h5 class="admin-card-title">
                             <i data-lucide="@(Model.IsLockedOut ? "lock" : "shield")"></i>
@@ -207,12 +264,12 @@
                     <div class="admin-card-body">
                         @if (Model.IsLockedOut)
                         {
-                            <div class="alert alert-warning mb-3">
+                            <div class="mb-3 p-3" style="background: #fff3cd; border-radius: 6px; border: 1px solid #ffc107;">
                                 <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                    <i data-lucide="alert-triangle" style="width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;"></i>
+                                    <i data-lucide="alert-triangle" style="width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; color: #ffc107;"></i>
                                     <div>
-                                        <strong>Tài khoản đang bị khóa tạm thời</strong>
-                                        <p class="mb-0 small">Do nhập sai mật khẩu quá nhiều lần</p>
+                                        <strong style="color: #856404;">Tài khoản đang bị khóa tạm thời</strong>
+                                        <p class="mb-0 small" style="color: #856404; margin-top: 0.25rem;">Do nhập sai mật khẩu quá nhiều lần</p>
                                     </div>
                                 </div>
                             </div>
@@ -287,44 +344,59 @@
                 </div>
             }
 
-            <!-- Statistics Card -->
+            <!-- Contact & Activity Card -->
             <div class="admin-card mt-4">
                 <div class="admin-card-header">
                     <h5 class="admin-card-title">
-                        <i data-lucide="bar-chart-2"></i>
-                        Thống kê
+                        <i data-lucide="activity"></i>
+                        Hoạt động & Thời gian
                     </h5>
                 </div>
                 <div class="admin-card-body">
-                    <div class="admin-stat-item">
-                        <div class="admin-stat-label">
-                            <i data-lucide="shopping-cart"></i>
-                            Tổng đơn hàng
-                        </div>
-                        <div class="admin-stat-value">@Model.OrderCount</div>
-                    </div>
-                    <div class="admin-stat-item">
-                        <div class="admin-stat-label">
-                            <i data-lucide="dollar-sign"></i>
-                            Tổng chi tiêu
-                        </div>
-                        <div class="admin-stat-value">@Model.TotalSpent.ToString("N0") ₫</div>
-                    </div>
-                    <div class="admin-stat-item">
-                        <div class="admin-stat-label">
+                    <div class="admin-info-item">
+                        <label class="admin-info-label">
                             <i data-lucide="calendar"></i>
-                            Tham gia từ
+                            Ngày tham gia
+                        </label>
+                        <div class="admin-info-value">
+                            @Model.JoinDate.ToString("dd/MM/yyyy HH:mm")
+                            <br>
+                            <small class="text-muted">
+                                @{
+                                    var daysSinceJoin = (DateTime.UtcNow - Model.JoinDate).Days;
+                                }
+                                @daysSinceJoin ngày trước
+                            </small>
                         </div>
-                        <div class="admin-stat-value">@Model.JoinDate.ToString("dd/MM/yyyy")</div>
                     </div>
                     @if (Model.LastActivity.HasValue)
                     {
-                        <div class="admin-stat-item">
-                            <div class="admin-stat-label">
+                        <div class="admin-info-item">
+                            <label class="admin-info-label">
                                 <i data-lucide="clock"></i>
                                 Hoạt động cuối
+                            </label>
+                            <div class="admin-info-value">
+                                @Model.LastActivity.Value.ToString("dd/MM/yyyy HH:mm")
+                                <br>
+                                <small class="text-muted">
+                                    @{
+                                        var timeSinceActivity = DateTime.UtcNow - Model.LastActivity.Value;
+                                        if (timeSinceActivity.TotalDays >= 1)
+                                        {
+                                            <text>@((int)timeSinceActivity.TotalDays) ngày trước</text>
+                                        }
+                                        else if (timeSinceActivity.TotalHours >= 1)
+                                        {
+                                            <text>@((int)timeSinceActivity.TotalHours) giờ trước</text>
+                                        }
+                                        else
+                                        {
+                                            <text>@((int)timeSinceActivity.TotalMinutes) phút trước</text>
+                                        }
+                                    }
+                                </small>
                             </div>
-                            <div class="admin-stat-value">@Model.LastActivity.Value.ToString("dd/MM/yyyy HH:mm")</div>
                         </div>
                     }
                 </div>

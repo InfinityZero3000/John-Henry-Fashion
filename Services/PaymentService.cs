@@ -323,7 +323,7 @@ namespace JohnHenryFashionWeb.Services
 
                 var requestId = Guid.NewGuid().ToString();
                 var orderId = request.OrderId;
-                var amount = (long)request.Amount; // MoMo requires long/number type, not string
+                var amount = ((long)request.Amount).ToString(); // MoMo requires STRING, not number
                 var orderInfo = request.OrderInfo;
                 var redirectUrl = request.ReturnUrl;
                 var ipnUrl = request.NotifyUrl;
@@ -345,7 +345,7 @@ namespace JohnHenryFashionWeb.Services
                     partnerName = "John Henry Fashion",
                     storeId = "MomoTestStore",
                     requestId,
-                    amount, // This will be serialized as number
+                    amount, // STRING value as required by MoMo API v2.1
                     orderId,
                     orderInfo,
                     redirectUrl,

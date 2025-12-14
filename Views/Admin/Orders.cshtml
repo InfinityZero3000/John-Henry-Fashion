@@ -240,6 +240,12 @@
                                             COD - Chờ thanh toán
                                         </span>
                                         break;
+                                    case "awaiting_transfer":
+                                        <span class="admin-badge admin-badge-info">
+                                            <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
+                                            Chờ chuyển khoản
+                                        </span>
+                                        break;
                                     case "failed":
                                         <span class="admin-badge admin-badge-danger">
                                             <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
@@ -880,6 +886,7 @@
                 'paid': '<span class="admin-badge admin-badge-success"><i data-lucide="check-circle" style="width:12px;height:12px;"></i> Đã thanh toán</span>',
                 'pending': '<span class="admin-badge admin-badge-warning"><i data-lucide="clock" style="width:12px;height:12px;"></i> Chờ thanh toán</span>',
                 'cod_pending': '<span class="admin-badge admin-badge-warning"><i data-lucide="banknote" style="width:12px;height:12px;"></i> COD - Chờ thanh toán</span>',
+                'awaiting_transfer': '<span class="admin-badge admin-badge-info"><i data-lucide="credit-card" style="width:12px;height:12px;"></i> Chờ chuyển khoản</span>',
                 'failed': '<span class="admin-badge admin-badge-danger"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Thất bại</span>',
                 'refunded': '<span class="admin-badge admin-badge-info"><i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i> Hoàn tiền</span>'
             };

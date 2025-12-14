@@ -805,6 +805,14 @@ namespace JohnHenryFashionWeb.Controllers
                 _logger.LogInformation("MoMo Return - ResultCode: {ResultCode}, OrderId: {OrderId}", 
                     resultCode, orderId);
 
+                // If no parameters, redirect to home (user accessed URL directly)
+                if (string.IsNullOrEmpty(resultCode) && string.IsNullOrEmpty(orderId))
+                {
+                    _logger.LogWarning("MoMo Return accessed without parameters");
+                    TempData["Info"] = "Không tìm thấy thông tin thanh toán.";
+                    return RedirectToAction("Index", "Home");
+                }
+
                 if (resultCode == "0" && Guid.TryParse(orderId, out var orderGuid))
                 {
                     var order = await _context.Orders
