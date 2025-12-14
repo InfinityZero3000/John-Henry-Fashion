@@ -207,6 +207,7 @@
                         <a href="/admin/notifications" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Notifications" || ViewData["CurrentSection"]?.ToString() == "notifications" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
                             <i data-lucide="bell" style="margin-right: 1rem; width: 20px;"></i>
                             <span>Thông báo</span>
+                            <span id="notification-menu-badge" class="badge bg-danger ms-auto" style="display: none;">0</span>
                         </a>
                     </li>
 
@@ -294,14 +295,11 @@
                         <div class="dropdown">
                             <button class="btn btn-link notification-btn" type="button" data-bs-toggle="dropdown">
                                 <i data-lucide="bell"></i>
-                                <span class="notification-badge">2</span>
+                                <span id="notification-header-badge" class="notification-badge" style="display: none;">0</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
                                 <li><h6 class="dropdown-header">Thông báo</h6></li>
-                                <li><a class="dropdown-item" href="#"><i data-lucide="shopping-cart" class="text-info"></i> Đơn hàng mới</a></li>
-                                <li><a class="dropdown-item" href="#"><i data-lucide="alert-circle" class="text-warning"></i> Sản phẩm sắp hết hàng</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-center" href="#">Xem tất cả</a></li>
+                                <li><a class="dropdown-item" href="/admin/notifications"><i data-lucide="bell" class="text-info"></i> Xem tất cả thông báo</a></li>
                             </ul>
                         </div>
                     </div>
@@ -676,6 +674,46 @@
                 AdminNotification.info('Thông báo', '@Html.Raw(TempData["InfoMessage"])');
                 </text>
             }
+        });
+    </script>
+
+    <script>
+        // Auto-update notification badge
+        document.addEventListener('DOMContentLoaded', function() {
+            const headerBadge = document.getElementById('notification-header-badge');
+            const menuBadge = document.getElementById('notification-menu-badge');
+            
+            async function updateNotificationBadge() {
+                try {
+                    const response = await fetch('/api/notifications/unread-count');
+                    const result = await response.json();
+                    
+                    if (result.success && result.count > 0) {
+                        const displayText = result.count > 99 ? '99+' : result.count;
+                        
+                        if (headerBadge) {
+                            headerBadge.textContent = displayText;
+                            headerBadge.style.display = 'inline-block';
+                        }
+                        
+                        if (menuBadge) {
+                            menuBadge.textContent = displayText;
+                            menuBadge.style.display = 'inline-block';
+                        }
+                    } else {
+                        if (headerBadge) headerBadge.style.display = 'none';
+                        if (menuBadge) menuBadge.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error updating notification badge:', error);
+                }
+            }
+            
+            // Update immediately on load
+            updateNotificationBadge();
+            
+            // Update every 30 seconds
+            setInterval(updateNotificationBadge, 30000);
         });
     </script>
 
