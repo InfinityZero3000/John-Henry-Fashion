@@ -4,151 +4,134 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">Quản lý đánh giá</h1>
-            <p class="text-muted">Quản lý và phản hồi đánh giá từ khách hàng</p>
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="star"></i>
+                Quản lý đánh giá
+            </h1>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Tổng đánh giá
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.TotalReviews</div>
-                        </div>
-                        <div class="col-auto">
-                            <i data-lucide="star" class="w-8 h-8 text-gray-300"></i>
-                        </div>
-                    </div>
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng đánh giá</h3>
+                    <p class="value">@Model.Statistics.TotalReviews</p>
+                    <p class="change">Tất cả đánh giá</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="star"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Chưa phản hồi
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.PendingReviews</div>
-                        </div>
-                        <div class="col-auto">
-                            <i data-lucide="clock" class="w-8 h-8 text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Chưa phản hồi</h3>
+                    <p class="value">@Model.Statistics.PendingReviews</p>
+                    <p class="change">Cần xử lý</p>
+                </div>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="clock"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Đã duyệt
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.ApprovedReviews</div>
-                        </div>
-                        <div class="col-auto">
-                            <i data-lucide="check" class="w-8 h-8 text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Đã duyệt</h3>
+                    <p class="value">@Model.Statistics.ApprovedReviews</p>
+                    <p class="change">@((Model.Statistics.TotalReviews > 0 ? (Model.Statistics.ApprovedReviews * 100.0 / Model.Statistics.TotalReviews).ToString("F1") : "0"))% tổng số</p>
+                </div>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="check-circle"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Đánh giá trung bình
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.AverageRating.ToString("0.0")</div>
-                        </div>
-                        <div class="col-auto">
-                            <i data-lucide="star-half" class="w-8 h-8 text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Đánh giá TB</h3>
+                    <p class="value">@Model.Statistics.AverageRating.ToString("F1") <i data-lucide="star" style="width: 20px; height: 20px; color: #ffc107;"></i></p>
+                    <p class="change">Điểm trung bình</p>
+                </div>
+                <div class="admin-stat-card-icon info">
+                    <i data-lucide="award"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Bộ lọc</h6>
-        </div>
-        <div class="card-body">
-            <form method="get" action="@Url.Action("Reviews")">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label for="search">Tìm kiếm</label>
-                        <input type="text" class="form-control" id="search" name="search" value="@Model.Search" placeholder="Tên sản phẩm, khách hàng...">
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label for="rating">Đánh giá</label>
-                        <select class="form-control" id="rating" name="rating">
-                            <option value="">Tất cả</option>
-                            <option value="5" selected="@(Model.Rating == 5)">5 sao</option>
-                            <option value="4" selected="@(Model.Rating == 4)">4 sao</option>
-                            <option value="3" selected="@(Model.Rating == 3)">3 sao</option>
-                            <option value="2" selected="@(Model.Rating == 2)">2 sao</option>
-                            <option value="1" selected="@(Model.Rating == 1)">1 sao</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label for="status">Trạng thái</label>
-                        <select class="form-control" id="status" name="status">
-                            <option value="">Tất cả</option>
-                            <option value="pending" selected="@(Model.Status == "pending")">Chưa duyệt</option>
-                            <option value="approved" selected="@(Model.Status == "approved")">Đã duyệt</option>
-                            <option value="rejected" selected="@(Model.Status == "rejected")">Từ chối</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label>&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i data-lucide="search"></i> Tìm kiếm
-                        </button>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label>&nbsp;</label>
-                        <a href="@Url.Action("Reviews")" class="btn btn-secondary btn-block">
-                            <i data-lucide="x"></i> Xóa bộ lọc
-                        </a>
+    <!-- Filters & Search -->
+    <div class="admin-filters">
+        <form method="get" action="@Url.Action("Reviews")">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="admin-form-label">Tìm kiếm</label>
+                    <div class="admin-search-box" style="position: relative;">
+                        <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--admin-text-secondary); pointer-events: none;"></i>
+                        <input type="text" id="search" name="search" class="admin-form-input" placeholder="Tên sản phẩm, khách hàng..." value="@Model.Search" style="padding-left: 3rem;" />
                     </div>
                 </div>
-            </form>
-        </div>
+                <div class="col-md-2">
+                    <label class="admin-form-label">Đánh giá</label>
+                    <select class="admin-form-select" id="rating" name="rating">
+                        <option value="" selected="@(Model.Rating == null)">Tất cả</option>
+                        <option value="5" selected="@(Model.Rating == 5)">⭐ 5 sao</option>
+                        <option value="4" selected="@(Model.Rating == 4)">⭐ 4 sao</option>
+                        <option value="3" selected="@(Model.Rating == 3)">⭐ 3 sao</option>
+                        <option value="2" selected="@(Model.Rating == 2)">⭐ 2 sao</option>
+                        <option value="1" selected="@(Model.Rating == 1)">⭐ 1 sao</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="admin-form-label">Trạng thái</label>
+                    <select class="admin-form-select" id="status" name="status">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.Status))">Tất cả</option>
+                        <option value="pending" selected="@(Model.Status == "pending")">Chưa duyệt</option>
+                        <option value="approved" selected="@(Model.Status == "approved")">Đã duyệt</option>
+                        <option value="rejected" selected="@(Model.Status == "rejected")">Từ chối</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="admin-btn admin-btn-primary" style="width: 100%;">
+                        <i data-lucide="search"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Action("Reviews")" class="admin-btn admin-btn-secondary" style="width: 100%; display: inline-block; text-align: center;">
+                        <i data-lucide="x"></i>
+                        Xóa lọc
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- Reviews List -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Danh sách đánh giá (@Model.TotalCount)</h6>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5 class="admin-card-title">
+                <i data-lucide="list"></i>
+                Danh sách đánh giá (@Model.TotalCount)
+            </h5>
         </div>
-        <div class="card-body">
+        <div class="admin-card-body">
             @if (Model.Reviews.Any())
             {
                 foreach (var review in Model.Reviews)
                 {
-                    <div class="card mb-3">
-                        <div class="card-body">
+                    <div class="admin-card mb-3">
+                        <div class="admin-card-body">
                             <div class="row">
                                 <div class="col-md-2">
                                     @if (!string.IsNullOrEmpty(review.Product?.FeaturedImageUrl))
@@ -186,14 +169,20 @@
                                                 } *@
                                             </div>
                                         </div>
-                                        <div class="text-right">
+                                        <div style="text-align: right;">
                                             @if (review.IsApproved)
                                             {
-                                                <span class="badge badge-success">Đã duyệt</span>
+                                                <span class="admin-badge admin-badge-success">
+                                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                                    Đã duyệt
+                                                </span>
                                             }
                                             else
                                             {
-                                                <span class="badge badge-warning">Chưa duyệt</span>
+                                                <span class="admin-badge admin-badge-warning">
+                                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                                    Chưa duyệt
+                                                </span>
                                             }
                                         </div>
                                     </div>
@@ -237,10 +226,10 @@
                                         <div>
                                             @if (!review.IsApproved)
                                             {
-                                                <button class="btn btn-sm btn-success approve-review" data-id="@review.Id">
+                                                <button class="admin-btn admin-btn-sm admin-btn-success approve-review" data-id="@review.Id">
                                                     <i data-lucide="check"></i> Duyệt
                                                 </button>
-                                                <button class="btn btn-sm btn-danger reject-review" data-id="@review.Id">
+                                                <button class="admin-btn admin-btn-sm admin-btn-danger reject-review" data-id="@review.Id">
                                                     <i data-lucide="x"></i> Từ chối
                                                 </button>
                                             }
@@ -255,38 +244,57 @@
                 <!-- Pagination -->
                 @if (Model.TotalPages > 1)
                 {
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            @if (Model.CurrentPage > 1)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" href="@Url.Action("Reviews", new { page = Model.CurrentPage - 1, search = Model.Search, rating = Model.Rating, status = Model.Status })">Trước</a>
-                                </li>
-                            }
+                    <div class="admin-pagination">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="@Url.Action("Reviews", new { page = Model.CurrentPage - 1, search = Model.Search, rating = Model.Rating, status = Model.Status })" 
+                               class="admin-pagination-btn">
+                                <i data-lucide="chevron-left"></i>
+                                Trước
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="admin-pagination-btn" disabled>
+                                <i data-lucide="chevron-left"></i>
+                                Trước
+                            </button>
+                        }
 
-                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
-                            {
-                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                                    <a class="page-link" href="@Url.Action("Reviews", new { page = i, search = Model.Search, rating = Model.Rating, status = Model.Status })">@i</a>
-                                </li>
-                            }
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <a href="@Url.Action("Reviews", new { page = i, search = Model.Search, rating = Model.Rating, status = Model.Status })" 
+                               class="admin-pagination-btn @(i == Model.CurrentPage ? "active" : "")">@i</a>
+                        }
 
-                            @if (Model.CurrentPage < Model.TotalPages)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" href="@Url.Action("Reviews", new { page = Model.CurrentPage + 1, search = Model.Search, rating = Model.Rating, status = Model.Status })">Sau</a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="@Url.Action("Reviews", new { page = Model.CurrentPage + 1, search = Model.Search, rating = Model.Rating, status = Model.Status })" 
+                               class="admin-pagination-btn">
+                                Sau
+                                <i data-lucide="chevron-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="admin-pagination-btn" disabled>
+                                Sau
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        }
+                    </div>
+
+                    <div class="admin-text-center" style="margin-top: var(--spacing-md); color: var(--admin-text-light); font-size: 0.875rem;">
+                        Trang @Model.CurrentPage / @Model.TotalPages (Tổng @Model.TotalCount đánh giá)
+                    </div>
                 }
             }
             else
             {
-                <div class="text-center py-5">
-                    <i data-lucide="star" class="w-12 h-12 text-muted mb-3"></i>
-                    <h5 class="text-muted">Chưa có đánh giá nào</h5>
-                    <p class="text-muted">Các đánh giá từ khách hàng sẽ hiển thị tại đây.</p>
+                <div class="admin-text-center" style="padding: 3rem;">
+                    <i data-lucide="star" style="width: 64px; height: 64px; color: var(--admin-text-muted); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Chưa có đánh giá nào</h3>
+                    <p style="color: var(--admin-text-light);">Các đánh giá từ khách hàng sẽ hiển thị tại đây.</p>
                 </div>
             }
         </div>
@@ -295,6 +303,11 @@
 
 @section Scripts {
     <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+
         $(document).ready(function() {
             $('.approve-review').click(function() {
                 var reviewId = $(this).data('id');
@@ -302,13 +315,19 @@
                 
                 $.post('@Url.Action("ApproveReview")', { id: reviewId }, function(data) {
                     if (data.success) {
-                        button.closest('.card').find('.badge-warning').removeClass('badge-warning').addClass('badge-success').text('Đã duyệt');
+                        button.closest('.admin-card-body').find('.admin-badge-warning')
+                            .removeClass('admin-badge-warning')
+                            .addClass('admin-badge-success')
+                            .html('<i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> Đã duyệt');
                         button.siblings('.reject-review').remove();
                         button.remove();
-                        toastr.success('Duyệt đánh giá thành công!');
+                        lucide.createIcons();
+                        
+                        // Show success message
+                        showToast('success', 'Duyệt đánh giá thành công!');
                     }
                 }).fail(function() {
-                    toastr.error('Có lỗi xảy ra khi duyệt đánh giá!');
+                    showToast('error', 'Có lỗi xảy ra khi duyệt đánh giá!');
                 });
             });
 
@@ -319,16 +338,34 @@
                 if (confirm('Bạn có chắc chắn muốn từ chối đánh giá này?')) {
                     $.post('@Url.Action("RejectReview")', { id: reviewId }, function(data) {
                         if (data.success) {
-                            button.closest('.card').find('.badge-warning').removeClass('badge-warning').addClass('badge-danger').text('Từ chối');
+                            button.closest('.admin-card-body').find('.admin-badge-warning')
+                                .removeClass('admin-badge-warning')
+                                .addClass('admin-badge-danger')
+                                .html('<i data-lucide="x-circle" style="width: 12px; height: 12px;"></i> Từ chối');
                             button.siblings('.approve-review').remove();
                             button.remove();
-                            toastr.success('Đã từ chối đánh giá!');
+                            lucide.createIcons();
+                            
+                            showToast('success', 'Đã từ chối đánh giá!');
                         }
                     }).fail(function() {
-                        toastr.error('Có lỗi xảy ra khi từ chối đánh giá!');
+                        showToast('error', 'Có lỗi xảy ra khi từ chối đánh giá!');
                     });
                 }
             });
         });
+
+        // Toast notification helper
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
     </script>
 }

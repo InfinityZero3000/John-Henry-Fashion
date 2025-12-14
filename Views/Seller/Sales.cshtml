@@ -4,149 +4,128 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="admin-content">
     <!-- Header Section -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="page-title">Báo cáo Bán hàng</h1>
-                    <p class="text-muted">Theo dõi hiệu suất bán hàng của cửa hàng</p>
-                </div>
-            </div>
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-page-title">
+                <i data-lucide="trending-up"></i>
+                Báo cáo Bán hàng
+            </h1>
         </div>
     </div>
 
     <!-- Date Filter -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="fromDate" class="form-label">Từ ngày</label>
-                            <input type="date" class="form-control" id="fromDate" name="fromDate" 
-                                   value="@Model.FromDate.ToString("yyyy-MM-dd")">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="toDate" class="form-label">Đến ngày</label>
-                            <input type="date" class="form-control" id="toDate" name="toDate" 
-                                   value="@Model.ToDate.ToString("yyyy-MM-dd")">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Xem báo cáo
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-grid">
-                                <button type="button" class="btn btn-success" onclick="exportData()">
-                                    <i class="fas fa-download"></i> Xuất Excel
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <div class="admin-filters">
+        <form method="get" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <label for="fromDate" class="admin-form-label">Từ ngày</label>
+                <input type="date" class="admin-form-input" id="fromDate" name="fromDate" 
+                       value="@Model.FromDate.ToString("yyyy-MM-dd")">
             </div>
-        </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label for="toDate" class="admin-form-label">Đến ngày</label>
+                <input type="date" class="admin-form-input" id="toDate" name="toDate" 
+                       value="@Model.ToDate.ToString("yyyy-MM-dd")">
+            </div>
+            <button type="submit" class="admin-btn admin-btn-primary">
+                <i data-lucide="search"></i>
+                Xem báo cáo
+            </button>
+            <button type="button" class="admin-btn admin-btn-success" onclick="exportData()">
+                <i data-lucide="download"></i>
+                Xuất Excel
+            </button>
+        </form>
     </div>
 
     <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title mb-0">@Model.TotalRevenue.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</h4>
-                            <p class="card-text">Tổng doanh thu</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                        </div>
-                    </div>
+    <div class="admin-stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3 class="admin-stat-card-value">@Model.TotalRevenue.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</h3>
+                    <p class="admin-stat-card-label">Tổng doanh thu</p>
+                </div>
+                <div class="admin-stat-card-icon admin-stat-card-icon-primary">
+                    <i data-lucide="dollar-sign"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title mb-0">@Model.TotalOrders</h4>
-                            <p class="card-text">Tổng đơn hàng</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-shopping-cart fa-2x"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3 class="admin-stat-card-value">@Model.TotalOrders</h3>
+                    <p class="admin-stat-card-label">Tổng đơn hàng</p>
+                </div>
+                <div class="admin-stat-card-icon admin-stat-card-icon-success">
+                    <i data-lucide="shopping-cart"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Sales Chart -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Biểu đồ Doanh thu theo ngày</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="salesChart" height="100"></canvas>
-                </div>
-            </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3 class="admin-card-title">
+                <i data-lucide="bar-chart-2" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                Biểu đồ Doanh thu theo ngày
+            </h3>
+        </div>
+        <div class="admin-card-body">
+            <canvas id="salesChart" height="100"></canvas>
         </div>
     </div>
 
     <!-- Sales Table -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Chi tiết theo ngày</h5>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3 class="admin-card-title">
+                <i data-lucide="list" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                Chi tiết theo ngày
+            </h3>
+        </div>
+        <div class="admin-card-body">
+            @if (Model.SalesData.Any())
+            {
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Số đơn hàng</th>
+                                <th>Doanh thu</th>
+                                <th>Đơn giá trung bình</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.SalesData.OrderByDescending(s => s.Date))
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="admin-badge admin-badge-primary">
+                                            <i data-lucide="shopping-cart"></i>
+                                            @item.OrderCount
+                                        </span>
+                                    </td>
+                                    <td style="font-weight: 600;">@item.Revenue.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                    <td>@((item.OrderCount > 0 ? item.Revenue / item.OrderCount : 0).ToString("C", new System.Globalization.CultureInfo("vi-VN")))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-                <div class="card-body">
-                    @if (Model.SalesData.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Ngày</th>
-                                        <th>Số đơn hàng</th>
-                                        <th>Doanh thu</th>
-                                        <th>Đơn giá trung bình</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model.SalesData.OrderByDescending(s => s.Date))
-                                    {
-                                        <tr>
-                                            <td>@item.Date.ToString("dd/MM/yyyy")</td>
-                                            <td>@item.OrderCount</td>
-                                            <td>@item.Revenue.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</td>
-                                            <td>@((item.OrderCount > 0 ? item.Revenue / item.OrderCount : 0).ToString("C", new System.Globalization.CultureInfo("vi-VN")))</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                            <h5>Không có dữ liệu</h5>
-                            <p class="text-muted">Không có dữ liệu bán hàng trong khoảng thời gian đã chọn.</p>
-                        </div>
-                    }
+            }
+            else
+            {
+                <div class="admin-text-center" style="padding: 3rem;">
+                    <i data-lucide="trending-up" style="width: 64px; height: 64px; color: var(--admin-text-muted); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Không có dữ liệu</h3>
+                    <p style="color: var(--admin-text-light); margin-bottom: 0;">Không có dữ liệu bán hàng trong khoảng thời gian đã chọn.</p>
                 </div>
-            </div>
+            }
         </div>
     </div>
 </div>
@@ -154,6 +133,11 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+
         // Sales Chart
         var ctx = document.getElementById('salesChart').getContext('2d');
         var salesChart = new Chart(ctx, {
@@ -211,8 +195,22 @@
             var fromDate = document.getElementById('fromDate').value;
             var toDate = document.getElementById('toDate').value;
             
-            // TODO: Implement export functionality
-            alert('Chức năng xuất Excel sẽ được phát triển trong phiên bản tiếp theo.');
+            // Show toast notification
+            showToast('info', 'Chức năng xuất Excel sẽ được phát triển trong phiên bản tiếp theo.');
+        }
+
+        // Toast notification helper
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            const alertType = type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info';
+            toast.className = `alert alert-${alertType} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
     </script>
 }

@@ -1,51 +1,47 @@
 @model JohnHenryFashionWeb.ViewModels.SellerSettingsViewModel
 @{
-    ViewData["Title"] = "Cài đặt Cửa hàng";
+    ViewData["Title"] = "Cài đặt";
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <!-- Success Message -->
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i data-lucide="check-circle" class="me-2"></i>
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <!-- Header Section -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="page-title">Cài đặt Cửa hàng</h1>
-                    <p class="text-muted">Quản lý cài đặt và tùy chọn cho cửa hàng của bạn</p>
-                </div>
-            </div>
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="settings"></i>
+                Cài đặt
+            </h1>
         </div>
     </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="admin-alert admin-alert-success">
+            <i data-lucide="check-circle"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
 
     <form asp-action="Settings" method="post">
         <div class="row">
             <!-- Main Settings -->
-            <div class="col-md-8">
+            <div class="col-lg-8">
                 <!-- Business Settings -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i data-lucide="store" class="me-2"></i>Cài đặt Kinh doanh
-                        </h5>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">
+                            <i data-lucide="store"></i>
+                            Cài đặt Kinh doanh
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Trạng thái cửa hàng</label>
-                            <div class="form-check form-switch">
-                                <input asp-for="IsStoreActive" class="form-check-input" type="checkbox" id="storeActiveSwitch">
-                                <label class="form-check-label" for="storeActiveSwitch">
-                                    Kích hoạt cửa hàng
-                                </label>
+                            <label class="admin-form-label">Trạng thái cửa hàng</label>
+                            <div class="admin-form-switch">
+                                <input asp-for="IsStoreActive" type="checkbox" id="storeActiveSwitch">
+                                <label for="storeActiveSwitch">Kích hoạt cửa hàng</label>
                             </div>
                             <small class="text-muted">
                                 Khi tắt, khách hàng sẽ không thể xem sản phẩm của bạn
@@ -53,10 +49,10 @@
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="StoreDescription" class="form-label fw-bold">
+                            <label asp-for="StoreDescription" class="admin-form-label">
                                 Mô tả cửa hàng
                             </label>
-                            <textarea asp-for="StoreDescription" class="form-control" rows="4" 
+                            <textarea asp-for="StoreDescription" class="admin-form-input" rows="4" 
                                       placeholder="Mô tả ngắn gọn về cửa hàng và sản phẩm của bạn"></textarea>
                             <span asp-validation-for="StoreDescription" class="text-danger"></span>
                             <small class="text-muted">Tối đa 500 ký tự</small>
@@ -65,57 +61,61 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="BusinessHoursStart" class="form-label fw-bold">
+                                    <label asp-for="BusinessHoursStart" class="admin-form-label">
                                         Giờ mở cửa
                                     </label>
-                                    <input asp-for="BusinessHoursStart" type="time" class="form-control" />
+                                    <input asp-for="BusinessHoursStart" type="time" class="admin-form-input" />
                                     <span asp-validation-for="BusinessHoursStart" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="BusinessHoursEnd" class="form-label fw-bold">
+                                    <label asp-for="BusinessHoursEnd" class="admin-form-label">
                                         Giờ đóng cửa
                                     </label>
-                                    <input asp-for="BusinessHoursEnd" type="time" class="form-control" />
+                                    <input asp-for="BusinessHoursEnd" type="time" class="admin-form-input" />
                                     <span asp-validation-for="BusinessHoursEnd" class="text-danger"></span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Ngày nghỉ trong tuần</label>
+                            <label class="admin-form-label">Ngày nghỉ trong tuần</label>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnMonday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnMonday" class="form-check-label">Thứ Hai</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnTuesday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnTuesday" class="form-check-label">Thứ Ba</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnWednesday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnWednesday" class="form-check-label">Thứ Tư</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnThursday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnThursday" class="form-check-label">Thứ Năm</label>
+                                    <div class="admin-checkbox-group">
+                                        <label>
+                                            <input asp-for="ClosedOnMonday" type="checkbox">
+                                            <span>Thứ Hai</span>
+                                        </label>
+                                        <label>
+                                            <input asp-for="ClosedOnTuesday" type="checkbox">
+                                            <span>Thứ Ba</span>
+                                        </label>
+                                        <label>
+                                            <input asp-for="ClosedOnWednesday" type="checkbox">
+                                            <span>Thứ Tư</span>
+                                        </label>
+                                        <label>
+                                            <input asp-for="ClosedOnThursday" type="checkbox">
+                                            <span>Thứ Năm</span>
+                                        </label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnFriday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnFriday" class="form-check-label">Thứ Sáu</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnSaturday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnSaturday" class="form-check-label">Thứ Bảy</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input asp-for="ClosedOnSunday" class="form-check-input" type="checkbox">
-                                        <label asp-for="ClosedOnSunday" class="form-check-label">Chủ Nhật</label>
+                                    <div class="admin-checkbox-group">
+                                        <label>
+                                            <input asp-for="ClosedOnFriday" type="checkbox">
+                                            <span>Thứ Sáu</span>
+                                        </label>
+                                        <label>
+                                            <input asp-for="ClosedOnSaturday" type="checkbox">
+                                            <span>Thứ Bảy</span>
+                                        </label>
+                                        <label>
+                                            <input asp-for="ClosedOnSunday" type="checkbox">
+                                            <span>Chủ Nhật</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -124,44 +124,39 @@
                 </div>
 
                 <!-- Notification Settings -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i data-lucide="bell" class="me-2"></i>Cài đặt Thông báo
-                        </h5>
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">
+                            <i data-lucide="bell"></i>
+                            Cài đặt Thông báo
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Thông báo Email</label>
-                            <div class="form-check">
-                                <input asp-for="EmailNotifications.NewOrders" class="form-check-input" type="checkbox">
-                                <label asp-for="EmailNotifications.NewOrders" class="form-check-label">
-                                    Đơn hàng mới
+                            <label class="admin-form-label">Thông báo Email</label>
+                            <div class="admin-checkbox-group">
+                                <label>
+                                    <input asp-for="EmailNotifications.NewOrders" type="checkbox">
+                                    <span>Đơn hàng mới</span>
                                 </label>
-                            </div>
-                            <div class="form-check">
-                                <input asp-for="EmailNotifications.LowStock" class="form-check-input" type="checkbox">
-                                <label asp-for="EmailNotifications.LowStock" class="form-check-label">
-                                    Hàng sắp hết
+                                <label>
+                                    <input asp-for="EmailNotifications.LowStock" type="checkbox">
+                                    <span>Hàng sắp hết</span>
                                 </label>
-                            </div>
-                            <div class="form-check">
-                                <input asp-for="EmailNotifications.ProductReviews" class="form-check-input" type="checkbox">
-                                <label asp-for="EmailNotifications.ProductReviews" class="form-check-label">
-                                    Đánh giá sản phẩm mới
+                                <label>
+                                    <input asp-for="EmailNotifications.ProductReviews" type="checkbox">
+                                    <span>Đánh giá sản phẩm mới</span>
                                 </label>
-                            </div>
-                            <div class="form-check">
-                                <input asp-for="EmailNotifications.SystemUpdates" class="form-check-input" type="checkbox">
-                                <label asp-for="EmailNotifications.SystemUpdates" class="form-check-label">
-                                    Cập nhật hệ thống
+                                <label>
+                                    <input asp-for="EmailNotifications.SystemUpdates" type="checkbox">
+                                    <span>Cập nhật hệ thống</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Tần suất báo cáo</label>
-                            <select asp-for="ReportFrequency" class="form-select">
+                            <label asp-for="ReportFrequency" class="admin-form-label">Tần suất báo cáo</label>
+                            <select asp-for="ReportFrequency" class="admin-form-select">
                                 <option value="Daily">Hằng ngày</option>
                                 <option value="Weekly">Hằng tuần</option>
                                 <option value="Monthly">Hằng tháng</option>
@@ -175,20 +170,21 @@
                 </div>
 
                 <!-- Inventory Settings -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i data-lucide="package" class="me-2"></i>Cài đặt Kho hàng
-                        </h5>
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">
+                            <i data-lucide="package"></i>
+                            Cài đặt Kho hàng
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="LowStockThreshold" class="form-label fw-bold">
+                                    <label asp-for="LowStockThreshold" class="admin-form-label">
                                         Ngưỡng cảnh báo hết hàng
                                     </label>
-                                    <input asp-for="LowStockThreshold" type="number" class="form-control" min="0" />
+                                    <input asp-for="LowStockThreshold" type="number" class="admin-form-input" min="0" />
                                     <span asp-validation-for="LowStockThreshold" class="text-danger"></span>
                                     <small class="text-muted">
                                         Cảnh báo khi số lượng sản phẩm dưới ngưỡng này
@@ -197,14 +193,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="AutoHideOutOfStock" class="form-label fw-bold">
-                                        Ẩn sản phẩm hết hàng
-                                    </label>
-                                    <div class="form-check form-switch">
-                                        <input asp-for="AutoHideOutOfStock" class="form-check-input" type="checkbox">
-                                        <label asp-for="AutoHideOutOfStock" class="form-check-label">
-                                            Tự động ẩn
-                                        </label>
+                                    <label class="admin-form-label">Ẩn sản phẩm hết hàng</label>
+                                    <div class="admin-form-switch">
+                                        <input asp-for="AutoHideOutOfStock" type="checkbox" id="autoHideSwitch">
+                                        <label for="autoHideSwitch">Tự động ẩn</label>
                                     </div>
                                     <small class="text-muted">
                                         Tự động ẩn sản phẩm khi hết hàng
@@ -216,17 +208,20 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i data-lucide="save" class="me-2"></i>Lưu cài đặt
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <div class="admin-card-body">
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button type="submit" class="admin-btn admin-btn-primary">
+                                <i data-lucide="save"></i>
+                                Lưu cài đặt
                             </button>
-                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                                <i data-lucide="rotate-ccw" class="me-2"></i>Khôi phục
+                            <button type="button" class="admin-btn admin-btn-secondary" onclick="resetForm()">
+                                <i data-lucide="rotate-ccw"></i>
+                                Khôi phục
                             </button>
-                            <a href="@Url.Action("Dashboard", "Seller")" class="btn btn-outline-secondary">
-                                <i data-lucide="x" class="me-2"></i>Hủy
+                            <a href="@Url.Action("Dashboard", "Seller")" class="admin-btn admin-btn-outline">
+                                <i data-lucide="x"></i>
+                                Hủy
                             </a>
                         </div>
                     </div>
@@ -234,24 +229,23 @@
             </div>
 
             <!-- Sidebar -->
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <!-- Quick Stats -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i data-lucide="trending-up" class="me-2"></i>Thống kê nhanh
-                        </h5>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">
+                            <i data-lucide="trending-up"></i>
+                            Thống kê nhanh
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <div class="row text-center">
-                            <div class="col-6">
-                                <div class="border-end">
-                                    <h4 class="mb-1 text-primary">@Model.TotalProducts</h4>
-                                    <small class="text-muted">Sản phẩm</small>
-                                </div>
+                            <div class="col-6" style="border-right: 1px solid var(--admin-border);">
+                                <h4 style="margin-bottom: 0.25rem; color: var(--admin-primary);">@Model.TotalProducts</h4>
+                                <small class="text-muted">Sản phẩm</small>
                             </div>
                             <div class="col-6">
-                                <h4 class="mb-1 text-success">@Model.TotalOrders</h4>
+                                <h4 style="margin-bottom: 0.25rem; color: var(--admin-success);">@Model.TotalOrders</h4>
                                 <small class="text-muted">Đơn hàng</small>
                             </div>
                         </div>
@@ -259,33 +253,36 @@
                 </div>
 
                 <!-- Store Status -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i data-lucide="info" class="me-2"></i>Trạng thái Cửa hàng
-                        </h5>
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">
+                            <i data-lucide="info"></i>
+                            Trạng thái Cửa hàng
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <div class="mb-3">
-                            <label class="form-label">Trạng thái hiện tại</label>
+                            <label class="admin-form-label">Trạng thái hiện tại</label>
                             <div>
                                 @if (Model.IsStoreActive)
                                 {
-                                    <span class="badge bg-success">
-                                        <i data-lucide="check-circle" class="me-1"></i>Đang hoạt động
+                                    <span class="admin-badge admin-badge-success">
+                                        <i data-lucide="check-circle"></i>
+                                        Đang hoạt động
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">
-                                        <i data-lucide="x-circle" class="me-1"></i>Đã tắt
+                                    <span class="admin-badge admin-badge-danger">
+                                        <i data-lucide="x-circle"></i>
+                                        Đã tắt
                                     </span>
                                 }
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Cập nhật cuối</label>
+                            <label class="admin-form-label">Cập nhật cuối</label>
                             <p class="text-muted mb-0">
                                 @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
                             </p>
@@ -294,22 +291,25 @@
                 </div>
 
                 <!-- Help Section -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i data-lucide="help-circle" class="me-2"></i>Trợ giúp
-                        </h5>
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">
+                            <i data-lucide="help-circle"></i>
+                            Trợ giúp
+                        </h2>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <p class="text-muted mb-3">
                             Cần hỗ trợ về cài đặt cửa hàng?
                         </p>
-                        <div class="d-grid gap-2">
-                            <a href="#" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal">
-                                <i data-lucide="book-open" class="me-2"></i>Hướng dẫn
-                            </a>
-                            <a href="mailto:support@johnhenry.vn" class="btn btn-outline-primary btn-sm">
-                                <i data-lucide="mail" class="me-2"></i>Liên hệ hỗ trợ
+                        <div style="display: grid; gap: 0.75rem;">
+                            <button type="button" class="admin-btn admin-btn-outline" data-bs-toggle="modal" data-bs-target="#helpModal">
+                                <i data-lucide="book-open"></i>
+                                Hướng dẫn
+                            </button>
+                            <a href="mailto:support@johnhenry.vn" class="admin-btn admin-btn-outline">
+                                <i data-lucide="mail"></i>
+                                Liên hệ hỗ trợ
                             </a>
                         </div>
                     </div>
@@ -325,7 +325,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i data-lucide="help-circle" class="me-2"></i>Hướng dẫn Cài đặt
+                    <i data-lucide="help-circle"></i>
+                    Hướng dẫn Cài đặt
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -379,6 +380,11 @@
 
 @section Scripts {
     <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         // Form handling
         function resetForm() {
             if (confirm('Bạn có chắc muốn khôi phục lại cài đặt ban đầu?')) {
@@ -387,88 +393,51 @@
         }
 
         // Real-time validation
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Store description character counter
-            $('#StoreDescription').on('input', function() {
-                var current = $(this).val().length;
-                var max = 500;
-                var remaining = max - current;
-                
-                var counterEl = $(this).siblings('.char-counter');
-                if (counterEl.length === 0) {
-                    counterEl = $('<small class="char-counter text-muted"></small>');
-                    $(this).after(counterEl);
-                }
-                
-                counterEl.text(remaining + ' ký tự còn lại');
-                
-                if (remaining < 0) {
-                    counterEl.removeClass('text-muted').addClass('text-danger');
-                } else {
-                    counterEl.removeClass('text-danger').addClass('text-muted');
-                }
-            });
+            const descTextarea = document.querySelector('textarea[name="StoreDescription"]');
+            if (descTextarea) {
+                descTextarea.addEventListener('input', function() {
+                    const current = this.value.length;
+                    const max = 500;
+                    const remaining = max - current;
+                    
+                    let counterEl = this.parentElement.querySelector('.char-counter');
+                    if (!counterEl) {
+                        counterEl = document.createElement('small');
+                        counterEl.className = 'char-counter text-muted';
+                        counterEl.style.display = 'block';
+                        counterEl.style.marginTop = '0.25rem';
+                        this.parentElement.appendChild(counterEl);
+                    }
+                    
+                    counterEl.textContent = remaining + ' ký tự còn lại';
+                    
+                    if (remaining < 0) {
+                        counterEl.classList.remove('text-muted');
+                        counterEl.classList.add('text-danger');
+                    } else {
+                        counterEl.classList.remove('text-danger');
+                        counterEl.classList.add('text-muted');
+                    }
+                });
+            }
 
             // Business hours validation
-            $('#BusinessHoursStart, #BusinessHoursEnd').on('change', function() {
-                var start = $('#BusinessHoursStart').val();
-                var end = $('#BusinessHoursEnd').val();
+            const startTime = document.querySelector('input[name="BusinessHoursStart"]');
+            const endTime = document.querySelector('input[name="BusinessHoursEnd"]');
+            
+            if (startTime && endTime) {
+                const validateHours = function() {
+                    if (startTime.value && endTime.value && startTime.value >= endTime.value) {
+                        alert('Giờ đóng cửa phải sau giờ mở cửa');
+                        this.focus();
+                    }
+                };
                 
-                if (start && end && start >= end) {
-                    alert('Giờ đóng cửa phải sau giờ mở cửa');
-                    $(this).focus();
-                }
-            });
-
-            // Auto-save settings (optional)
-            var autoSaveTimeout;
-            $('input[type="checkbox"], select').on('change', function() {
-                clearTimeout(autoSaveTimeout);
-                autoSaveTimeout = setTimeout(function() {
-                    // TODO: Implement auto-save functionality
-                    console.log('Auto-saving settings...');
-                }, 2000);
-            });
+                startTime.addEventListener('change', validateHours);
+                endTime.addEventListener('change', validateHours);
+            }
         });
     </script>
-}
-
-@section Styles {
-    <style>
-        .card-title {
-            color: #495057;
-            font-weight: 600;
-        }
-        
-        .form-label {
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .form-check-label {
-            font-weight: normal;
-        }
-        
-        .badge {
-            font-size: 0.875rem;
-        }
-        
-        .border-end {
-            border-right: 1px solid #dee2e6 !important;
-        }
-        
-        .card {
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            border: 1px solid rgba(0, 0, 0, 0.125);
-        }
-        
-        .form-switch .form-check-input {
-            width: 2.5em;
-        }
-        
-        .accordion-button:not(.collapsed) {
-            background-color: #f8f9fa;
-            color: #495057;
-        }
-    </style>
 }
