@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cảm ơn bạn đã liên hệ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-top: 10px;
+        }
+        
+        .icon-container {
+            text-align: center;
+            padding: 30px 0 20px;
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .content {
+            padding: 20px 40px 40px;
+        }
+        
+        .greeting {
+            font-size: 1.3em;
+            color: #dc3545;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .message {
+            font-size: 1.05em;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        
+        .info-box h3 {
+            color: #dc3545;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .info-row {
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 120px;
+            margin-right: 10px;
+        }
+        
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+        
+        .message-box {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .timeline {
+            background: linear-gradient(to bottom, #e3f2fd 0%, #f5f5f5 100%);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            border: 1px solid #bbdefb;
+        }
+        
+        .timeline h3 {
+            color: #1976d2;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+        
+        .timeline-icon {
+            width: 28px;
+            height: 28px;
+            background-color: #2196f3;
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 14px 35px;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.05em;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+        
+        .support-info {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        
+        .support-info h4 {
+            color: #856404;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+        }
+        
+        .support-info p {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .support-info a {
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ddd, transparent);
+            margin: 30px 0;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .footer-links {
+            margin: 20px 0;
+        }
+        
+        .footer-links a {
+            color: #ecf0f1;
+            text-decoration: none;
+            margin: 0 12px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .social-links {
+            margin: 20px 0;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            margin: 0 6px;
+            line-height: 36px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .social-links a:hover {
+            background-color: #dc3545;
+        }
+        
+        .copyright {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-top: 15px;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 4px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 15px 20px 30px;
+            }
+            
+            .info-row {
+                flex-direction: column;
+            }
+            
+            .info-label {
+                margin-bottom: 5px;
+            }
+            
+            .footer {
+                padding: 20px;
+            }
+            
+            .footer-links a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>John Henry Fashion</h1>
+            <p>Cảm ơn bạn đã tin tưởng và liên hệ với chúng tôi</p>
+        </div>
+        
+        <!-- Success Icon -->
+        <div class="icon-container">
+            <div class="icon">✓</div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <div class="greeting">Xin chào {{CustomerName}},</div>
+            
+            <div class="message">
+                Chúng tôi đã nhận được tin nhắn của bạn và rất trân trọng sự quan tâm của bạn dành cho John Henry Fashion. 
+                Đội ngũ chăm sóc khách hàng của chúng tôi sẽ xem xét và phản hồi bạn trong thời gian sớm nhất có thể.
+            </div>
+            
+            <!-- Submission Info -->
+            <div class="info-box">
+                <h3>📋 Thông tin tin nhắn của bạn</h3>
+                <div class="info-row">
+                    <span class="info-label">Chủ đề:</span>
+                    <span class="info-value">{{Subject}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Ngày gửi:</span>
+                    <span class="info-value">{{SubmissionDate}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Trạng thái:</span>
+                    <span class="info-value" style="color: #28a745; font-weight: 600;">✓ Đã tiếp nhận</span>
+                </div>
+                
+                <div class="message-box">
+                    "{{OriginalMessage}}"
+                </div>
+            </div>
+            
+            <!-- Timeline -->
+            <div class="timeline">
+                <h3>⏱️ Quy trình xử lý</h3>
+                <div class="timeline-item">
+                    <span class="timeline-icon">1</span>
+                    <span><strong>Tiếp nhận:</strong> Tin nhắn của bạn đã được ghi nhận</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-icon">2</span>
+                    <span><strong>Xử lý:</strong> Đội ngũ sẽ phân tích và xem xét yêu cầu</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-icon">3</span>
+                    <span><strong>Phản hồi:</strong> Bạn sẽ nhận được câu trả lời trong 24-48 giờ</span>
+                </div>
+            </div>
+            
+            <!-- Support Info -->
+            <div class="support-info">
+                <h4>💡 Cần hỗ trợ khẩn cấp?</h4>
+                <p>📞 Hotline: <a href="tel:1900xxxx">1900 xxxx</a> (24/7)</p>
+                <p>📧 Email: <a href="mailto:support@johnhenry.vn">support@johnhenry.vn</a></p>
+                <p>💬 Live Chat: <a href="https://johnhenry.vn/chat">johnhenry.vn/chat</a></p>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <p style="margin-bottom: 15px; color: #666;">Trong khi chờ đợi, hãy khám phá bộ sưu tập mới nhất của chúng tôi</p>
+                <a href="https://johnhenry.vn/products" class="cta-button">Xem Sản Phẩm Mới</a>
+            </div>
+            
+            <div class="message" style="margin-top: 30px; text-align: center; color: #888; font-size: 0.95em;">
+                Một lần nữa, cảm ơn bạn đã lựa chọn John Henry Fashion.<br>
+                Chúng tôi mong được phục vụ bạn!
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-logo">John Henry Fashion</div>
+            
+            <div class="footer-links">
+                <a href="https://johnhenry.vn">Trang chủ</a>
+                <a href="https://johnhenry.vn/products">Sản phẩm</a>
+                <a href="https://johnhenry.vn/about">Về chúng tôi</a>
+                <a href="https://johnhenry.vn/contact">Liên hệ</a>
+            </div>
+            
+            <div class="social-links">
+                <a href="#" title="Facebook">f</a>
+                <a href="#" title="Instagram">📷</a>
+                <a href="#" title="Twitter">🐦</a>
+                <a href="#" title="YouTube">▶</a>
+            </div>
+            
+            <div class="divider" style="background: rgba(255,255,255,0.1); margin: 20px 40px;"></div>
+            
+            <div class="copyright">
+                © 2025 John Henry Fashion. All rights reserved.<br>
+                Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM<br>
+                <a href="https://johnhenry.vn/privacy" style="color: #ecf0f1; opacity: 0.8;">Chính sách bảo mật</a> | 
+                <a href="https://johnhenry.vn/terms" style="color: #ecf0f1; opacity: 0.8;">Điều khoản sử dụng</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
