@@ -156,7 +156,6 @@
                 <i data-lucide="trending-up"></i>
                 Phân tích & Thống kê
             </h1>
-            <p class="admin-page-description">Phân tích chi tiết hiệu suất kinh doanh</p>
         </div>
         <div class="admin-page-header-actions">
             <select class="admin-form-select" style="width: auto;" id="periodSelect">
@@ -226,12 +225,21 @@
                     </div>
                 </div>
                 <div class="admin-card-body">
-                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f9fafb; border-radius: 0.5rem;">
-                        <div style="text-align: center; color: #6b7280;">
-                            <i data-lucide="bar-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
-                            <p>Biểu đồ doanh thu sẽ hiển thị ở đây</p>
+                    @if (Model.DailyRevenues.Any())
+                    {
+                        <div style="height: 300px;">
+                            <canvas id="revenueChart"></canvas>
                         </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f9fafb; border-radius: 0.5rem;">
+                            <div style="text-align: center; color: #6b7280;">
+                                <i data-lucide="bar-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p>Chưa có dữ liệu doanh thu</p>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -344,6 +352,9 @@
 </div>
 
 @section Scripts {
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
     <script>
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') {
@@ -361,100 +372,65 @@
             console.log('Period changed to:', this.value, 'days');
             refreshAnalytics();
         });
-    </script>
-}
-        // Revenue Chart
-        var revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        var revenueChart = new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-                datasets: [{
-                    label: 'Doanh thu (VND)',
-                    data: [120000, 190000, 300000, 500000, 200000, 300000, 450000],
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(value);
+
+        @if (Model.DailyRevenues.Any())
+        {
+            <text>
+            // Revenue Chart with real data
+            var revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                var revenueChart = new Chart(revenueCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.DailyRevenues.Select(d => $"'{d.Date:dd/MM}'")))],
+                        datasets: [{
+                            label: 'Doanh thu (VND)',
+                            data: [@Html.Raw(string.Join(",", Model.DailyRevenues.Select(d => d.Revenue)))],
+                            borderColor: 'rgb(220, 53, 69)',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN', {
+                                            style: 'currency',
+                                            currency: 'VND'
+                                        }).format(context.parsed.y);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('vi-VN', {
+                                            style: 'currency',
+                                            currency: 'VND',
+                                            notation: 'compact'
+                                        }).format(value);
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                });
             }
-        });
-
-        // Category Chart
-        var categoryCtx = document.getElementById('categoryChart').getContext('2d');
-        var categoryChart = new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Áo thun', 'Quần jean', 'Váy đầm', 'Phụ kiện'],
-                datasets: [{
-                    data: [35, 25, 25, 15],
-                    backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)',
-                        'rgb(75, 192, 192)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-
-        // Customer Trend Chart
-        var customerCtx = document.getElementById('customerTrendChart').getContext('2d');
-        var customerChart = new Chart(customerCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
-                datasets: [{
-                    label: 'Khách hàng mới',
-                    data: [12, 19, 15, 25],
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)'
-                }, {
-                    label: 'Khách hàng quay lại',
-                    data: [8, 14, 20, 18],
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Period selector
-        document.getElementById('periodSelect').addEventListener('change', function() {
-            // TODO: Implement period change functionality
-            console.log('Period changed to:', this.value);
-        });
+            </text>
+        }
     </script>
 }

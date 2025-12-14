@@ -7,124 +7,147 @@
 <div class="admin-content">
     <!-- Page Header -->
     <div class="admin-page-header">
-        <div class="admin-page-header-content">
-            <div>
-                <h1 class="admin-page-title">
-                    <i data-lucide="shopping-cart" class="me-2"></i>
-                    Quản lý đơn hàng
-                </h1>
-                <p class="admin-page-description">Theo dõi và xử lý các đơn hàng của bạn</p>
-            </div>
-            <div class="admin-page-actions">
-                <button type="button" class="admin-btn admin-btn-outline">
-                    <i data-lucide="download" class="me-2"></i>
-                    Xuất báo cáo
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-content">
-                    <div class="admin-stat-label">Tổng đơn hàng</div>
-                    <div class="admin-stat-value">@Model.TotalOrders</div>
-                </div>
-                <div class="admin-stat-icon" style="background-color: rgba(59, 130, 246, 0.1);">
-                    <i data-lucide="shopping-bag" style="color: #3b82f6;"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-content">
-                    <div class="admin-stat-label">Đơn chờ xử lý</div>
-                    <div class="admin-stat-value text-warning">@Model.PendingOrders</div>
-                </div>
-                <div class="admin-stat-icon" style="background-color: rgba(251, 191, 36, 0.1);">
-                    <i data-lucide="clock" style="color: #fbbf24;"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-content">
-                    <div class="admin-stat-label">Đơn hôm nay</div>
-                    <div class="admin-stat-value text-info">@Model.TodayOrders</div>
-                </div>
-                <div class="admin-stat-icon" style="background-color: rgba(14, 165, 233, 0.1);">
-                    <i data-lucide="calendar" style="color: #0ea5e9;"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-content">
-                    <div class="admin-stat-label">Doanh thu hôm nay</div>
-                    <div class="admin-stat-value text-success">@Model.TodayRevenue.ToString("N0") ₫</div>
-                </div>
-                <div class="admin-stat-icon" style="background-color: rgba(34, 197, 94, 0.1);">
-                    <i data-lucide="dollar-sign" style="color: #22c55e;"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="admin-filters">
-        <form method="get" class="admin-filters-form">
-            <div class="admin-search-box">
-                <i data-lucide="search"></i>
-                <input type="text" name="search" value="@Model.SearchQuery" 
-                       placeholder="Mã đơn hàng, tên khách hàng, email..." class="admin-search-input">
-            </div>
-            
-            <select name="status" class="admin-form-select" onchange="this.form.submit()">
-                <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">Tất cả trạng thái (@Model.StatusCounts["all"])</option>
-                <option value="pending" selected="@(Model.StatusFilter == "pending")">Chờ xử lý (@Model.StatusCounts["pending"])</option>
-                <option value="processing" selected="@(Model.StatusFilter == "processing")">Đang xử lý (@Model.StatusCounts["processing"])</option>
-                <option value="completed" selected="@(Model.StatusFilter == "completed")">Hoàn thành (@Model.StatusCounts["completed"])</option>
-                <option value="cancelled" selected="@(Model.StatusFilter == "cancelled")">Đã hủy (@Model.StatusCounts["cancelled"])</option>
-            </select>
-            
-            <button type="submit" class="admin-btn admin-btn-primary">
-                <i data-lucide="search" class="me-1"></i>
-                Tìm kiếm
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="shopping-cart"></i>
+                Quản lý đơn hàng
+            </h1>
+            <button type="button" class="admin-btn admin-btn-secondary">
+                <i data-lucide="download"></i>
+                Xuất báo cáo
             </button>
-            
-            @if (!string.IsNullOrEmpty(Model.SearchQuery) || !string.IsNullOrEmpty(Model.StatusFilter))
-            {
-                <a href="@Url.Action("Orders")" class="admin-btn admin-btn-outline">
-                    <i data-lucide="x" class="me-1"></i>
-                    Xóa lọc
-                </a>
-            }
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng đơn hàng</h3>
+                    <p class="value">@Model.TotalOrders</p>
+                    <p class="change">Tất cả đơn của bạn</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="shopping-bag"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Chờ xử lý</h3>
+                    <p class="value">@Model.PendingOrders</p>
+                    <p class="change">Cần xác nhận</p>
+                </div>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="clock"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Đơn hôm nay</h3>
+                    <p class="value">@Model.TodayOrders</p>
+                    <p class="change">Đơn mới trong ngày</p>
+                </div>
+                <div class="admin-stat-card-icon info">
+                    <i data-lucide="calendar"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Doanh thu hôm nay</h3>
+                    <p class="value">@Model.TodayRevenue.ToString("N0") đ</p>
+                    <p class="change">Thu nhập trong ngày</p>
+                </div>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="admin-filters">
+        <form method="get" action="@Url.Action("Orders")">
+            <div class="row g-3 align-items-end">
+                <!-- Search Box -->
+                <div class="col-md-5">
+                    <label class="admin-form-label">Tìm kiếm</label>
+                    <div class="admin-search-box">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" name="search" class="admin-form-input" 
+                               placeholder="Mã đơn hàng, tên khách hàng, email..." 
+                               value="@Model.SearchQuery">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <label class="admin-form-label">Trạng thái</label>
+                    <select name="status" class="admin-form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">Tất cả</option>
+                        <option value="pending" selected="@(Model.StatusFilter == "pending")">Chờ xử lý</option>
+                        <option value="processing" selected="@(Model.StatusFilter == "processing")">Đang xử lý</option>
+                        <option value="completed" selected="@(Model.StatusFilter == "completed")">Hoàn thành</option>
+                        <option value="cancelled" selected="@(Model.StatusFilter == "cancelled")">Đã hủy</option>
+                    </select>
+                </div>
+
+                <!-- Search Button -->
+                <div class="col-md-2">
+                    <button type="submit" class="admin-btn admin-btn-primary" style="width: 100%;">
+                        <i data-lucide="search"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+
+                <!-- Clear Filter -->
+                @if (!string.IsNullOrEmpty(Model.SearchQuery) || !string.IsNullOrEmpty(Model.StatusFilter))
+                {
+                    <div class="col-md-2">
+                        <a href="@Url.Action("Orders")" class="admin-btn admin-btn-secondary" style="width: 100%;">
+                            <i data-lucide="x"></i>
+                            Xóa lọc
+                        </a>
+                    </div>
+                }
+            </div>
         </form>
     </div>
 
     <!-- Filter Tabs -->
-    <div class="admin-filter-tabs mb-4">
+    <div class="admin-filter-tabs">
         <a href="@Url.Action("Orders", new { search = Model.SearchQuery })" 
            class="admin-filter-tab @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">
-            Tất cả <span class="badge bg-secondary ms-1">@Model.StatusCounts["all"]</span>
+            Tất cả (@Model.StatusCounts["all"])
         </a>
         <a href="@Url.Action("Orders", new { status = "pending", search = Model.SearchQuery })" 
            class="admin-filter-tab @(Model.StatusFilter == "pending" ? "active" : "")">
-            Chờ xử lý <span class="badge bg-warning ms-1">@Model.StatusCounts["pending"]</span>
+            <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+            Chờ xử lý (@Model.StatusCounts["pending"])
         </a>
         <a href="@Url.Action("Orders", new { status = "processing", search = Model.SearchQuery })" 
            class="admin-filter-tab @(Model.StatusFilter == "processing" ? "active" : "")">
-            Đang xử lý <span class="badge bg-info ms-1">@Model.StatusCounts["processing"]</span>
+            <i data-lucide="package" style="width: 14px; height: 14px;"></i>
+            Đang xử lý (@Model.StatusCounts["processing"])
         </a>
         <a href="@Url.Action("Orders", new { status = "completed", search = Model.SearchQuery })" 
            class="admin-filter-tab @(Model.StatusFilter == "completed" ? "active" : "")">
-            Hoàn thành <span class="badge bg-success ms-1">@Model.StatusCounts["completed"]</span>
+            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+            Hoàn thành (@Model.StatusCounts["completed"])
         </a>
         <a href="@Url.Action("Orders", new { status = "cancelled", search = Model.SearchQuery })" 
            class="admin-filter-tab @(Model.StatusFilter == "cancelled" ? "active" : "")">
-            Đã hủy <span class="badge bg-danger ms-1">@Model.StatusCounts["cancelled"]</span>
+            <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+            Đã hủy (@Model.StatusCounts["cancelled"])
         </a>
     </div>
 
@@ -199,19 +222,34 @@
                                 @switch (order.Status.ToLower())
                                 {
                                     case "pending":
-                                        <span class="admin-badge admin-badge-warning">Chờ xử lý</span>
+                                        <span class="admin-badge admin-badge-warning">
+                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                            Chờ xử lý
+                                        </span>
                                         break;
                                     case "processing":
-                                        <span class="admin-badge admin-badge-info">Đang xử lý</span>
+                                        <span class="admin-badge admin-badge-info">
+                                            <i data-lucide="package" style="width: 12px; height: 12px;"></i>
+                                            Đang xử lý
+                                        </span>
                                         break;
                                     case "shipped":
-                                        <span class="admin-badge admin-badge-primary">Đã gửi</span>
+                                        <span class="admin-badge admin-badge-info">
+                                            <i data-lucide="truck" style="width: 12px; height: 12px;"></i>
+                                            Đã gửi hàng
+                                        </span>
                                         break;
                                     case "delivered":
-                                        <span class="admin-badge admin-badge-success">Đã giao</span>
+                                        <span class="admin-badge admin-badge-success">
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                            Đã giao hàng
+                                        </span>
                                         break;
                                     case "cancelled":
-                                        <span class="admin-badge admin-badge-danger">Đã hủy</span>
+                                        <span class="admin-badge admin-badge-danger">
+                                            <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                            Đã hủy
+                                        </span>
                                         break;
                                     default:
                                         <span class="admin-badge admin-badge-secondary">@order.Status</span>
@@ -222,10 +260,16 @@
                                 @switch (order.PaymentStatus.ToLower())
                                 {
                                     case "paid":
-                                        <span class="admin-badge admin-badge-success">Đã thanh toán</span>
+                                        <span class="admin-badge admin-badge-success">
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                            Đã thanh toán
+                                        </span>
                                         break;
                                     case "pending":
-                                        <span class="admin-badge admin-badge-warning">Chờ thanh toán</span>
+                                        <span class="admin-badge admin-badge-warning">
+                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                            Chờ thanh toán
+                                        </span>
                                         break;
                                     case "cod_pending":
                                         <span class="admin-badge admin-badge-warning">
@@ -233,11 +277,23 @@
                                             COD - Chờ thanh toán
                                         </span>
                                         break;
+                                    case "awaiting_transfer":
+                                        <span class="admin-badge admin-badge-info">
+                                            <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
+                                            Chờ chuyển khoản
+                                        </span>
+                                        break;
                                     case "failed":
-                                        <span class="admin-badge admin-badge-danger">Thất bại</span>
+                                        <span class="admin-badge admin-badge-danger">
+                                            <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                            Thất bại
+                                        </span>
                                         break;
                                     case "refunded":
-                                        <span class="admin-badge admin-badge-info">Đã hoàn tiền</span>
+                                        <span class="admin-badge admin-badge-info">
+                                            <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i>
+                                            Đã hoàn tiền
+                                        </span>
                                         break;
                                     default:
                                         <span class="admin-badge admin-badge-secondary">@order.PaymentStatus</span>
@@ -381,10 +437,28 @@
     }
     else
     {
-        <div class="empty-state">
-            <i data-lucide="inbox" style="width: 64px; height: 64px;"></i>
-            <h4 class="mt-3 mb-2">Chưa có đơn hàng nào</h4>
-            <p class="text-muted mb-4">Các đơn hàng sẽ hiển thị tại đây khi có khách đặt mua</p>
+        <div class="admin-card">
+            <div class="admin-card-body admin-text-center" style="padding: 3rem;">
+                <i data-lucide="inbox" style="width: 64px; height: 64px; color: var(--admin-text-muted); margin-bottom: 1rem;"></i>
+                <h3 style="margin-bottom: 0.5rem;">Chưa có đơn hàng nào</h3>
+                <p style="color: var(--admin-text-light); margin-bottom: 1.5rem;">
+                    @if (!string.IsNullOrEmpty(Model.SearchQuery) || !string.IsNullOrEmpty(Model.StatusFilter))
+                    {
+                        <text>Không có đơn hàng nào phù hợp với bộ lọc</text>
+                    }
+                    else
+                    {
+                        <text>Các đơn hàng sẽ hiển thị tại đây khi có khách đặt mua sản phẩm của bạn</text>
+                    }
+                </p>
+                @if (!string.IsNullOrEmpty(Model.SearchQuery) || !string.IsNullOrEmpty(Model.StatusFilter))
+                {
+                    <a href="@Url.Action("Orders")" class="admin-btn admin-btn-secondary">
+                        <i data-lucide="x"></i>
+                        Xóa bộ lọc
+                    </a>
+                }
+            </div>
         </div>
     }
 </div>

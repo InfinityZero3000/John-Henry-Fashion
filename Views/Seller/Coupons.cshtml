@@ -4,146 +4,117 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">Quản lý mã giảm giá</h1>
-            <p class="text-muted">Tạo và quản lý các mã giảm giá cho khách hàng</p>
-        </div>
-        <div>
-            <a href="@Url.Action("CreateCoupon", "Seller")" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Tạo mã giảm giá mới
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="ticket"></i>
+                Quản lý mã giảm giá
+            </h1>
+            <a href="@Url.Action("CreateCoupon", "Seller")" class="admin-btn admin-btn-primary">
+                <i data-lucide="plus"></i>
+                Tạo mã giảm giá mới
             </a>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Tổng mã giảm giá
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.TotalCoupons</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng mã giảm giá</h3>
+                    <p class="value">@Model.Statistics.TotalCoupons</p>
+                    <p class="change">Tất cả mã</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="ticket"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Đang hoạt động
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.ActiveCoupons</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Đang hoạt động</h3>
+                    <p class="value">@Model.Statistics.ActiveCoupons</p>
+                    <p class="change">@((Model.Statistics.TotalCoupons > 0 ? (Model.Statistics.ActiveCoupons * 100.0 / Model.Statistics.TotalCoupons).ToString("F1") : "0"))% tổng số</p>
+                </div>
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="check-circle"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Đã hết hạn
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.ExpiredCoupons</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Đã hết hạn</h3>
+                    <p class="value">@Model.Statistics.ExpiredCoupons</p>
+                    <p class="change">Không còn hiệu lực</p>
+                </div>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="clock"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Tổng giảm giá đã cho
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Statistics.TotalDiscountGiven.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng giảm giá</h3>
+                    <p class="value">@Model.Statistics.TotalDiscountGiven.ToString("N0") đ</p>
+                    <p class="change">Đã cho khách hàng</p>
+                </div>
+                <div class="admin-stat-card-icon info">
+                    <i data-lucide="dollar-sign"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Bộ lọc</h6>
-        </div>
-        <div class="card-body">
-            <form method="get" action="@Url.Action("Coupons")">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="search">Tìm kiếm</label>
-                        <input type="text" class="form-control" id="search" name="search" value="@Model.Search" placeholder="Mã hoặc tên giảm giá...">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="status">Trạng thái</label>
-                        <select class="form-control" id="status" name="status">
-                            <option value="">Tất cả</option>
-                            <option value="active" selected="@(Model.Status == "active")">Đang hoạt động</option>
-                            <option value="expired" selected="@(Model.Status == "expired")">Đã hết hạn</option>
-                            <option value="inactive" selected="@(Model.Status == "inactive")">Đã tắt</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label>&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-search"></i> Tìm kiếm
-                        </button>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label>&nbsp;</label>
-                        <a href="@Url.Action("Coupons")" class="btn btn-secondary btn-block">
-                            <i class="fas fa-times"></i> Xóa bộ lọc
-                        </a>
+    <!-- Filters & Search -->
+    <div class="admin-filters">
+        <form method="get" action="@Url.Action("Coupons")">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="admin-form-label">Tìm kiếm</label>
+                    <div class="admin-search-box" style="position: relative;">
+                        <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--admin-text-secondary); pointer-events: none;"></i>
+                        <input type="text" id="search" name="search" class="admin-form-input" placeholder="Mã hoặc tên giảm giá..." value="@Model.Search" style="padding-left: 3rem;" />
                     </div>
                 </div>
-            </form>
-        </div>
+                <div class="col-md-3">
+                    <label class="admin-form-label">Trạng thái</label>
+                    <select class="admin-form-select" id="status" name="status">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.Status))">Tất cả</option>
+                        <option value="active" selected="@(Model.Status == "active")">Đang hoạt động</option>
+                        <option value="expired" selected="@(Model.Status == "expired")">Đã hết hạn</option>
+                        <option value="inactive" selected="@(Model.Status == "inactive")">Đã tắt</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="admin-btn admin-btn-primary" style="width: 100%;">
+                        <i data-lucide="search"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Action("Coupons")" class="admin-btn admin-btn-secondary" style="width: 100%; display: inline-block; text-align: center;">
+                        <i data-lucide="x"></i>
+                        Xóa lọc
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- Coupons List -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Danh sách mã giảm giá (@Model.TotalCount)</h6>
-            <a href="@Url.Action("CreateCoupon", "Seller")" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Tạo mới
-            </a>
-        </div>
-        <div class="card-body">
-            @if (Model.Coupons.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-bordered" width="100%" cellspacing="0">
+    @if (Model.Coupons.Any())
+    {
+        <div class="admin-table-wrapper">
+                    <table class="admin-table">
                         <thead>
                             <tr>
                                 <th>Mã giảm giá</th>
@@ -154,7 +125,7 @@
                                 <th>Sử dụng</th>
                                 <th>Hiệu lực</th>
                                 <th>Trạng thái</th>
-                                <th>Thao tác</th>
+                                <th style="width: 120px;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -162,33 +133,39 @@
                             {
                                 <tr>
                                     <td>
-                                        <strong>@coupon.Code</strong>
+                                        <code class="text-primary fw-semibold">@coupon.Code</code>
                                     </td>
                                     <td>@coupon.Name</td>
                                     <td>
                                         @if (coupon.Type == "percentage")
                                         {
-                                            <span class="badge badge-info">Phần trăm</span>
+                                            <span class="admin-badge admin-badge-info">
+                                                <i data-lucide="percent" style="width: 12px; height: 12px;"></i>
+                                                Phần trăm
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-secondary">Số tiền</span>
+                                            <span class="admin-badge admin-badge-secondary">
+                                                <i data-lucide="dollar-sign" style="width: 12px; height: 12px;"></i>
+                                                Số tiền
+                                            </span>
                                         }
                                     </td>
                                     <td>
                                         @if (coupon.Type == "percentage")
                                         {
-                                            <span>@coupon.Value%</span>
+                                            <span class="fw-semibold">@coupon.Value%</span>
                                         }
                                         else
                                         {
-                                            <span>@coupon.Value.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</span>
+                                            <span class="fw-semibold">@coupon.Value.ToString("N0") đ</span>
                                         }
                                     </td>
                                     <td>
                                         @if (coupon.MinOrderAmount.HasValue)
                                         {
-                                            <small>Tối thiểu: @coupon.MinOrderAmount.Value.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</small>
+                                            <small>Tối thiểu: @coupon.MinOrderAmount.Value.ToString("N0") đ</small>
                                         }
                                         else
                                         {
@@ -229,32 +206,44 @@
                                         @switch (coupon.Status)
                                         {
                                             case "Active":
-                                                <span class="badge badge-success">Đang hoạt động</span>
+                                                <span class="admin-badge admin-badge-success">
+                                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                                    Đang hoạt động
+                                                </span>
                                                 break;
                                             case "Expired":
-                                                <span class="badge badge-danger">Hết hạn</span>
+                                                <span class="admin-badge admin-badge-danger">
+                                                    <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                                    Hết hạn
+                                                </span>
                                                 break;
                                             case "Scheduled":
-                                                <span class="badge badge-warning">Chờ kích hoạt</span>
+                                                <span class="admin-badge admin-badge-warning">
+                                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                                    Chờ kích hoạt
+                                                </span>
                                                 break;
                                             case "Limit Reached":
-                                                <span class="badge badge-dark">Đã đạt giới hạn</span>
+                                                <span class="admin-badge admin-badge-secondary">
+                                                    <i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i>
+                                                    Đã đạt giới hạn
+                                                </span>
                                                 break;
                                             case "Inactive":
-                                                <span class="badge badge-secondary">Đã tắt</span>
+                                                <span class="admin-badge admin-badge-secondary">Đã tắt</span>
                                                 break;
                                             default:
-                                                <span class="badge badge-light">@coupon.Status</span>
+                                                <span class="admin-badge admin-badge-secondary">@coupon.Status</span>
                                                 break;
                                         }
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="@Url.Action("EditCoupon", new { id = coupon.Id })" class="btn btn-sm btn-primary" title="Chỉnh sửa">
-                                                <i class="fas fa-edit"></i>
+                                        <div style="display: flex; gap: 0.5rem; white-space: nowrap;">
+                                            <a href="@Url.Action("EditCoupon", new { id = coupon.Id })" class="admin-btn admin-btn-sm admin-btn-primary" title="Chỉnh sửa">
+                                                <i data-lucide="edit"></i>
                                             </a>
-                                            <button class="btn btn-sm btn-danger delete-coupon" data-id="@coupon.Id" title="Xóa">
-                                                <i class="fas fa-trash"></i>
+                                            <button class="admin-btn admin-btn-sm admin-btn-danger delete-coupon" data-id="@coupon.Id" title="Xóa">
+                                                <i data-lucide="trash-2"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -262,54 +251,79 @@
                             }
                         </tbody>
                     </table>
-                </div>
+        </div>
 
-                <!-- Pagination -->
+        <!-- Pagination -->
                 @if (Model.TotalPages > 1)
                 {
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            @if (Model.CurrentPage > 1)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" href="@Url.Action("Coupons", new { page = Model.CurrentPage - 1, search = Model.Search, status = Model.Status })">Trước</a>
-                                </li>
-                            }
+                    <div class="admin-pagination">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="@Url.Action("Coupons", new { page = Model.CurrentPage - 1, search = Model.Search, status = Model.Status })" 
+                               class="admin-pagination-btn">
+                                <i data-lucide="chevron-left"></i>
+                                Trước
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="admin-pagination-btn" disabled>
+                                <i data-lucide="chevron-left"></i>
+                                Trước
+                            </button>
+                        }
 
-                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
-                            {
-                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                                    <a class="page-link" href="@Url.Action("Coupons", new { page = i, search = Model.Search, status = Model.Status })">@i</a>
-                                </li>
-                            }
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <a href="@Url.Action("Coupons", new { page = i, search = Model.Search, status = Model.Status })" 
+                               class="admin-pagination-btn @(i == Model.CurrentPage ? "active" : "")">@i</a>
+                        }
 
-                            @if (Model.CurrentPage < Model.TotalPages)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" href="@Url.Action("Coupons", new { page = Model.CurrentPage + 1, search = Model.Search, status = Model.Status })">Sau</a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="@Url.Action("Coupons", new { page = Model.CurrentPage + 1, search = Model.Search, status = Model.Status })" 
+                               class="admin-pagination-btn">
+                                Sau
+                                <i data-lucide="chevron-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="admin-pagination-btn" disabled>
+                                Sau
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        }
+                    </div>
+
+                    <div class="admin-text-center" style="margin-top: var(--spacing-md); color: var(--admin-text-light); font-size: 0.875rem;">
+                        Trang @Model.CurrentPage / @Model.TotalPages (Tổng @Model.TotalCount mã giảm giá)
+                    </div>
                 }
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">Chưa có mã giảm giá nào</h5>
-                    <p class="text-muted">Tạo mã giảm giá đầu tiên để bắt đầu khuyến mãi!</p>
-                    <a href="@Url.Action("CreateCoupon", "Seller")" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Tạo mã giảm giá đầu tiên
-                    </a>
-                </div>
-            }
+    }
+    else
+    {
+        <div class="admin-empty-state">
+            <div class="admin-empty-state-icon">
+                <i data-lucide="ticket"></i>
+            </div>
+            <h3 class="admin-empty-state-title">Chưa có mã giảm giá nào</h3>
+            <p class="admin-empty-state-description">Tạo mã giảm giá đầu tiên để bắt đầu khuyến mãi!</p>
+            <a href="@Url.Action("CreateCoupon", "Seller")" class="admin-btn admin-btn-primary">
+                <i data-lucide="plus"></i>
+                Tạo mã giảm giá đầu tiên
+            </a>
         </div>
-    </div>
+    }
 </div>
 
 @section Scripts {
     <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+
         $(document).ready(function() {
             $('.delete-coupon').click(function() {
                 var couponId = $(this).data('id');
@@ -317,16 +331,33 @@
                 
                 if (confirm('Bạn có chắc chắn muốn xóa mã giảm giá này?')) {
                     $.post('@Url.Action("DeleteCoupon")', { id: couponId }, function(data) {
-                        row.fadeOut();
-                        toastr.success('Xóa mã giảm giá thành công!');
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1000);
+                        if (data.success) {
+                            row.fadeOut();
+                            showToast('success', 'Xóa mã giảm giá thành công!');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            showToast('error', data.message || 'Có lỗi xảy ra khi xóa mã giảm giá!');
+                        }
                     }).fail(function() {
-                        toastr.error('Có lỗi xảy ra khi xóa mã giảm giá!');
+                        showToast('error', 'Có lỗi xảy ra khi xóa mã giảm giá!');
                     });
                 }
             });
         });
+
+        // Toast notification helper
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
     </script>
 }

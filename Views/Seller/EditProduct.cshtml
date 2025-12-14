@@ -4,25 +4,30 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="admin-content">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="admin-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 class="h3 mb-0 text-gray-800">Chỉnh sửa sản phẩm</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Seller")">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="@Url.Action("Products", "Seller")">Sản phẩm</a></li>
-                    <li class="breadcrumb-item active">Chỉnh sửa</li>
-                </ol>
-            </nav>
+            <h1 class="admin-page-title">
+                <i data-lucide="edit"></i>
+                Chỉnh sửa sản phẩm
+            </h1>
+            <p style="color: var(--admin-text-light); margin-top: 0.5rem;">
+                <a href="@Url.Action("Dashboard", "Seller")" style="color: var(--admin-text-light); text-decoration: none;">Dashboard</a>
+                <span style="margin: 0 0.5rem;">/</span>
+                <a href="@Url.Action("Products", "Seller")" style="color: var(--admin-text-light); text-decoration: none;">Sản phẩm</a>
+                <span style="margin: 0 0.5rem;">/</span>
+                Chỉnh sửa
+            </p>
         </div>
-        <div>
-            <a href="@Url.Action("Products", "Seller")" class="btn btn-secondary">
-                <i data-lucide="arrow-left"></i> Quay lại
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="@Url.Action("Products", "Seller")" class="admin-btn admin-btn-secondary">
+                <i data-lucide="arrow-left"></i>
+                Quay lại
             </a>
-            <a href="@Url.Action("Details", "Products", new { id = Model.Id })" class="btn btn-info" target="_blank">
-                <i data-lucide="external-link"></i> Xem trên web
+            <a href="@Url.Action("Details", "Products", new { id = Model.Id })" class="admin-btn admin-btn-info" target="_blank">
+                <i data-lucide="external-link"></i>
+                Xem trên web
             </a>
         </div>
     </div>
@@ -30,39 +35,42 @@
     <!-- Status Alert -->
     @if (!string.IsNullOrEmpty(ViewBag.Message))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div style="background: var(--admin-success-light); border-left: 4px solid var(--admin-success); padding: 1rem; margin-bottom: var(--spacing-lg); border-radius: 4px; position: relative;">
             @ViewBag.Message
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--admin-success);">×</button>
         </div>
     }
 
     <form asp-action="EditProduct" method="post" enctype="multipart/form-data" id="productForm">
         <input asp-for="Id" type="hidden" />
         
-        <div class="row">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--spacing-lg);">
             <!-- Main Content -->
-            <div class="col-lg-8">
+            <div>
                 <!-- Basic Information -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Thông tin cơ bản</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="info" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Thông tin cơ bản
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" placeholder="Nhập tên sản phẩm...">
-                            <span asp-validation-for="Name" class="text-danger"></span>
+                    <div class="admin-card-body">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label asp-for="Name" class="admin-form-label">Tên sản phẩm <span style="color: var(--admin-danger);">*</span></label>
+                            <input asp-for="Name" class="admin-form-input" placeholder="Nhập tên sản phẩm...">
+                            <span asp-validation-for="Name" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label asp-for="SKU" class="form-label">SKU <span class="text-danger">*</span></label>
-                                <input asp-for="SKU" class="form-control" placeholder="Mã sản phẩm...">
-                                <span asp-validation-for="SKU" class="text-danger"></span>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label asp-for="SKU" class="admin-form-label">SKU <span style="color: var(--admin-danger);">*</span></label>
+                                <input asp-for="SKU" class="admin-form-input" placeholder="Mã sản phẩm...">
+                                <span asp-validation-for="SKU" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="Status" class="form-label">Trạng thái</label>
-                                <select asp-for="Status" class="form-select">
+                            <div>
+                                <label asp-for="Status" class="admin-form-label">Trạng thái</label>
+                                <select asp-for="Status" class="admin-form-select">
                                     <option value="active">Đang bán</option>
                                     <option value="inactive">Tạm dừng</option>
                                     <option value="out_of_stock">Hết hàng</option>
@@ -70,154 +78,165 @@
                             </div>
                         </div>
 
-                        <div class="mb-3 mt-3">
-                            <label asp-for="ShortDescription" class="form-label">Mô tả ngắn</label>
-                            <textarea asp-for="ShortDescription" class="form-control" rows="3" placeholder="Mô tả ngắn gọn về sản phẩm..."></textarea>
-                            <span asp-validation-for="ShortDescription" class="text-danger"></span>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label asp-for="ShortDescription" class="admin-form-label">Mô tả ngắn</label>
+                            <textarea asp-for="ShortDescription" class="admin-form-input" rows="3" placeholder="Mô tả ngắn gọn về sản phẩm..."></textarea>
+                            <span asp-validation-for="ShortDescription" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Mô tả chi tiết</label>
-                            <textarea asp-for="Description" class="form-control" rows="8" id="descriptionEditor"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
+                        <div style="margin-bottom: 0;">
+                            <label asp-for="Description" class="admin-form-label">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="admin-form-input" rows="8" id="descriptionEditor"></textarea>
+                            <span asp-validation-for="Description" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pricing -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Giá bán</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="dollar-sign" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Giá bán
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label asp-for="Price" class="form-label">Giá gốc <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input asp-for="Price" class="form-control" type="number" step="1000" min="0">
-                                    <span class="input-group-text">VNĐ</span>
+                    <div class="admin-card-body">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div>
+                                <label asp-for="Price" class="admin-form-label">Giá gốc <span style="color: var(--admin-danger);">*</span></label>
+                                <div style="display: flex;">
+                                    <input asp-for="Price" class="admin-form-input" type="number" step="1000" min="0" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <span style="display: flex; align-items: center; padding: 0 1rem; background: var(--admin-bg-secondary); border: 1px solid var(--admin-border); border-left: none; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">VNĐ</span>
                                 </div>
-                                <span asp-validation-for="Price" class="text-danger"></span>
+                                <span asp-validation-for="Price" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="SalePrice" class="form-label">Giá khuyến mãi</label>
-                                <div class="input-group">
-                                    <input asp-for="SalePrice" class="form-control" type="number" step="1000" min="0">
-                                    <span class="input-group-text">VNĐ</span>
+                            <div>
+                                <label asp-for="SalePrice" class="admin-form-label">Giá khuyến mãi</label>
+                                <div style="display: flex;">
+                                    <input asp-for="SalePrice" class="admin-form-input" type="number" step="1000" min="0" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <span style="display: flex; align-items: center; padding: 0 1rem; background: var(--admin-bg-secondary); border: 1px solid var(--admin-border); border-left: none; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">VNĐ</span>
                                 </div>
-                                <small class="form-text text-muted">Để trống nếu không có khuyến mãi</small>
+                                <small style="color: var(--admin-text-muted); font-size: 0.875rem;">Để trống nếu không có khuyến mãi</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Product Attributes -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Thuộc tính sản phẩm</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="tag" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Thuộc tính sản phẩm
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label asp-for="Size" class="form-label">Kích thước</label>
-                                <input asp-for="Size" class="form-control" placeholder="S, M, L, XL...">
+                    <div class="admin-card-body">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label asp-for="Size" class="admin-form-label">Kích thước</label>
+                                <input asp-for="Size" class="admin-form-input" placeholder="S, M, L, XL...">
                             </div>
-                            <div class="col-md-4">
-                                <label asp-for="Color" class="form-label">Màu sắc</label>
-                                <input asp-for="Color" class="form-control" placeholder="Đen, Trắng, Xanh...">
+                            <div>
+                                <label asp-for="Color" class="admin-form-label">Màu sắc</label>
+                                <input asp-for="Color" class="admin-form-input" placeholder="Đen, Trắng, Xanh...">
                             </div>
-                            <div class="col-md-4">
-                                <label asp-for="Material" class="form-label">Chất liệu</label>
-                                <input asp-for="Material" class="form-control" placeholder="Cotton, Polyester...">
+                            <div>
+                                <label asp-for="Material" class="admin-form-label">Chất liệu</label>
+                                <input asp-for="Material" class="admin-form-input" placeholder="Cotton, Polyester...">
                             </div>
                         </div>
 
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label asp-for="Weight" class="form-label">Trọng lượng</label>
-                                <div class="input-group">
-                                    <input asp-for="Weight" class="form-control" type="number" step="0.1" min="0">
-                                    <span class="input-group-text">kg</span>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div>
+                                <label asp-for="Weight" class="admin-form-label">Trọng lượng</label>
+                                <div style="display: flex;">
+                                    <input asp-for="Weight" class="admin-form-input" type="number" step="0.1" min="0" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <span style="display: flex; align-items: center; padding: 0 1rem; background: var(--admin-bg-secondary); border: 1px solid var(--admin-border); border-left: none; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">kg</span>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="Dimensions" class="form-label">Kích thước (DxRxC)</label>
-                                <input asp-for="Dimensions" class="form-control" placeholder="30x40x5 cm">
+                            <div>
+                                <label asp-for="Dimensions" class="admin-form-label">Kích thước (DxRxC)</label>
+                                <input asp-for="Dimensions" class="admin-form-input" placeholder="30x40x5 cm">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- SEO -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">SEO & Marketing</h6>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="search" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            SEO & Marketing
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="MetaTitle" class="form-label">Meta Title</label>
-                            <input asp-for="MetaTitle" class="form-control" placeholder="Tiêu đề SEO...">
-                            <small class="form-text text-muted">Để trống để sử dụng tên sản phẩm</small>
+                    <div class="admin-card-body">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label asp-for="MetaTitle" class="admin-form-label">Meta Title</label>
+                            <input asp-for="MetaTitle" class="admin-form-input" placeholder="Tiêu đề SEO...">
+                            <small style="color: var(--admin-text-muted); font-size: 0.875rem;">Để trống để sử dụng tên sản phẩm</small>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="MetaDescription" class="form-label">Meta Description</label>
-                            <textarea asp-for="MetaDescription" class="form-control" rows="2" placeholder="Mô tả cho search engine..."></textarea>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label asp-for="MetaDescription" class="admin-form-label">Meta Description</label>
+                            <textarea asp-for="MetaDescription" class="admin-form-input" rows="2" placeholder="Mô tả cho search engine..."></textarea>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Tags" class="form-label">Tags</label>
-                            <input asp-for="Tags" class="form-control" placeholder="tag1, tag2, tag3...">
-                            <small class="form-text text-muted">Các từ khóa phân cách bằng dấu phẩy</small>
+                        <div style="margin-bottom: 0;">
+                            <label asp-for="Tags" class="admin-form-label">Tags</label>
+                            <input asp-for="Tags" class="admin-form-input" placeholder="tag1, tag2, tag3...">
+                            <small style="color: var(--admin-text-muted); font-size: 0.875rem;">Các từ khóa phân cách bằng dấu phẩy</small>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Sidebar -->
-            <div class="col-lg-4">
+            <div>
                 <!-- Product Status -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Trạng thái sản phẩm</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="bar-chart-2" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Trạng thái sản phẩm
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="p-2 bg-light rounded">
-                                    <i data-lucide="tag" class="text-primary"></i>
-                                    <div class="small">SKU</div>
-                                    <div class="font-weight-bold">@Model.SKU</div>
-                                </div>
+                    <div class="admin-card-body">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center;">
+                            <div style="padding: 1rem; background: var(--admin-bg-secondary); border-radius: 8px;">
+                                <i data-lucide="tag" style="width: 24px; height: 24px; color: var(--admin-primary); margin-bottom: 0.5rem;"></i>
+                                <div style="font-size: 0.875rem; color: var(--admin-text-muted); margin-bottom: 0.25rem;">SKU</div>
+                                <div style="font-weight: 600;">@Model.SKU</div>
                             </div>
-                            <div class="col-6">
-                                <div class="p-2 bg-light rounded">
-                                    <i data-lucide="box" class="text-info"></i>
-                                    <div class="small">Tồn kho</div>
-                                    <div class="font-weight-bold">@Model.StockQuantity</div>
-                                </div>
+                            <div style="padding: 1rem; background: var(--admin-bg-secondary); border-radius: 8px;">
+                                <i data-lucide="package" style="width: 24px; height: 24px; color: var(--admin-info); margin-bottom: 0.5rem;"></i>
+                                <div style="font-size: 0.875rem; color: var(--admin-text-muted); margin-bottom: 0.25rem;">Tồn kho</div>
+                                <div style="font-weight: 600;">@Model.StockQuantity</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Category & Brand -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Phân loại</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="layers" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Phân loại
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="CategoryId" class="form-label">Danh mục <span class="text-danger">*</span></label>
-                            <select asp-for="CategoryId" class="form-select" asp-items="@ViewBag.Categories">
+                    <div class="admin-card-body">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label asp-for="CategoryId" class="admin-form-label">Danh mục <span style="color: var(--admin-danger);">*</span></label>
+                            <select asp-for="CategoryId" class="admin-form-select" asp-items="@ViewBag.Categories">
                                 <option value="">-- Chọn danh mục --</option>
                             </select>
-                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            <span asp-validation-for="CategoryId" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="BrandId" class="form-label">Thương hiệu</label>
-                            <select asp-for="BrandId" class="form-select" asp-items="@ViewBag.Brands">
+                        <div style="margin-bottom: 0;">
+                            <label asp-for="BrandId" class="admin-form-label">Thương hiệu</label>
+                            <select asp-for="BrandId" class="admin-form-select" asp-items="@ViewBag.Brands">
                                 <option value="">-- Chọn thương hiệu --</option>
                             </select>
                         </div>
@@ -225,128 +244,135 @@
                 </div>
 
                 <!-- Inventory -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Tồn kho</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="package" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Tồn kho
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="StockQuantity" class="form-label">Số lượng tồn kho <span class="text-danger">*</span></label>
-                            <input asp-for="StockQuantity" class="form-control" type="number" min="0">
-                            <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                    <div class="admin-card-body">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label asp-for="StockQuantity" class="admin-form-label">Số lượng tồn kho <span style="color: var(--admin-danger);">*</span></label>
+                            <input asp-for="StockQuantity" class="admin-form-input" type="number" min="0">
+                            <span asp-validation-for="StockQuantity" style="color: var(--admin-danger); font-size: 0.875rem;"></span>
                         </div>
 
-                        <div class="form-check mb-3">
-                            <input asp-for="ManageStock" class="form-check-input" type="checkbox">
-                            <label asp-for="ManageStock" class="form-check-label">
-                                Quản lý tồn kho
+                        <div style="margin-bottom: 1.5rem;">
+                            <label class="admin-form-check">
+                                <input asp-for="ManageStock" class="admin-form-check-input" type="checkbox">
+                                <span class="admin-form-check-label">Quản lý tồn kho</span>
                             </label>
-                            <small class="form-text text-muted d-block">Tự động cập nhật khi có đơn hàng</small>
+                            <small style="color: var(--admin-text-muted); font-size: 0.875rem; display: block; margin-top: 0.5rem;">Tự động cập nhật khi có đơn hàng</small>
                         </div>
 
-                        <div class="form-check mb-3">
-                            <input asp-for="InStock" class="form-check-input" type="checkbox">
-                            <label asp-for="InStock" class="form-check-label">
-                                Còn hàng
+                        <div style="margin-bottom: 0;">
+                            <label class="admin-form-check">
+                                <input asp-for="InStock" class="admin-form-check-input" type="checkbox">
+                                <span class="admin-form-check-label">Còn hàng</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Featured Image & Gallery -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Hình ảnh sản phẩm</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="image" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Hình ảnh sản phẩm
+                        </h3>
                     </div>
-                    <div class="card-body">
+                    <div class="admin-card-body">
                         <!-- Featured Image -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Ảnh chính</label>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label class="admin-form-label" style="font-weight: 600;">Ảnh chính</label>
                             @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
                             {
-                                <div class="mb-3">
-                                    <img src="@Model.FeaturedImageUrl" class="img-fluid rounded border" style="max-height: 200px;" alt="Current Featured Image">
-                                    <div class="small text-muted mt-1">Ảnh chính hiện tại</div>
+                                <div style="margin-bottom: 1rem;">
+                                    <img src="@Model.FeaturedImageUrl" style="max-height: 200px; max-width: 100%; border-radius: 8px; border: 1px solid var(--admin-border);" alt="Current Featured Image">
+                                    <div style="font-size: 0.875rem; color: var(--admin-text-muted); margin-top: 0.5rem;">Ảnh chính hiện tại</div>
                                 </div>
                             }
 
-                            <input type="file" name="FeaturedImage" class="form-control" accept="image/*" id="featuredImageInput">
-                            <small class="form-text text-muted">Kích thước khuyến nghị: 800x800px (JPG, PNG, WebP)</small>
+                            <input type="file" name="FeaturedImage" class="admin-form-input" accept="image/*" id="featuredImageInput">
+                            <small style="color: var(--admin-text-muted); font-size: 0.875rem;">Kích thước khuyến nghị: 800x800px (JPG, PNG, WebP)</small>
                             
-                            <div id="featuredImagePreview" class="mt-3" style="display: none;">
-                                <img id="featuredPreviewImg" src="" class="img-fluid rounded border" style="max-height: 200px;">
-                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeFeaturedImage()">
-                                    <i data-lucide="trash"></i> Xóa ảnh mới
+                            <div id="featuredImagePreview" style="margin-top: 1rem; display: none;">
+                                <img id="featuredPreviewImg" src="" style="max-height: 200px; max-width: 100%; border-radius: 8px; border: 1px solid var(--admin-border);">
+                                <button type="button" class="admin-btn admin-btn-danger" style="margin-top: 0.5rem;" onclick="removeFeaturedImage()">
+                                    <i data-lucide="trash" style="width: 16px; height: 16px;"></i> Xóa ảnh mới
                                 </button>
                             </div>
                         </div>
 
                         <!-- Gallery Images -->
-                        <hr>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Thư viện ảnh</label>
+                        <hr style="border-color: var(--admin-border); margin: 1.5rem 0;">
+                        <div style="margin-bottom: 0;">
+                            <label class="admin-form-label" style="font-weight: 600;">Thư viện ảnh</label>
                             
                             <!-- Existing Gallery Images -->
                             @if (Model.ExistingGalleryImages != null && Model.ExistingGalleryImages.Length > 0)
                             {
-                                <div class="row mb-3" id="existingGallery">
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem;" id="existingGallery">
                                     @for (int i = 0; i < Model.ExistingGalleryImages.Length; i++)
                                     {
-                                        <div class="col-md-4 mb-2 gallery-item">
-                                            <div class="position-relative">
-                                                <img src="@Model.ExistingGalleryImages[i]" class="img-fluid rounded border" style="height: 120px; width: 100%; object-fit: cover;">
-                                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
-                                                        onclick="removeExistingImage(@i, '@Model.ExistingGalleryImages[i]')">
-                                                    <i data-lucide="x"></i>
-                                                </button>
-                                            </div>
+                                        <div class="gallery-item" style="position: relative;">
+                                            <img src="@Model.ExistingGalleryImages[i]" style="height: 120px; width: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--admin-border);">
+                                            <button type="button" class="admin-btn admin-btn-danger" style="position: absolute; top: 0.25rem; right: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                                                    onclick="removeExistingImage(@i, '@Model.ExistingGalleryImages[i]')">
+                                                <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                                            </button>
                                         </div>
                                     }
                                 </div>
                             }
 
                             <!-- Add New Gallery Images -->
-                            <input type="file" name="GalleryImages" class="form-control" accept="image/*" multiple id="galleryImagesInput">
-                            <small class="form-text text-muted">Có thể chọn nhiều ảnh cùng lúc. Tối đa 10 ảnh.</small>
+                            <input type="file" name="GalleryImages" class="admin-form-input" accept="image/*" multiple id="galleryImagesInput">
+                            <small style="color: var(--admin-text-muted); font-size: 0.875rem;">Có thể chọn nhiều ảnh cùng lúc. Tối đa 10 ảnh.</small>
                             
                             <!-- Preview New Gallery Images -->
-                            <div id="galleryImagesPreviews" class="row mt-3"></div>
+                            <div id="galleryImagesPreviews" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Settings -->
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Cài đặt</h6>
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">
+                            <i data-lucide="settings" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            Cài đặt
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="form-check mb-3">
-                            <input asp-for="IsFeatured" class="form-check-input" type="checkbox">
-                            <label asp-for="IsFeatured" class="form-check-label">
-                                Sản phẩm nổi bật
+                    <div class="admin-card-body">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label class="admin-form-check">
+                                <input asp-for="IsFeatured" class="admin-form-check-input" type="checkbox">
+                                <span class="admin-form-check-label">Sản phẩm nổi bật</span>
                             </label>
-                            <small class="form-text text-muted d-block">Hiển thị ở vị trí ưu tiên</small>
+                            <small style="color: var(--admin-text-muted); font-size: 0.875rem; display: block; margin-top: 0.5rem;">Hiển thị ở vị trí ưu tiên</small>
                         </div>
 
-                        <div class="form-check mb-3">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox">
-                            <label asp-for="IsActive" class="form-check-label">
-                                Kích hoạt
+                        <div style="margin-bottom: 0;">
+                            <label class="admin-form-check">
+                                <input asp-for="IsActive" class="admin-form-check-input" type="checkbox">
+                                <span class="admin-form-check-label">Kích hoạt</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="card shadow">
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i data-lucide="save"></i> Cập nhật sản phẩm
+                <div class="admin-card">
+                    <div class="admin-card-body">
+                        <div style="display: grid; gap: 0.75rem;">
+                            <button type="submit" class="admin-btn admin-btn-success" style="width: 100%;">
+                                <i data-lucide="save" style="width: 16px; height: 16px;"></i> Cập nhật sản phẩm
                             </button>
-                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
-                                <i data-lucide="trash"></i> Xóa sản phẩm
+                            <button type="button" class="admin-btn admin-btn-danger" style="width: 100%; background: transparent; border: 1px solid var(--admin-danger); color: var(--admin-danger);" onclick="confirmDelete()">
+                                <i data-lucide="trash" style="width: 16px; height: 16px;"></i> Xóa sản phẩm
                             </button>
                         </div>
                     </div>
@@ -364,8 +390,13 @@
 @section Scripts {
     <!-- TinyMCE -->
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
         // Initialize TinyMCE
         tinymce.init({
             selector: '#descriptionEditor',
@@ -379,6 +410,24 @@
             toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
             content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }'
         });
+
+        // Custom toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 9999;
+                padding: 1rem 1.5rem; border-radius: 8px;
+                background: ${type === 'success' ? 'var(--admin-success)' : 'var(--admin-danger)'};
+                color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
         // Featured image preview
         document.getElementById('featuredImageInput').addEventListener('change', function(e) {
@@ -400,7 +449,7 @@
             previewContainer.innerHTML = ''; // Clear previous previews
 
             if (files.length > 10) {
-                alert('Bạn chỉ có thể chọn tối đa 10 ảnh.');
+                showToast('Bạn chỉ có thể chọn tối đa 10 ảnh.', 'error');
                 this.value = '';
                 return;
             }
@@ -409,17 +458,16 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const col = document.createElement('div');
-                    col.className = 'col-md-4 mb-2';
+                    col.style.cssText = 'position: relative;';
                     col.innerHTML = `
-                        <div class="position-relative">
-                            <img src="${e.target.result}" class="img-fluid rounded border" style="height: 120px; width: 100%; object-fit: cover;">
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
-                                    onclick="removeGalleryPreview(this)">
-                                <i data-lucide="x"></i>
-                            </button>
-                        </div>
+                        <img src="${e.target.result}" style="height: 120px; width: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--admin-border);">
+                        <button type="button" class="admin-btn admin-btn-danger" style="position: absolute; top: 0.25rem; right: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                                onclick="removeGalleryPreview(this)">
+                            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                        </button>
                     `;
                     previewContainer.appendChild(col);
+                    lucide.createIcons(); // Re-init icons for new elements
                 };
                 reader.readAsDataURL(file);
             });
@@ -431,7 +479,7 @@
         }
 
         function removeGalleryPreview(button) {
-            button.closest('.col-md-4').remove();
+            button.closest('div[style*="position: relative"]').remove();
             // Reset file input to remove the file from selection
             document.getElementById('galleryImagesInput').value = '';
         }
@@ -511,31 +559,31 @@
             const categoryId = document.querySelector('[name="CategoryId"]').value;
 
             if (!name) {
-                alert('Vui lòng nhập tên sản phẩm.');
+                showToast('Vui lòng nhập tên sản phẩm.', 'error');
                 e.preventDefault();
                 return;
             }
 
             if (name.length < 3) {
-                alert('Tên sản phẩm phải có ít nhất 3 ký tự.');
+                showToast('Tên sản phẩm phải có ít nhất 3 ký tự.', 'error');
                 e.preventDefault();
                 return;
             }
 
             if (!sku) {
-                alert('Vui lòng nhập SKU.');
+                showToast('Vui lòng nhập SKU.', 'error');
                 e.preventDefault();
                 return;
             }
 
             if (!price || price <= 0) {
-                alert('Vui lòng nhập giá sản phẩm hợp lệ.');
+                showToast('Vui lòng nhập giá sản phẩm hợp lệ.', 'error');
                 e.preventDefault();
                 return;
             }
 
             if (!categoryId) {
-                alert('Vui lòng chọn danh mục sản phẩm.');
+                showToast('Vui lòng chọn danh mục sản phẩm.', 'error');
                 e.preventDefault();
                 return;
             }
@@ -543,7 +591,7 @@
             // Show loading state
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Đang cập nhật...';
+            submitBtn.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Đang cập nhật...';
             submitBtn.disabled = true;
         });
 
@@ -568,39 +616,9 @@
             const salePrice = parseFloat(this.value);
             
             if (salePrice && price && salePrice >= price) {
-                alert('Giá khuyến mãi phải nhỏ hơn giá gốc.');
+                showToast('Giá khuyến mãi phải nhỏ hơn giá gốc.', 'error');
                 this.focus();
             }
         });
     </script>
-}
-
-@section Styles {
-    <style>
-        .card-header h6 {
-            color: #5a5c69 !important;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: #5a5c69;
-        }
-
-        .text-danger {
-            font-size: 0.875rem;
-        }
-
-        #imagePreview img {
-            border: 2px solid #e3e6f0;
-        }
-
-        .input-group-text {
-            background-color: #f8f9fc;
-            border-color: #d1d3e2;
-        }
-
-        .bg-light {
-            background-color: #f8f9fc !important;
-        }
-    </style>
 }
