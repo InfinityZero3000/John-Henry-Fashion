@@ -590,8 +590,16 @@ namespace JohnHenryFashionWeb.ViewModels
     {
         public List<TopSellingProduct> TopProducts { get; set; } = new();
         public List<CategoryPerformance> CategoryPerformance { get; set; } = new();
+        public List<DailyRevenue> DailyRevenues { get; set; } = new();
         public int TotalProductViews { get; set; }
         public int ConversionRate { get; set; }
+    }
+
+    public class DailyRevenue
+    {
+        public DateTime Date { get; set; }
+        public decimal Revenue { get; set; }
+        public int OrderCount { get; set; }
     }
 
     public class CategoryPerformance
