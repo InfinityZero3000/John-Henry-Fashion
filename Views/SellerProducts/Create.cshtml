@@ -4,213 +4,208 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">Thêm sản phẩm mới</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/seller">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="/seller/products">Sản phẩm</a></li>
-                    <li class="breadcrumb-item active">Thêm mới</li>
-                </ol>
-            </nav>
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-flex-between">
+            <h1 class="admin-page-title">
+                <i data-lucide="plus-circle"></i>
+                Thêm sản phẩm mới
+            </h1>
+            <a href="/seller/products" class="admin-btn admin-btn-secondary">
+                <i data-lucide="arrow-left"></i> Quay lại
+            </a>
         </div>
-        <a href="/seller/products" class="btn btn-secondary">
-            <i data-lucide="arrow-left"></i> Quay lại
-        </a>
     </div>
 
-    <div class="row">
-        <div class="col-lg-12">
+    <!-- Alert Messages -->
+    @if (ViewBag.Error != null)
+    {
+        <div class="admin-alert admin-alert-danger">
+            <i data-lucide="alert-circle"></i>
+            <span>@ViewBag.Error</span>
+        </div>
+    }
 
-            @if (ViewBag.Error != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @ViewBag.Error
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-
-            <form method="post" action="/seller/products/create" enctype="multipart/form-data">
-                <div class="card shadow mb-4">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">Thông tin sản phẩm</h6>
+    <form method="post" action="/seller/products/create" enctype="multipart/form-data">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">
+                    <i data-lucide="package"></i>
+                    Thông tin sản phẩm
+                </h3>
+            </div>
+            <div class="admin-card-body">
+                @Html.AntiForgeryToken()
+                
+                <!-- Basic Information -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-8">
+                        <label class="admin-form-label">
+                            Tên sản phẩm <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="Name" class="admin-form-input" required placeholder="Ví dụ: Áo sơ mi nam trắng tay dài">
+                        <small class="admin-form-text">Tên sản phẩm sẽ hiển thị trên trang chủ</small>
                     </div>
-                    <div class="card-body">
-                        @Html.AntiForgeryToken()
-                        
-                        <!-- Basic Information -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-8">
-                                <label class="form-label fw-bold">
-                                    Tên sản phẩm <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="Name" class="form-control" required placeholder="Ví dụ: Áo sơ mi nam trắng tay dài">
-                                <small class="form-text text-muted">Tên sản phẩm sẽ hiển thị trên trang chủ</small>
-                            </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">
-                                    SKU <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="SKU" class="form-control" required placeholder="SM-NAM-001">
-                                <small class="form-text text-muted">Mã sản phẩm duy nhất</small>
-                            </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">
+                            SKU <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="SKU" class="admin-form-input" required placeholder="SM-NAM-001">
+                        <small class="admin-form-text">Mã sản phẩm duy nhất</small>
+                    </div>
 
-                            <div class="col-12">
-                                <label class="form-label fw-bold">Slug (URL thân thiện)</label>
-                                <input type="text" name="Slug" class="form-control" placeholder="ao-so-mi-nam-trang-tay-dai">
-                                <small class="form-text text-muted">Để trống để tự động tạo từ tên sản phẩm</small>
-                            </div>
-                        </div>
+                    <div class="col-12">
+                        <label class="admin-form-label">Slug (URL thân thiện)</label>
+                        <input type="text" name="Slug" class="admin-form-input" placeholder="ao-so-mi-nam-trang-tay-dai">
+                        <small class="admin-form-text">Để trống để tự động tạo từ tên sản phẩm</small>
+                    </div>
+                </div>
 
-                        <!-- Pricing -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <h6 class="mb-3 text-primary">
-                                    <i data-lucide="dollar-sign"></i> Giá và tồn kho
-                                </h6>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">
-                                    Giá gốc (₫) <span class="text-danger">*</span>
-                                </label>
-                                <input type="number" name="Price" class="form-control" required min="0" step="1000" placeholder="500000">
-                            </div>
+                <!-- Pricing -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="admin-section-title">
+                            <i data-lucide="dollar-sign"></i> Giá và tồn kho
+                        </h6>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">
+                            Giá gốc (₫) <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" name="Price" class="admin-form-input" required min="0" step="1000" placeholder="500000">
+                    </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Giá khuyến mãi (₫)</label>
-                                <input type="number" name="SalePrice" class="form-control" min="0" step="1000" placeholder="450000">
-                                <small class="form-text text-muted">Để trống nếu không giảm giá</small>
-                            </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Giá khuyến mãi (₫)</label>
+                        <input type="number" name="SalePrice" class="admin-form-input" min="0" step="1000" placeholder="450000">
+                        <small class="admin-form-text">Để trống nếu không giảm giá</small>
+                    </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">
-                                    Số lượng tồn kho <span class="text-danger">*</span>
-                                </label>
-                                <input type="number" name="StockQuantity" class="form-control" required min="0" value="0">
-                            </div>
-                        </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">
+                            Số lượng tồn kho <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" name="StockQuantity" class="admin-form-input" required min="0" value="0">
+                    </div>
+                </div>
 
-                        <!-- Product Details -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <h6 class="mb-3 text-primary">
-                                    <i data-lucide="list"></i> Chi tiết sản phẩm
-                                </h6>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">
-                                    Danh mục <span class="text-danger">*</span>
-                                </label>
-                                    <select name="CategoryId" class="form-select" required>
-                                        <option value="">-- Chọn danh mục --</option>
-                                        @if (ViewBag.Categories != null)
-                                        {
-                                            @foreach (var category in (ViewBag.Categories as List<JohnHenryFashionWeb.Models.Category>) ?? new List<JohnHenryFashionWeb.Models.Category>())
-                                            {
-                                                <option value="@category.Id">@category.Name</option>
-                                            }
-                                        }
-                                    </select>
-                            </div>
+                <!-- Product Details -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="admin-section-title">
+                            <i data-lucide="list"></i> Chi tiết sản phẩm
+                        </h6>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">
+                            Danh mục <span class="text-danger">*</span>
+                        </label>
+                            <select name="CategoryId" class="admin-form-select" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    @foreach (var category in (ViewBag.Categories as List<JohnHenryFashionWeb.Models.Category>) ?? new List<JohnHenryFashionWeb.Models.Category>())
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                }
+                            </select>
+                    </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Thương hiệu</label>
-                                    <select name="BrandId" class="form-select">
-                                        <option value="">-- Chọn thương hiệu --</option>
-                                        @if (ViewBag.Brands != null)
-                                        {
-                                            @foreach (var brand in (ViewBag.Brands as List<JohnHenryFashionWeb.Models.Brand>) ?? new List<JohnHenryFashionWeb.Models.Brand>())
-                                            {
-                                                <option value="@brand.Id">@brand.Name</option>
-                                            }
-                                        }
-                                    </select>
-                            </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Thương hiệu</label>
+                            <select name="BrandId" class="admin-form-select">
+                                <option value="">-- Chọn thương hiệu --</option>
+                                @if (ViewBag.Brands != null)
+                                {
+                                    @foreach (var brand in (ViewBag.Brands as List<JohnHenryFashionWeb.Models.Brand>) ?? new List<JohnHenryFashionWeb.Models.Brand>())
+                                    {
+                                        <option value="@brand.Id">@brand.Name</option>
+                                    }
+                                }
+                            </select>
+                    </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Chất liệu</label>
-                                <input type="text" name="Material" class="form-control" placeholder="Ví dụ: Cotton 100%">
-                            </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Chất liệu</label>
+                        <input type="text" name="Material" class="admin-form-input" placeholder="Ví dụ: Cotton 100%">
+                    </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Kích thước</label>
-                                <input type="text" name="Size" class="form-control" placeholder="Ví dụ: S, M, L, XL">
-                            </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Kích thước</label>
+                        <input type="text" name="Size" class="admin-form-input" placeholder="Ví dụ: S, M, L, XL">
+                    </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Màu sắc</label>
-                                <input type="text" name="Color" class="form-control" placeholder="Ví dụ: Trắng, Đen, Xanh">
-                            </div>
-                        </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Màu sắc</label>
+                        <input type="text" name="Color" class="admin-form-input" placeholder="Ví dụ: Trắng, Đen, Xanh">
+                    </div>
+                </div>
 
-                        <!-- Image Upload -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <h6 class="mb-3 text-primary">
-                                    <i data-lucide="image"></i> Hình ảnh sản phẩm
-                                </h6>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">
-                                    Hình ảnh chính <span class="text-danger">*</span>
-                                </label>
-                                <input type="file" name="imageFile" class="form-control" accept="image/*" required id="imageInput">
-                                <small class="form-text text-muted">Định dạng: JPG, PNG, WEBP (Tối đa 5MB)</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Xem trước</label>
-                                <div id="imagePreview" class="border rounded p-3 text-center bg-light" style="min-height: 200px;">
-                                    <i data-lucide="upload-cloud" style="width: 48px; height: 48px;" class="text-muted mb-2"></i>
-                                    <p class="text-muted mb-0">Chưa chọn ảnh</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Status Options -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <h6 class="mb-3 text-primary">
-                                    <i data-lucide="toggle-left"></i> Trạng thái
-                                </h6>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="IsActive" id="isActive" checked>
-                                    <label class="form-check-label" for="isActive">
-                                        <strong>Hiển thị sản phẩm</strong>
-                                        <br><small class="text-muted">Sản phẩm sẽ hiển thị trên trang chủ</small>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="IsFeatured" id="isFeatured">
-                                    <label class="form-check-label" for="isFeatured">
-                                        <strong>Sản phẩm nổi bật</strong>
-                                        <br><small class="text-muted">Hiển thị ở vị trí ưu tiên</small>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
-                            <a href="/seller/products" class="btn btn-secondary">
-                                <i data-lucide="x"></i> Hủy
-                            </a>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i data-lucide="save"></i> Lưu sản phẩm
-                            </button>
+                <!-- Image Upload -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="admin-section-title">
+                            <i data-lucide="image"></i> Hình ảnh sản phẩm
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">
+                            Hình ảnh chính <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="imageFile" class="admin-form-input" accept="image/*" required id="imageInput">
+                        <small class="admin-form-text">Định dạng: JPG, PNG, WEBP (Tối đa 5MB)</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Xem trước</label>
+                        <div id="imagePreview" class="admin-image-preview">
+                            <i data-lucide="upload-cloud" style="width: 48px; height: 48px;" class="text-muted mb-2"></i>
+                            <p class="text-muted mb-0">Chưa chọn ảnh</p>
                         </div>
                     </div>
                 </div>
-            </form>
+
+                <!-- Status Options -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="admin-section-title">
+                            <i data-lucide="toggle-left"></i> Trạng thái
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="admin-form-check">
+                            <input class="admin-form-check-input" type="checkbox" name="IsActive" id="isActive" checked>
+                            <label class="admin-form-check-label" for="isActive">
+                                <strong>Hiển thị sản phẩm</strong>
+                                <br><small class="text-muted">Sản phẩm sẽ hiển thị trên trang chủ</small>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="admin-form-check">
+                            <input class="admin-form-check-input" type="checkbox" name="IsFeatured" id="isFeatured">
+                            <label class="admin-form-check-label" for="isFeatured">
+                                <strong>Sản phẩm nổi bật</strong>
+                                <br><small class="text-muted">Hiển thị ở vị trí ưu tiên</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="admin-form-actions">
+                    <a href="/seller/products" class="admin-btn admin-btn-secondary">
+                        <i data-lucide="x"></i> Hủy
+                    </a>
+                    <button type="submit" class="admin-btn admin-btn-primary">
+                        <i data-lucide="save"></i> Lưu sản phẩm
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 @section Scripts {
