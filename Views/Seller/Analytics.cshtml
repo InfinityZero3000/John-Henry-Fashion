@@ -4,159 +4,272 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <!-- Header Section -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="page-title">Phân tích & Thống kê</h1>
-                    <p class="text-muted">Phân tích chi tiết hiệu suất kinh doanh</p>
-                </div>
-                <div>
-                    <select class="form-select" id="periodSelect">
-                        <option value="7">7 ngày qua</option>
-                        <option value="30" selected>30 ngày qua</option>
-                        <option value="90">90 ngày qua</option>
-                        <option value="365">1 năm qua</option>
-                    </select>
-                </div>
-            </div>
+@section Styles {
+    <style>
+        .admin-page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .admin-page-header-content h1.admin-page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .admin-page-description {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin: 0.5rem 0 0 0;
+        }
+        
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .admin-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .admin-stat-icon i {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .admin-stat-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+        
+        .admin-stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .admin-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .admin-card-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0.25rem 0 0 0;
+        }
+        
+        .admin-card-body {
+            padding: 1.5rem;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admin-table thead th {
+            padding: 0.875rem 1rem;
+            background: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .admin-table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .admin-table tbody tr:hover {
+            background: #f9fafb;
+        }
+    </style>
+}
+
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+        <div class="admin-page-header-content">
+            <h1 class="admin-page-title">
+                <i data-lucide="trending-up"></i>
+                Phân tích & Thống kê
+            </h1>
+            <p class="admin-page-description">Phân tích chi tiết hiệu suất kinh doanh</p>
+        </div>
+        <div class="admin-page-header-actions">
+            <select class="admin-form-select" style="width: auto;" id="periodSelect">
+                <option value="7">7 ngày qua</option>
+                <option value="30" selected>30 ngày qua</option>
+                <option value="90">90 ngày qua</option>
+                <option value="365">1 năm qua</option>
+            </select>
+            <button class="admin-btn admin-btn-primary" onclick="refreshAnalytics()">
+                <i data-lucide="refresh-cw"></i>
+                Làm mới
+            </button>
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <div class="text-primary mb-2">
-                        <i class="fas fa-eye fa-2x"></i>
-                    </div>
-                    <h4>@Model.TotalProductViews</h4>
-                    <p class="text-muted mb-0">Lượt xem sản phẩm</p>
-                </div>
+    <!-- Stats Cards -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                <i data-lucide="eye"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.TotalProductViews</div>
+                <div class="admin-stat-label">Lượt xem sản phẩm</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <div class="text-success mb-2">
-                        <i class="fas fa-percentage fa-2x"></i>
-                    </div>
-                    <h4>@Model.ConversionRate%</h4>
-                    <p class="text-muted mb-0">Tỷ lệ chuyển đổi</p>
-                </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <i data-lucide="percent"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.ConversionRate%</div>
+                <div class="admin-stat-label">Tỷ lệ chuyển đổi</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <div class="text-info mb-2">
-                        <i class="fas fa-star fa-2x"></i>
-                    </div>
-                    <h4>@Model.TopProducts.Count</h4>
-                    <p class="text-muted mb-0">Sản phẩm bán chạy</p>
-                </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i data-lucide="star"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">@Model.TopProducts.Count</div>
+                <div class="admin-stat-label">Sản phẩm bán chạy</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <div class="text-warning mb-2">
-                        <i class="fas fa-chart-line fa-2x"></i>
-                    </div>
-                    <h4>+15%</h4>
-                    <p class="text-muted mb-0">Tăng trưởng</p>
-                </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
+                <i data-lucide="trending-up"></i>
+            </div>
+            <div class="admin-stat-content">
+                <div class="admin-stat-value">+15%</div>
+                <div class="admin-stat-label">Tăng trưởng</div>
             </div>
         </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Biểu đồ Doanh thu theo thời gian</h5>
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Doanh thu theo thời gian</h3>
+                        <p class="admin-card-description">Biểu đồ doanh thu 30 ngày qua</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="revenueChart" height="80"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Phân bố theo danh mục</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="categoryChart"></canvas>
+                <div class="admin-card-body">
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f9fafb; border-radius: 0.5rem;">
+                        <div style="text-align: center; color: #6b7280;">
+                            <i data-lucide="bar-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Biểu đồ doanh thu sẽ hiển thị ở đây</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Top Products -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Sản phẩm bán chạy nhất</h5>
+        <div class="col-lg-4">
+            <div class="admin-card h-100">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Top sản phẩm</h3>
+                        <p class="admin-card-description">Sản phẩm bán chạy nhất</p>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="admin-card-body">
                     @if (Model.TopProducts.Any())
                     {
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Thứ hạng</th>
-                                        <th>Sản phẩm</th>
-                                        <th>Số lượng bán</th>
-                                        <th>Doanh thu</th>
-                                        <th>Tỷ lệ</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        var totalRevenue = Model.TopProducts.Sum(p => p.Revenue);
-                                        var rank = 1;
-                                    }
-                                    @foreach (var product in Model.TopProducts)
-                                    {
-                                        var percentage = totalRevenue > 0 ? (product.Revenue / totalRevenue * 100) : 0;
-                                        <tr>
-                                            <td>
-                                                <span class="badge bg-primary">#@rank</span>
-                                            </td>
-                                            <td>
-                                                <strong>@product.ProductName</strong>
-                                            </td>
-                                            <td>@product.QuantitySold</td>
-                                            <td>@product.Revenue.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</td>
-                                            <td>
-                                                <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar" role="progressbar" 
-                                                         style="width: @percentage.ToString("F1")%" 
-                                                         aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
-                                                        @percentage.ToString("F1")%
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        rank++;
-                                    }
-                                </tbody>
-                            </table>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            @{
+                                var rank = 1;
+                            }
+                            @foreach (var product in Model.TopProducts.Take(5))
+                            {
+                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem;">
+                                    <span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: #dc2626; color: white; border-radius: 50%; font-size: 0.75rem; font-weight: 700;">@rank</span>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 600; font-size: 0.875rem; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@product.ProductName</div>
+                                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem;">@product.QuantitySold sản phẩm</div>
+                                    </div>
+                                    <div style="font-weight: 700; color: #dc2626; font-size: 0.875rem;">@product.Revenue.ToString("N0") ₫</div>
+                                </div>
+                                rank++;
+                            }
                         </div>
                     }
                     else
                     {
-                        <div class="text-center py-5">
-                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                            <h5>Chưa có dữ liệu</h5>
-                            <p class="text-muted">Chưa có dữ liệu sản phẩm bán chạy.</p>
+                        <div style="text-align: center; padding: 3rem 0; color: #6b7280;">
+                            <i data-lucide="package" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Chưa có dữ liệu sản phẩm</p>
                         </div>
                     }
                 </div>
@@ -164,56 +277,92 @@
         </div>
     </div>
 
-    <!-- Performance Metrics -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Hiệu suất theo kênh</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Bán hàng trực tiếp</span>
-                        <span class="text-success">85%</span>
-                    </div>
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-success" style="width: 85%"></div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Bán hàng online</span>
-                        <span class="text-info">65%</span>
-                    </div>
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-info" style="width: 65%"></div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Mạng xã hội</span>
-                        <span class="text-warning">45%</span>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar bg-warning" style="width: 45%"></div>
-                    </div>
-                </div>
+    <!-- Top Products Table -->
+    <div class="admin-card" style="margin-top: 1.5rem;">
+        <div class="admin-card-header">
+            <div>
+                <h3 class="admin-card-title">Sản phẩm bán chạy nhất</h3>
+                <p class="admin-card-description">Chi tiết sản phẩm bán chạy trong kỳ</p>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Xu hướng khách hàng</h5>
+        <div class="admin-card-body">
+            @if (Model.TopProducts.Any())
+            {
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">Hạng</th>
+                                <th>Sản phẩm</th>
+                                <th style="width: 120px; text-align: right;">Đã bán</th>
+                                <th style="width: 150px; text-align: right;">Doanh thu</th>
+                                <th style="width: 200px;">Tỷ lệ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var totalRevenue = Model.TopProducts.Sum(p => p.Revenue);
+                                var rank = 1;
+                            }
+                            @foreach (var product in Model.TopProducts)
+                            {
+                                var percentage = totalRevenue > 0 ? (product.Revenue / totalRevenue * 100) : 0;
+                                <tr>
+                                    <td>
+                                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #dc2626; color: white; border-radius: 50%; font-weight: 700; font-size: 0.875rem;">#@rank</span>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600; color: #1f2937;">@product.ProductName</div>
+                                    </td>
+                                    <td style="text-align: right; font-weight: 600;">@product.QuantitySold</td>
+                                    <td style="text-align: right; font-weight: 700; color: #dc2626;">@product.Revenue.ToString("N0") ₫</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div style="flex: 1; height: 8px; background: #e5e7eb; border-radius: 9999px; overflow: hidden;">
+                                                <div style="height: 100%; background: #dc2626; width: @percentage.ToString("F1")%; transition: width 0.3s ease;"></div>
+                                            </div>
+                                            <span style="font-weight: 600; color: #6b7280; font-size: 0.875rem; min-width: 50px; text-align: right;">@percentage.ToString("F1")%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                rank++;
+                            }
+                        </tbody>
+                    </table>
                 </div>
-                <div class="card-body">
-                    <canvas id="customerTrendChart" height="120"></canvas>
+            }
+            else
+            {
+                <div style="text-align: center; padding: 4rem 0; color: #6b7280;">
+                    <i data-lucide="bar-chart" style="width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                    <h5 style="color: #374151; margin-bottom: 0.5rem;">Chưa có dữ liệu</h5>
+                    <p>Chưa có dữ liệu sản phẩm bán chạy.</p>
                 </div>
-            </div>
+            }
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Refresh analytics function
+        function refreshAnalytics() {
+            location.reload();
+        }
+
+        // Period selector
+        document.getElementById('periodSelect').addEventListener('change', function() {
+            // TODO: Implement AJAX reload with new period
+            console.log('Period changed to:', this.value, 'days');
+            refreshAnalytics();
+        });
+    </script>
+}
         // Revenue Chart
         var revenueCtx = document.getElementById('revenueChart').getContext('2d');
         var revenueChart = new Chart(revenueCtx, {

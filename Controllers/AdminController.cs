@@ -2578,12 +2578,14 @@ namespace JohnHenryFashionWeb.Controllers
 
         #region Analytics
         [HttpGet("analytics")]
-        public IActionResult Analytics()
+        public async Task<IActionResult> Analytics()
         {
-            ViewData["CurrentSection"] = "analytics";
+            ViewData["CurrentSection"] = "Analytics";
             ViewData["Title"] = "Phân tích";
             
-            return View("Analytics");
+            var viewModel = await GenerateAdvancedAnalyticsData();
+            
+            return View("Analytics", viewModel);
         }
         #endregion
 
@@ -2608,19 +2610,19 @@ namespace JohnHenryFashionWeb.Controllers
 
             // KPI Data
             var currentRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .SumAsync(o => o.TotalAmount);
 
             var previousRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .SumAsync(o => o.TotalAmount);
 
             var currentOrders = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .CountAsync();
 
             var previousOrders = await _context.Orders
-                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .CountAsync();
 
             var currentCustomers = await _context.Users
@@ -2653,7 +2655,7 @@ namespace JohnHenryFashionWeb.Controllers
 
             // Sales Analytics Data
             var monthlyRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= startDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .GroupBy(o => new { Year = o.CreatedAt.Year, Month = o.CreatedAt.Month })
                 .Select(g => new MonthlyData
                 {
@@ -2726,7 +2728,7 @@ namespace JohnHenryFashionWeb.Controllers
             // Top Products Data
             var topProducts = await _context.OrderItems
                 .Include(oi => oi.Product)
-                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.Status == "completed")
+                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.PaymentStatus == "paid" && oi.Order.Status != "cancelled")
                 .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
                 .Select(g => new Models.ChartData
                 {
@@ -2741,7 +2743,7 @@ namespace JohnHenryFashionWeb.Controllers
             var categorySales = await _context.OrderItems
                 .Include(oi => oi.Product)
                 .ThenInclude(p => p.Category)
-                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.Status == "completed")
+                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.PaymentStatus == "paid" && oi.Order.Status != "cancelled")
                 .GroupBy(oi => oi.Product.Category.Name)
                 .Select(g => new Models.ChartData
                 {
@@ -2752,7 +2754,7 @@ namespace JohnHenryFashionWeb.Controllers
 
             // Payment Method Data
             var paymentMethodsRaw = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= startDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .GroupBy(o => o.PaymentMethod)
                 .Select(g => new
                 {

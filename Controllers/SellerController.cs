@@ -51,7 +51,7 @@ namespace JohnHenryFashionWeb.Controllers
             var myOrdersCount = await _context.Orders.CountAsync();
             
             var myRevenue = await _context.Orders
-                .Where(o => o.Status == "completed")
+                .Where(o => o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .SumAsync(o => o.TotalAmount);
 
             var currentMonth = DateTime.UtcNow.Month;
@@ -59,7 +59,7 @@ namespace JohnHenryFashionWeb.Controllers
             var monthlyRevenue = await _context.Orders
                 .Where(o => o.CreatedAt.Month == currentMonth && 
                            o.CreatedAt.Year == currentYear &&
-                           o.Status == "completed")
+                           o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .SumAsync(o => o.TotalAmount);
 
             var recentOrders = await _context.Orders
@@ -79,7 +79,7 @@ namespace JohnHenryFashionWeb.Controllers
 
             var topProducts = await _context.OrderItems
                 .Include(oi => oi.Product)
-                .Where(oi => oi.Order.Status == "completed")
+                .Where(oi => oi.Order.PaymentStatus == "paid" && oi.Order.Status != "cancelled")
                 .GroupBy(oi => oi.ProductId)
                 .Select(g => new TopSellingProduct
                 {
@@ -186,7 +186,7 @@ namespace JohnHenryFashionWeb.Controllers
 
             // TODO: Filter by seller when relationship is implemented
             var salesData = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.Status == "completed")
+                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
                 .GroupBy(o => o.CreatedAt.Date)
                 .Select(g => new
                 {
@@ -217,19 +217,48 @@ namespace JohnHenryFashionWeb.Controllers
         [HttpGet("analytics")]
         public async Task<IActionResult> Analytics()
         {
-            // TODO: Implement seller-specific analytics
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return Unauthorized();
+
+            var sellerId = currentUser.Id;
+            
+            // Get top selling products for this seller (last 30 days)
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+            var topProducts = await _context.OrderItems
+                .Include(oi => oi.Order)
+                .Include(oi => oi.Product)
+                .Where(oi => oi.Product.SellerId == sellerId 
+                    && oi.Order.PaymentStatus == "paid" 
+                    && oi.Order.Status != "cancelled"
+                    && oi.Order.CreatedAt >= thirtyDaysAgo)
+                .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
+                .Select(g => new TopSellingProduct
+                {
+                    ProductName = g.Key.Name,
+                    QuantitySold = g.Sum(oi => oi.Quantity),
+                    Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice)
+                })
+                .OrderByDescending(p => p.Revenue)
+                .Take(10)
+                .ToListAsync();
+
+            // Get total orders for this seller
+            var totalOrders = await _context.Orders
+                .Where(o => o.OrderItems.Any(oi => oi.Product.SellerId == sellerId)
+                    && o.PaymentStatus == "paid"
+                    && o.Status != "cancelled"
+                    && o.CreatedAt >= thirtyDaysAgo)
+                .CountAsync();
+                
+            // Simple mock for views and conversion (can be enhanced with real tracking later)
+            var totalViews = totalOrders * 10; // Estimate: 1 order per 10 views
+            var conversionRate = totalViews > 0 ? (int)Math.Round((decimal)totalOrders / totalViews * 100) : 0;
+
             var viewModel = new SellerAnalyticsViewModel
             {
-                TopProducts = await _context.Products
-                    .OrderByDescending(p => p.StockQuantity) // This should be orders count
-                    .Take(10)
-                    .Select(p => new TopSellingProduct
-                    {
-                        ProductName = p.Name,
-                        QuantitySold = p.StockQuantity,
-                        Revenue = p.Price * p.StockQuantity
-                    })
-                    .ToListAsync()
+                TopProducts = topProducts,
+                TotalProductViews = totalViews,
+                ConversionRate = conversionRate
             };
 
             return View(viewModel);

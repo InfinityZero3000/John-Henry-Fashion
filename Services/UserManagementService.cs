@@ -165,8 +165,8 @@ namespace JohnHenryFashionWeb.Services
 
             var orderCount = await _context.Orders.CountAsync(o => o.UserId == userId);
             var totalSpent = await _context.Orders
-                .Where(o => o.UserId == userId && o.Status == "Completed")
-                .SumAsync(o => o.Total);
+                .Where(o => o.UserId == userId && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .SumAsync(o => o.TotalAmount);
 
             // Check lockout status
             var isLockedOut = await _userManager.IsLockedOutAsync(user);
