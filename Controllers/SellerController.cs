@@ -108,7 +108,7 @@ namespace JohnHenryFashionWeb.Controllers
         // to avoid routing conflicts. Use /seller/products routes instead.
 
         [HttpGet("inventory")]
-        public async Task<IActionResult> Inventory(string search = "", bool lowStock = false)
+        public async Task<IActionResult> Inventory(string search = "", string filter = "all", int page = 1, int pageSize = 20)
         {
             var query = _context.Products
                 .Include(p => p.Category)
@@ -123,14 +123,36 @@ namespace JohnHenryFashionWeb.Controllers
                 query = query.Where(p => p.Name.Contains(search) || p.SKU.Contains(search));
             }
 
-            if (lowStock)
+            // Apply stock filter
+            switch (filter)
             {
-                query = query.Where(p => p.StockQuantity <= 10);
+                case "low_stock":
+                    query = query.Where(p => p.StockQuantity > 0 && p.StockQuantity < 10);
+                    break;
+                case "out_of_stock":
+                    query = query.Where(p => p.StockQuantity == 0);
+                    break;
+                case "in_stock":
+                    query = query.Where(p => p.StockQuantity >= 10);
+                    break;
+                // "all" - no filter
             }
 
-            var products = await query
+            var totalItems = await query.CountAsync();
+
+            // Calculate statistics for ALL products matching the query (before pagination)
+            var allProducts = await query.AsNoTracking().ToListAsync();
+            var totalStockQuantity = allProducts.Sum(p => p.StockQuantity);
+            var lowStockCount = allProducts.Count(p => p.StockQuantity > 0 && p.StockQuantity < 10);
+            var outOfStockCount = allProducts.Count(p => p.StockQuantity == 0);
+            var inStockCount = allProducts.Count(p => p.StockQuantity >= 10);
+
+            // Get paginated products
+            var products = allProducts
                 .OrderBy(p => p.StockQuantity)
                 .ThenBy(p => p.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(p => new InventoryItemViewModel
                 {
                     Id = p.Id,
@@ -138,17 +160,28 @@ namespace JohnHenryFashionWeb.Controllers
                     ProductName = p.Name,
                     SKU = p.SKU,
                     CurrentStock = p.StockQuantity,
-                    CategoryName = p.Category.Name,
+                    StockQuantity = p.StockQuantity,
+                    CategoryName = p.Category?.Name ?? "N/A",
                     Price = p.Price,
-                    LastUpdated = p.UpdatedAt
+                    ImageUrl = p.FeaturedImageUrl,
+                    LastUpdated = p.UpdatedAt,
+                    MinStockLevel = 10
                 })
-                .ToListAsync();
+                .ToList();
 
             var viewModel = new InventoryListViewModel
             {
                 Items = products,
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                PageSize = pageSize,
                 SearchTerm = search,
-                Filter = lowStock ? "low_stock" : "all"
+                Filter = filter,
+                TotalProducts = totalItems,
+                TotalStockQuantity = totalStockQuantity,
+                LowStockProducts = lowStockCount,
+                OutOfStockProducts = outOfStockCount,
+                InStockProducts = inStockCount
             };
 
             return View(viewModel);
@@ -220,15 +253,15 @@ namespace JohnHenryFashionWeb.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null) return Unauthorized();
 
-            var sellerId = currentUser.Id;
+            // TODO: Filter by seller when seller-product relationship is implemented
+            // var sellerId = currentUser.Id;
             
-            // Get top selling products for this seller (last 30 days)
-            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+            // Get top selling products (last 30 days) - showing all products temporarily
+            var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
             var topProducts = await _context.OrderItems
                 .Include(oi => oi.Order)
                 .Include(oi => oi.Product)
-                .Where(oi => oi.Product.SellerId == sellerId 
-                    && oi.Order.PaymentStatus == "paid" 
+                .Where(oi => oi.Order.PaymentStatus == "paid" 
                     && oi.Order.Status != "cancelled"
                     && oi.Order.CreatedAt >= thirtyDaysAgo)
                 .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
@@ -242,14 +275,28 @@ namespace JohnHenryFashionWeb.Controllers
                 .Take(10)
                 .ToListAsync();
 
-            // Get total orders for this seller
+            // Get total orders (showing all orders temporarily)
             var totalOrders = await _context.Orders
-                .Where(o => o.OrderItems.Any(oi => oi.Product.SellerId == sellerId)
-                    && o.PaymentStatus == "paid"
+                .Where(o => o.PaymentStatus == "paid"
                     && o.Status != "cancelled"
                     && o.CreatedAt >= thirtyDaysAgo)
                 .CountAsync();
                 
+            // Get daily revenue for last 30 days
+            var dailyRevenues = await _context.Orders
+                .Where(o => o.PaymentStatus == "paid"
+                    && o.Status != "cancelled"
+                    && o.CreatedAt >= thirtyDaysAgo)
+                .GroupBy(o => o.CreatedAt.Date)
+                .Select(g => new DailyRevenue
+                {
+                    Date = g.Key,
+                    Revenue = g.Sum(o => o.TotalAmount),
+                    OrderCount = g.Count()
+                })
+                .OrderBy(d => d.Date)
+                .ToListAsync();
+            
             // Simple mock for views and conversion (can be enhanced with real tracking later)
             var totalViews = totalOrders * 10; // Estimate: 1 order per 10 views
             var conversionRate = totalViews > 0 ? (int)Math.Round((decimal)totalOrders / totalViews * 100) : 0;
@@ -257,6 +304,7 @@ namespace JohnHenryFashionWeb.Controllers
             var viewModel = new SellerAnalyticsViewModel
             {
                 TopProducts = topProducts,
+                DailyRevenues = dailyRevenues,
                 TotalProductViews = totalViews,
                 ConversionRate = conversionRate
             };
@@ -1169,267 +1217,6 @@ namespace JohnHenryFashionWeb.Controllers
             return RedirectToAction("Products");
         }
 
-        #region Store Management
-        [HttpGet("store")]
-        [HttpGet("store-management")]
-        public async Task<IActionResult> StoreManagement()
-        {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            // Get seller's store
-            var sellerStore = await _context.SellerStores
-                .Include(ss => ss.Store)
-                .FirstOrDefaultAsync(ss => ss.SellerId == currentUser.Id && ss.IsActive);
-
-            if (sellerStore?.Store == null)
-            {
-                // Create a basic view model for sellers without a store
-                var emptyViewModel = new StoreManagementViewModel
-                {
-                    Store = null,
-                    Statistics = new StoreStatistics()
-                };
-                return View(emptyViewModel);
-            }
-
-            var store = sellerStore.Store;
-
-            // Get inventory
-            var inventory = await _context.StoreInventories
-                .Include(si => si.Product)
-                .Where(si => si.StoreId == store.Id)
-                .Select(si => new StoreInventoryItem
-                {
-                    Id = si.Id,
-                    ProductName = si.Product.Name,
-                    ProductImageUrl = si.Product.FeaturedImageUrl ?? "",
-                    ProductSku = si.Product.SKU,
-                    Quantity = si.Quantity,
-                    MinimumStock = si.MinimumStock,
-                    MaximumStock = si.MaximumStock,
-                    Location = si.Location,
-                    LastUpdated = si.LastUpdated
-                })
-                .OrderBy(si => si.ProductName)
-                .ToListAsync();
-
-            // Get settings
-            var settings = await _context.StoreSettings
-                .Include(ss => ss.UpdatedByUser)
-                .Where(ss => ss.StoreId == store.Id)
-                .Select(ss => new StoreSettingItem
-                {
-                    Id = ss.Id,
-                    SettingKey = ss.SettingKey,
-                    SettingValue = ss.SettingValue,
-                    Description = ss.Description,
-                    UpdatedAt = ss.UpdatedAt,
-                    UpdatedByName = $"{ss.UpdatedByUser.FirstName} {ss.UpdatedByUser.LastName}".Trim()
-                })
-                .OrderBy(ss => ss.SettingKey)
-                .ToListAsync();
-
-            // Get store staff
-            var storeStaff = await _context.SellerStores
-                .Include(ss => ss.Seller)
-                .Where(ss => ss.StoreId == store.Id && ss.IsActive)
-                .ToListAsync();
-
-            // Calculate statistics
-            var statistics = new StoreStatistics
-            {
-                TotalProducts = inventory.Count,
-                LowStockProducts = inventory.Count(i => i.Quantity <= i.MinimumStock),
-                OutOfStockProducts = inventory.Count(i => i.Quantity <= 0),
-                TotalInventoryValue = await _context.StoreInventories
-                    .Include(si => si.Product)
-                    .Where(si => si.StoreId == store.Id)
-                    .SumAsync(si => si.Quantity * si.Product.Price),
-                StaffCount = storeStaff.Count,
-                MonthlyRevenue = 0, // TODO: Calculate based on actual sales
-                MonthlyOrders = 0 // TODO: Calculate based on actual orders
-            };
-
-            var viewModel = new StoreManagementViewModel
-            {
-                Store = store,
-                Inventory = inventory,
-                Settings = settings,
-                Statistics = statistics,
-                StoreStaff = storeStaff
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpGet("store/settings")]
-        public async Task<IActionResult> StoreSettings()
-        {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var sellerStore = await _context.SellerStores
-                .Include(ss => ss.Store)
-                .FirstOrDefaultAsync(ss => ss.SellerId == currentUser.Id && ss.IsActive);
-
-            if (sellerStore?.Store == null)
-            {
-                TempData["ErrorMessage"] = "Bạn chưa được gán vào cửa hàng nào.";
-                return RedirectToAction("StoreManagement");
-            }
-
-            var store = sellerStore.Store;
-            var additionalSettings = await _context.StoreSettings
-                .Where(ss => ss.StoreId == store.Id)
-                .ToDictionaryAsync(ss => ss.SettingKey, ss => ss.SettingValue);
-
-            var viewModel = new StoreSettingsViewModel
-            {
-                StoreId = store.Id,
-                StoreName = store.Name,
-                StoreAddress = store.Address,
-                Phone = store.Phone,
-                Email = store.Email,
-                Website = store.Website,
-                WorkingHours = store.WorkingHours,
-                Description = store.Description,
-                SocialMedia = store.SocialMedia,
-                IsActive = store.IsActive,
-                AdditionalSettings = additionalSettings
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost("store/settings")]
-        public async Task<IActionResult> StoreSettings(StoreSettingsViewModel model)
-        {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var sellerStore = await _context.SellerStores
-                .Include(ss => ss.Store)
-                .FirstOrDefaultAsync(ss => ss.SellerId == currentUser.Id && ss.IsActive);
-
-            if (sellerStore?.Store == null)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                var store = sellerStore.Store;
-                store.Name = model.StoreName;
-                store.Address = model.StoreAddress;
-                store.Phone = model.Phone;
-                store.Email = model.Email;
-                store.Website = model.Website;
-                store.WorkingHours = model.WorkingHours;
-                store.Description = model.Description;
-                store.SocialMedia = model.SocialMedia;
-                store.IsActive = model.IsActive;
-                store.UpdatedAt = DateTime.UtcNow;
-
-                // Update additional settings
-                var existingSettings = await _context.StoreSettings
-                    .Where(ss => ss.StoreId == store.Id)
-                    .ToListAsync();
-
-                foreach (var setting in model.AdditionalSettings)
-                {
-                    var existingSetting = existingSettings.FirstOrDefault(s => s.SettingKey == setting.Key);
-                    if (existingSetting != null)
-                    {
-                        existingSetting.SettingValue = setting.Value;
-                        existingSetting.UpdatedAt = DateTime.UtcNow;
-                        existingSetting.UpdatedBy = currentUser.Id;
-                    }
-                    else
-                    {
-                        _context.StoreSettings.Add(new StoreSettings
-                        {
-                            Id = Guid.NewGuid(),
-                            StoreId = store.Id,
-                            SettingKey = setting.Key,
-                            SettingValue = setting.Value,
-                            UpdatedAt = DateTime.UtcNow,
-                            UpdatedBy = currentUser.Id
-                        });
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Cập nhật cài đặt cửa hàng thành công!";
-                return RedirectToAction("StoreManagement");
-            }
-
-            return View(model);
-        }
-
-        [HttpPost("store/inventory/update")]
-        public async Task<IActionResult> UpdateInventory(Guid productId, int quantity, int minStock, int maxStock, string? location)
-        {
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return Json(new { success = false, message = "Unauthorized" });
-            }
-
-            var sellerStore = await _context.SellerStores
-                .FirstOrDefaultAsync(ss => ss.SellerId == currentUser.Id && ss.IsActive);
-
-            if (sellerStore == null)
-            {
-                return Json(new { success = false, message = "Store not found" });
-            }
-
-            var inventory = await _context.StoreInventories
-                .FirstOrDefaultAsync(si => si.StoreId == sellerStore.StoreId && si.ProductId == productId);
-
-            if (inventory == null)
-            {
-                // Create new inventory entry
-                inventory = new StoreInventory
-                {
-                    Id = Guid.NewGuid(),
-                    StoreId = sellerStore.StoreId,
-                    ProductId = productId,
-                    Quantity = quantity,
-                    MinimumStock = minStock,
-                    MaximumStock = maxStock,
-                    Location = location,
-                    LastUpdated = DateTime.UtcNow,
-                    UpdatedBy = currentUser.Id
-                };
-                _context.StoreInventories.Add(inventory);
-            }
-            else
-            {
-                // Update existing inventory
-                inventory.Quantity = quantity;
-                inventory.MinimumStock = minStock;
-                inventory.MaximumStock = maxStock;
-                inventory.Location = location;
-                inventory.LastUpdated = DateTime.UtcNow;
-                inventory.UpdatedBy = currentUser.Id;
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Cập nhật kho thành công!" });
-        }
-
         // MARK: - Quản lý Đơn hàng
         [HttpGet("orders")]
         public async Task<IActionResult> Orders(int page = 1, int pageSize = 20, string search = "", string status = "")
@@ -1440,13 +1227,14 @@ namespace JohnHenryFashionWeb.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Get orders that contain products from this seller
+            // Get all orders (temporarily showing all orders since SellerId is not assigned yet)
+            // TODO: Filter by seller when seller-product relationship is fully implemented
             var query = _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
-                .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
                 .AsQueryable();
+                // .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id));
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -1464,9 +1252,8 @@ namespace JohnHenryFashionWeb.Controllers
             }
 
             // Get status counts for filters
-            var allOrders = await _context.Orders
-                .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
-                .ToListAsync();
+            var allOrders = await _context.Orders.ToListAsync();
+                // .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
 
             var statusCounts = new Dictionary<string, int>
             {
@@ -1508,7 +1295,7 @@ namespace JohnHenryFashionWeb.Controllers
                     Status = o.Status,
                     PaymentStatus = o.PaymentStatus,
                     CreatedAt = o.CreatedAt,
-                    ItemCount = o.OrderItems.Count(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id)
+                    ItemCount = o.OrderItems.Count()
                 }).ToList(),
                 CurrentPage = page,
                 TotalPages = (int)Math.Ceiling(totalOrders / (double)pageSize),
@@ -1548,17 +1335,18 @@ namespace JohnHenryFashionWeb.Controllers
                 return RedirectToAction(nameof(Orders));
             }
 
+            // TODO: Check seller permission when seller-product relationship is implemented
             // Check if seller has permission to view this order
             // Seller can only view orders that contain their products
-            var sellerProducts = order.OrderItems
-                .Where(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id)
-                .ToList();
+            // var sellerProducts = order.OrderItems
+            //     .Where(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id)
+            //     .ToList();
 
-            if (!sellerProducts.Any())
-            {
-                TempData["ErrorMessage"] = "Bạn không có quyền xem đơn hàng này.";
-                return RedirectToAction(nameof(Orders));
-            }
+            // if (!sellerProducts.Any())
+            // {
+            //     TempData["ErrorMessage"] = "Bạn không có quyền xem đơn hàng này.";
+            //     return RedirectToAction(nameof(Orders));
+            // }
 
             // Get order status history
             var statusHistory = await _context.OrderStatusHistories
@@ -1596,8 +1384,8 @@ namespace JohnHenryFashionWeb.Controllers
                 ShippingAddress = order.ShippingAddress,
                 BillingAddress = order.BillingAddress,
                 
-                // Order items - only seller's products
-                OrderItems = sellerProducts.Select(oi => new OrderItemDetailViewModel
+                // Order items - all items (showing all since SellerId not yet implemented)
+                OrderItems = order.OrderItems.Select(oi => new OrderItemDetailViewModel
                 {
                     ProductId = oi.ProductId,
                     ProductName = oi.ProductName ?? oi.Product?.Name ?? "N/A",
@@ -1608,12 +1396,12 @@ namespace JohnHenryFashionWeb.Controllers
                     TotalPrice = oi.TotalPrice
                 }).ToList(),
                 
-                // Calculate totals for seller's items only
-                Subtotal = sellerProducts.Sum(oi => oi.TotalPrice),
-                ShippingFee = order.ShippingFee, // Note: This is for the entire order
-                Tax = order.Tax, // Note: This is for the entire order
+                // Calculate totals for all items
+                Subtotal = order.OrderItems.Sum(oi => oi.TotalPrice),
+                ShippingFee = order.ShippingFee,
+                Tax = order.Tax,
                 DiscountAmount = order.DiscountAmount,
-                TotalAmount = sellerProducts.Sum(oi => oi.TotalPrice), // Only seller's portion
+                TotalAmount = order.TotalAmount,
                 
                 // Additional info
                 Notes = order.Notes,
@@ -1896,8 +1684,6 @@ namespace JohnHenryFashionWeb.Controllers
                 });
             }
         }
-        
-        #endregion
     }
 
     // Helper class for bulk update

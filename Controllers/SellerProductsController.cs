@@ -28,7 +28,7 @@ public class SellerProductsController : Controller
 
     // GET: seller/products
     [HttpGet("")]
-    public async Task<IActionResult> Index(string? search, Guid? categoryId, int page = 1, int pageSize = 20)
+    public async Task<IActionResult> Index(string? search, Guid? categoryId, string? status, int page = 1, int pageSize = 20)
     {
         var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(currentUserId))
@@ -39,7 +39,11 @@ public class SellerProductsController : Controller
         var query = _context.Products
             .Include(p => p.Category)
             .Include(p => p.Brand)
-            .Where(p => p.SellerId == currentUserId);
+            .AsQueryable();
+
+        // TODO: Filter by seller when seller-product relationship is fully implemented
+        // For now, show all products
+        // .Where(p => p.SellerId == currentUserId);
 
         // Filter by search
         if (!string.IsNullOrEmpty(search))
@@ -53,6 +57,12 @@ public class SellerProductsController : Controller
             query = query.Where(p => p.CategoryId == categoryId.Value);
         }
 
+        // Filter by status
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(p => p.Status == status);
+        }
+
         var totalItems = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
@@ -62,16 +72,38 @@ public class SellerProductsController : Controller
             .Take(pageSize)
             .ToListAsync();
 
-        // Pass data to view
-        ViewBag.Search = search;
-        ViewBag.CategoryId = categoryId;
-        ViewBag.Page = page;
-        ViewBag.PageSize = pageSize;
-        ViewBag.TotalItems = totalItems;
-        ViewBag.TotalPages = totalPages;
-        ViewBag.Categories = await _context.Categories.ToListAsync();
+        // Map to ViewModel
+        var viewModel = new JohnHenryFashionWeb.ViewModels.ProductListViewModel
+        {
+            Products = products.Select(p => new JohnHenryFashionWeb.ViewModels.ProductListItemViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                SKU = p.SKU,
+                Price = p.Price,
+                SalePrice = p.SalePrice,
+                StockQuantity = p.StockQuantity,
+                Status = p.Status,
+                CategoryName = p.Category?.Name ?? "N/A",
+                BrandName = p.Brand?.Name,
+                FeaturedImageUrl = p.FeaturedImageUrl,
+                CreatedAt = p.CreatedAt,
+                IsFeatured = p.IsFeatured,
+                IsActive = p.IsActive,
+                Description = p.Description,
+                Category = p.Category
+            }).ToList(),
+            CurrentPage = page,
+            TotalPages = totalPages,
+            PageSize = pageSize,
+            SearchTerm = search ?? string.Empty,
+            CategoryId = categoryId,
+            Status = status ?? string.Empty,
+            Categories = await _context.Categories.ToListAsync(),
+            TotalProducts = totalItems
+        };
 
-        return View(products);
+        return View("~/Views/Seller/Products.cshtml", viewModel);
     }
 
     // GET: seller/products/create
@@ -344,6 +376,85 @@ public class SellerProductsController : Controller
         await _context.SaveChangesAsync();
 
         TempData["Success"] = "Xóa sản phẩm thành công!";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // POST: Update product status (Active/Inactive)
+    [HttpPost]
+    [Route("update-status")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProductStatus(Guid productId, string status)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var product = await _context.Products.FindAsync(productId);
+        
+        if (product == null || product.SellerId != currentUserId)
+        {
+            TempData["Error"] = "Không tìm thấy sản phẩm hoặc bạn không có quyền!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        product.Status = status;
+        product.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã cập nhật trạng thái sản phẩm thành {(status == "Active" ? "Đang bán" : "Tạm ẩn")}!";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // POST: Toggle featured status
+    [HttpPost]
+    [Route("update-featured")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProductFeatured(Guid productId, bool isFeatured)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var product = await _context.Products.FindAsync(productId);
+        
+        if (product == null || product.SellerId != currentUserId)
+        {
+            TempData["Error"] = "Không tìm thấy sản phẩm hoặc bạn không có quyền!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        product.IsFeatured = isFeatured;
+        product.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = isFeatured ? "Đã đặt sản phẩm làm nổi bật!" : "Đã bỏ nổi bật sản phẩm!";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // POST: Delete product
+    [HttpPost]
+    [Route("delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteProduct(Guid productId)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var product = await _context.Products.FindAsync(productId);
+        
+        if (product == null || product.SellerId != currentUserId)
+        {
+            TempData["Error"] = "Không tìm thấy sản phẩm hoặc bạn không có quyền!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Delete image file if exists
+        if (!string.IsNullOrEmpty(product.FeaturedImageUrl))
+        {
+            var imagePath = product.FeaturedImageUrl.Replace("~/", "");
+            var imageFullPath = Path.Combine(_webHostEnvironment.WebRootPath, imagePath);
+            if (System.IO.File.Exists(imageFullPath))
+            {
+                System.IO.File.Delete(imageFullPath);
+            }
+        }
+
+        _context.Products.Remove(product);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Đã xóa sản phẩm thành công!";
         return RedirectToAction(nameof(Index));
     }
 

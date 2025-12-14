@@ -780,20 +780,58 @@ namespace JohnHenryFashionWeb.Controllers
 
             await _context.SaveChangesAsync();
 
+            // Reload order with User for email template
+            order = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == order.Id) ?? order;
+
             // Send confirmation email
             if (!string.IsNullOrEmpty(order.UserId))
             {
                 var user = await _userManager.FindByIdAsync(order.UserId);
                 if (user?.Email != null)
                 {
-                    await _emailService.SendOrderConfirmationEmailAsync(user.Email, order);
+                    _logger.LogInformation("Attempting to send order confirmation email to {Email} for order #{OrderNumber}", 
+                        user.Email, order.OrderNumber);
+                    
+                    var emailSent = await _emailService.SendOrderConfirmationEmailAsync(user.Email, order);
+                    
+                    if (emailSent)
+                    {
+                        _logger.LogInformation("Order confirmation email sent successfully to {Email}", user.Email);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to send order confirmation email to {Email} for order #{OrderNumber}", 
+                            user.Email, order.OrderNumber);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Cannot send order confirmation email - User or email is null for order #{OrderNumber}", 
+                        order.OrderNumber);
                 }
 
-                // Send notification
+                // Send notification to customer
                 await _notificationService.SendNotificationAsync(order.UserId,
                     "Đơn hàng đã được xác nhận",
                     $"Đơn hàng #{order.OrderNumber} đã được thanh toán và xác nhận thành công",
                     "order_confirmed");
+
+                // Send notification to all admin/seller users
+                var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+                var sellerUsers = await _userManager.GetUsersInRoleAsync("Seller");
+                var notifyUsers = adminUsers.Union(sellerUsers).Distinct();
+                
+                foreach (var adminUser in notifyUsers)
+                {
+                    await _notificationService.SendNotificationAsync(adminUser.Id,
+                        "Đơn hàng mới",
+                        $"Có đơn hàng mới #{order.OrderNumber} từ khách hàng {user.FirstName} {user.LastName}. Tổng giá trị: {order.TotalAmount:N0}₫",
+                        "new_order",
+                        $"/seller/orders?orderNumber={order.OrderNumber}");
+                }
             }
 
             // Update inventory
