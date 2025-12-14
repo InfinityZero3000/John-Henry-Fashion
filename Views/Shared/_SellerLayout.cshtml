@@ -117,7 +117,32 @@
                         </a>
                     </li>
 
-                    <!-- 2. QUẢN LÝ SẢN PHẨM -->
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="@Url.Action("Notifications", "Seller")" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Notifications" || ViewData["CurrentSection"]?.ToString() == "notifications" || ViewContext.RouteData.Values["Action"]?.ToString() == "Notifications" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="bell" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Thông báo</span>
+                            <span id="notification-badge" class="badge bg-danger ms-auto" style="display: none;">0</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. BÁO CÁO & THỐNG KÊ -->
+                    <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">BÁO CÁO & THỐNG KÊ</li>
+                    
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="@Url.Action("Sales", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sales" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="trending-up" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Báo cáo bán hàng</span>
+                        </a>
+                    </li>
+
+                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
+                        <a href="@Url.Action("Analytics", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Analytics" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
+                            <i data-lucide="bar-chart-3" style="margin-right: 1rem; width: 20px;"></i>
+                            <span>Phân tích</span>
+                        </a>
+                    </li>
+
+                    <!-- 3. QUẢN LÝ SẢN PHẨM -->
                     <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">QUẢN LÝ SẢN PHẨM</li>
                     
                     <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
@@ -141,7 +166,7 @@
                         </a>
                     </li>
 
-                    <!-- 3. QUẢN LÝ ĐƠN HÀNG -->
+                    <!-- 4. QUẢN LÝ ĐƠN HÀNG -->
                     <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">QUẢN LÝ ĐƠN HÀNG</li>
                     
                     <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
@@ -165,50 +190,9 @@
                         </a>
                     </li>
 
-                    <!-- 4. QUẢN LÝ CỬA HÀNG -->
-                    <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">QUẢN LÝ CỬA HÀNG</li>
-                    
-                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
-                        <a href="@Url.Action("StoreManagement", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "StoreManagement" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
-                            <i data-lucide="store" style="margin-right: 1rem; width: 20px;"></i>
-                            <span>Cửa hàng của tôi</span>
-                        </a>
-                    </li>
-
-                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
-                        <a href="@Url.Action("StoreSettings", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "StoreSettings" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
-                            <i data-lucide="settings-2" style="margin-right: 1rem; width: 20px;"></i>
-                            <span>Cài đặt cửa hàng</span>
-                        </a>
-                    </li>
-
-                    <!-- 5. BÁO CÁO & THỐNG KÊ -->
-                    <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">BÁO CÁO & THỐNG KÊ</li>
-                    
-                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
-                        <a href="@Url.Action("Sales", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sales" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
-                            <i data-lucide="trending-up" style="margin-right: 1rem; width: 20px;"></i>
-                            <span>Báo cáo bán hàng</span>
-                        </a>
-                    </li>
-
-                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
-                        <a href="@Url.Action("Analytics", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Analytics" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
-                            <i data-lucide="bar-chart-3" style="margin-right: 1rem; width: 20px;"></i>
-                            <span>Phân tích</span>
-                        </a>
-                    </li>
-
-                    <!-- 6. CÀI ĐẶT -->
+                    <!-- 5. CÀI ĐẶT -->
                     <li class="menu-header" style="padding: 1rem 1.5rem 0.5rem; color: #666666; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">CÀI ĐẶT</li>
                     
-                    <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
-                        <a href="@Url.Action("Notifications", "Seller")" class="menu-link @(ViewData["CurrentSection"]?.ToString() == "Notifications" || ViewData["CurrentSection"]?.ToString() == "notifications" || ViewContext.RouteData.Values["Action"]?.ToString() == "Notifications" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
-                            <i data-lucide="bell" style="margin-right: 1rem; width: 20px;"></i>
-                            <span>Thông báo</span>
-                        </a>
-                    </li>
-
                     <li class="menu-item" style="margin: 0.5rem 1rem; border-radius: 12px;">
                         <a href="@Url.Action("Profile", "Seller")" class="menu-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")" style="display: flex; align-items: center; padding: 1rem; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; font-weight: 500;">
                             <i data-lucide="user-cog" style="margin-right: 1rem; width: 20px;"></i>
@@ -473,6 +457,35 @@
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
         }, 500);
+
+        // Load notification count
+        async function updateNotificationBadge() {
+            try {
+                const response = await fetch('/api/notifications/unread-count');
+                const result = await response.json();
+                
+                if (result.success && result.count > 0) {
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) {
+                        badge.textContent = result.count > 99 ? '99+' : result.count;
+                        badge.style.display = 'inline-block';
+                    }
+                } else {
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notification count:', error);
+            }
+        }
+
+        // Update badge on page load
+        updateNotificationBadge();
+
+        // Update badge every 30 seconds
+        setInterval(updateNotificationBadge, 30000);
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
