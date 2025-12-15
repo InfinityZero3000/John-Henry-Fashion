@@ -79,8 +79,8 @@
                     <!-- Price -->
                     <div class="product-price mb-4 d-flex align-items-center gap-3">
                         <h3 class="price mb-0 fw-bold" style="color: #c21935;">@Model.Price.ToString("N0")đ</h3>
-                        <button type="button" class="btn btn-link p-0 text-danger" id="wishlistBtn" data-product-id="@Model.Id" title="Thêm vào yêu thích">
-                            <i class="far fa-heart fa-lg" id="wishlistIcon"></i>
+                        <button type="button" class="btn btn-link p-0" id="wishlistBtn" data-product-id="@Model.Id" title="Thêm vào yêu thích" style="text-decoration: none;">
+                            <i class="far fa-heart fa-2x" id="wishlistIcon" style="color: #dc3545;"></i>
                         </button>
                     </div>
 
@@ -273,7 +273,7 @@
                 <div class="col-lg-8">
                     @if (Model.Reviews != null && Model.Reviews.Any())
                     {
-                        <div class="reviews-list">
+                        <div class="reviews-list mb-5">
                             @foreach (var review in Model.Reviews)
                             {
                                 <div class="review-item border-bottom pb-4 mb-4">
@@ -341,10 +341,98 @@
                     }
                     else
                     {
-                        <div class="text-center py-5">
+                        <div class="text-center py-5 mb-5">
                             <i class="far fa-comment-dots fa-4x text-muted mb-3"></i>
                             <h5 class="text-muted">Chưa có đánh giá nào</h5>
                             <p class="text-muted">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                        </div>
+                    }
+
+                    <!-- Write Review Form -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="write-review-section mt-5 pt-4 border-top">
+                            <h4 class="mb-4">
+                                <i class="fas fa-pen-alt me-2 text-danger"></i>Viết đánh giá của bạn
+                            </h4>
+                            <form asp-controller="Review" asp-action="Submit" method="post" id="reviewForm">
+                                <input type="hidden" name="ProductId" value="@Model.Id" />
+                                
+                                <!-- Rating Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        Đánh giá của bạn <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="star-rating-input mb-2">
+                                        <input type="hidden" name="Rating" id="ratingValue" required />
+                                        <div class="star-buttons">
+                                            <button type="button" class="star-btn" data-rating="1">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="2">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="3">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="4">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="5">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Click vào sao để chọn đánh giá</small>
+                                </div>
+
+                                <!-- Review Title -->
+                                <div class="mb-3">
+                                    <label for="reviewTitle" class="form-label fw-semibold">
+                                        Tiêu đề đánh giá
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="reviewTitle" 
+                                           name="Title" 
+                                           placeholder="Nhập tiêu đề cho đánh giá của bạn (không bắt buộc)"
+                                           maxlength="100">
+                                </div>
+
+                                <!-- Review Comment -->
+                                <div class="mb-3">
+                                    <label for="reviewComment" class="form-label fw-semibold">
+                                        Nội dung đánh giá <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="reviewComment" 
+                                              name="Comment" 
+                                              rows="5" 
+                                              placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                                              required
+                                              maxlength="1000"></textarea>
+                                    <small class="text-muted float-end mt-1">
+                                        <span id="charCount">0</span>/1000 ký tự
+                                    </small>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-danger px-5 py-2">
+                                        <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="write-review-section mt-5 pt-4 border-top">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Bạn cần <a href="/Account/Login?returnUrl=/Products/@Model.Id" class="alert-link fw-bold">đăng nhập</a> 
+                                để viết đánh giá sản phẩm.
+                            </div>
                         </div>
                     }
                 </div>
@@ -895,6 +983,104 @@
                 showToast('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
             });
         }
+
+        // Review Form - Star Rating
+        document.addEventListener('DOMContentLoaded', function() {
+            const starButtons = document.querySelectorAll('.star-btn');
+            const ratingInput = document.getElementById('ratingValue');
+            
+            if (starButtons.length > 0) {
+                starButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const rating = parseInt(this.getAttribute('data-rating'));
+                        ratingInput.value = rating;
+                        
+                        // Update star display
+                        starButtons.forEach((btn, index) => {
+                            const star = btn.querySelector('i');
+                            if (index < rating) {
+                                star.classList.remove('far');
+                                star.classList.add('fas');
+                                btn.classList.add('active');
+                            } else {
+                                star.classList.remove('fas');
+                                star.classList.add('far');
+                                btn.classList.remove('active');
+                            }
+                        });
+                    });
+                    
+                    // Hover effect
+                    button.addEventListener('mouseenter', function() {
+                        const rating = parseInt(this.getAttribute('data-rating'));
+                        starButtons.forEach((btn, index) => {
+                            const star = btn.querySelector('i');
+                            if (index < rating) {
+                                star.classList.remove('far');
+                                star.classList.add('fas');
+                            }
+                        });
+                    });
+                });
+                
+                // Reset on mouse leave
+                const starContainer = document.querySelector('.star-buttons');
+                if (starContainer) {
+                    starContainer.addEventListener('mouseleave', function() {
+                        const currentRating = parseInt(ratingInput.value) || 0;
+                        starButtons.forEach((btn, index) => {
+                            const star = btn.querySelector('i');
+                            if (index < currentRating) {
+                                star.classList.remove('far');
+                                star.classList.add('fas');
+                            } else {
+                                star.classList.remove('fas');
+                                star.classList.add('far');
+                            }
+                        });
+                    });
+                }
+            }
+            
+            // Character count for review comment
+            const commentTextarea = document.getElementById('reviewComment');
+            const charCountSpan = document.getElementById('charCount');
+            
+            if (commentTextarea && charCountSpan) {
+                commentTextarea.addEventListener('input', function() {
+                    const currentLength = this.value.length;
+                    charCountSpan.textContent = currentLength;
+                    
+                    if (currentLength > 900) {
+                        charCountSpan.classList.add('text-danger');
+                        charCountSpan.classList.remove('text-muted');
+                    } else {
+                        charCountSpan.classList.remove('text-danger');
+                        charCountSpan.classList.add('text-muted');
+                    }
+                });
+            }
+            
+            // Form validation
+            const reviewForm = document.getElementById('reviewForm');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', function(e) {
+                    const rating = parseInt(ratingInput?.value);
+                    if (!rating || rating < 1 || rating > 5) {
+                        e.preventDefault();
+                        showToast('Vui lòng chọn số sao đánh giá', 'error');
+                        return false;
+                    }
+                    
+                    const comment = commentTextarea?.value.trim();
+                    if (!comment) {
+                        e.preventDefault();
+                        showToast('Vui lòng nhập nội dung đánh giá', 'error');
+                        return false;
+                    }
+                });
+            }
+        });
     </script>
 }
 
@@ -1058,18 +1244,32 @@
 
         #wishlistBtn {
             transition: all 0.3s ease;
+            background: none !important;
+            border: none;
+            outline: none;
+            box-shadow: none !important;
         }
 
         #wishlistBtn:hover {
             transform: scale(1.2);
         }
 
+        #wishlistBtn:focus {
+            box-shadow: none !important;
+        }
+
         #wishlistIcon {
             transition: all 0.3s ease;
+            color: #dc3545 !important;
         }
 
         #wishlistIcon.fas {
-            color: #dc3545;
+            color: #dc3545 !important;
+            font-weight: 900;
+        }
+
+        #wishlistIcon.far {
+            color: #dc3545 !important;
         }
 
         /* Related Products Styles - Match Home Page */
@@ -1247,13 +1447,48 @@
             white-space: pre-line;
         }
 
-        /* Star Rating Input */
-        .star-rating-input .rating-star {
-            transition: transform 0.2s ease;
+        /* Write Review Form Styles */
+        .write-review-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
         }
 
-        .star-rating-input .rating-star:hover {
+        .star-rating-input {
+            display: inline-block;
+        }
+
+        .star-buttons {
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+
+        .star-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 2rem;
+            color: #ddd;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .star-btn:hover {
             transform: scale(1.2);
+            color: #ffc107;
+        }
+
+        .star-btn.active {
+            color: #ffc107;
+        }
+
+        .star-btn.active i {
+            font-weight: 900;
+        }
+
+        .star-btn i {
+            pointer-events: none;
         }
 
         @@media (max-width: 768px) {

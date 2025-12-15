@@ -1,3 +1,4 @@
+@model JohnHenryFashionWeb.ViewModels.ReportsViewModel
 @{
     ViewData["Title"] = "Phân tích";
     ViewData["CurrentSection"] = "Analytics";
@@ -233,7 +234,6 @@
                 <i data-lucide="trending-up"></i>
                 Phân tích dữ liệu
             </h1>
-            <p class="admin-page-description">Theo dõi và phân tích hiệu suất kinh doanh</p>
         </div>
         <div class="admin-page-header-actions">
             <select class="admin-form-select" style="width: auto;" onchange="updateDateRange(this.value)">
@@ -258,11 +258,11 @@
                 <i data-lucide="dollar-sign"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-value">0 ₫</div>
+                <div class="admin-stat-value">@Model.KPIData.TotalRevenue.ToString("N0") ₫</div>
                 <div class="admin-stat-label">Doanh thu</div>
-                <div class="admin-stat-change positive">
-                    <i data-lucide="trending-up"></i>
-                    +0%
+                <div class="admin-stat-change @(Model.KPIData.RevenueGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.RevenueGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.RevenueGrowth >= 0 ? "+" : "")@Model.KPIData.RevenueGrowth.ToString("F1")%
                 </div>
             </div>
         </div>
@@ -272,11 +272,11 @@
                 <i data-lucide="shopping-cart"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-value">0</div>
+                <div class="admin-stat-value">@Model.KPIData.CompletedOrders</div>
                 <div class="admin-stat-label">Đơn hàng</div>
-                <div class="admin-stat-change positive">
-                    <i data-lucide="trending-up"></i>
-                    +0%
+                <div class="admin-stat-change @(Model.KPIData.OrdersGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.OrdersGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.OrdersGrowth >= 0 ? "+" : "")@Model.KPIData.OrdersGrowth.ToString("F1")%
                 </div>
             </div>
         </div>
@@ -286,11 +286,11 @@
                 <i data-lucide="users"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-value">0</div>
+                <div class="admin-stat-value">@Model.KPIData.NewCustomers</div>
                 <div class="admin-stat-label">Khách hàng mới</div>
-                <div class="admin-stat-change positive">
-                    <i data-lucide="trending-up"></i>
-                    +0%
+                <div class="admin-stat-change @(Model.KPIData.CustomersGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.CustomersGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.CustomersGrowth >= 0 ? "+" : "")@Model.KPIData.CustomersGrowth.ToString("F1")%
                 </div>
             </div>
         </div>
@@ -300,11 +300,11 @@
                 <i data-lucide="percent"></i>
             </div>
             <div class="admin-stat-content">
-                <div class="admin-stat-value">0%</div>
+                <div class="admin-stat-value">@Model.KPIData.ConversionRate.ToString("F1")%</div>
                 <div class="admin-stat-label">Tỷ lệ chuyển đổi</div>
-                <div class="admin-stat-change neutral">
-                    <i data-lucide="minus"></i>
-                    0%
+                <div class="admin-stat-change @(Model.KPIData.ConversionGrowth >= 0 ? "positive" : "negative")">
+                    <i data-lucide="@(Model.KPIData.ConversionGrowth >= 0 ? "trending-up" : "trending-down")"></i>
+                    @(Model.KPIData.ConversionGrowth >= 0 ? "+" : "")@Model.KPIData.ConversionGrowth.ToString("F1")%
                 </div>
             </div>
         </div>
@@ -325,11 +325,8 @@
                     </button>
                 </div>
                 <div class="admin-card-body">
-                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--admin-bg); border-radius: 0.5rem;">
-                        <div style="text-align: center; color: var(--admin-text-secondary);">
-                            <i data-lucide="bar-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
-                            <p>Biểu đồ doanh thu sẽ hiển thị ở đây</p>
-                        </div>
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -348,11 +345,8 @@
                     </button>
                 </div>
                 <div class="admin-card-body">
-                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--admin-bg); border-radius: 0.5rem;">
-                        <div style="text-align: center; color: var(--admin-text-secondary);">
-                            <i data-lucide="pie-chart" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
-                            <p>Biểu đồ phân bổ đơn hàng sẽ hiển thị ở đây</p>
-                        </div>
+                    <div style="height: 300px;">
+                        <canvas id="ordersChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -394,12 +388,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td colspan="3" style="text-align: center; padding: 2rem; color: var(--admin-text-secondary);">
-                                        <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
-                                        <div>Chưa có dữ liệu</div>
-                                    </td>
-                                </tr>
+                                @if (Model.TopProductsData?.Any() == true)
+                                {
+                                    @foreach (var product in Model.TopProductsData.Take(10))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div style="font-weight: 500;">@product.Label</div>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <span class="admin-badge badge-primary">N/A</span>
+                                            </td>
+                                            <td style="text-align: right; font-weight: 600;">
+                                                @product.Value.ToString("N0") ₫
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; padding: 2rem; color: var(--admin-text-secondary);">
+                                            <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                            <div>Chưa có dữ liệu</div>
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -456,9 +470,115 @@
 </div>
 
 @section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // Prepare chart data from Model
+        var revenueData = @Html.Raw(Json.Serialize(Model.SalesAnalytics.MonthlyData.Select(m => new { 
+            label = m.Month, 
+            value = m.Revenue 
+        })));
+
+        var topProducts = @Html.Raw(Json.Serialize(Model.TopProductsData.Take(5).Select(p => new { 
+            label = p.Label, 
+            value = p.Value 
+        })));
+
+        var categorySales = @Html.Raw(Json.Serialize(Model.CategorySalesData.Select(c => new { 
+            label = c.Label, 
+            value = c.Value 
+        })));
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueData.map(d => d.label),
+                datasets: [{
+                    label: 'Doanh thu (₫)',
+                    data: revenueData.map(d => d.value),
+                    borderColor: 'rgb(99, 102, 241)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return new Intl.NumberFormat('vi-VN', { 
+                                    style: 'currency', 
+                                    currency: 'VND' 
+                                }).format(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN', { 
+                                    notation: 'compact',
+                                    compactDisplay: 'short'
+                                }).format(value) + ' ₫';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Orders Chart (Doughnut)
+        const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+        new Chart(ordersCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categorySales.map(d => d.label),
+                datasets: [{
+                    data: categorySales.map(d => d.value),
+                    backgroundColor: [
+                        'rgb(99, 102, 241)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(239, 68, 68)',
+                        'rgb(139, 92, 246)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + new Intl.NumberFormat('vi-VN', { 
+                                    style: 'currency', 
+                                    currency: 'VND' 
+                                }).format(context.parsed);
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         function updateDateRange(range) {
             console.log('Date range changed to:', range);

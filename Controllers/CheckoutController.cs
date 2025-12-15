@@ -826,9 +826,10 @@ namespace JohnHenryFashionWeb.Controllers
                 
                 foreach (var adminUser in notifyUsers)
                 {
+                    var customerName = user != null ? $"{user.FirstName} {user.LastName}" : "Khách hàng";
                     await _notificationService.SendNotificationAsync(adminUser.Id,
                         "Đơn hàng mới",
-                        $"Có đơn hàng mới #{order.OrderNumber} từ khách hàng {user.FirstName} {user.LastName}. Tổng giá trị: {order.TotalAmount:N0}₫",
+                        $"Có đơn hàng mới #{order.OrderNumber} từ khách hàng {customerName}. Tổng giá trị: {order.TotalAmount:N0}₫",
                         "new_order",
                         $"/seller/orders?orderNumber={order.OrderNumber}");
                 }
