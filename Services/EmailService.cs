@@ -106,6 +106,9 @@ namespace JohnHenryFashionWeb.Services
             var template = await GetEmailTemplateAsync("OrderConfirmation");
             var orderItemsHtml = GenerateOrderItemsHtml(order.OrderItems);
             
+            // Calculate reward points (1 point per 10,000 VND)
+            var rewardPoints = Math.Floor(order.TotalAmount / 10000);
+            
             var body = template.Replace("{{OrderNumber}}", order.OrderNumber)
                               .Replace("{{OrderDate}}", order.CreatedAt.ToString("dd/MM/yyyy HH:mm"))
                               .Replace("{{CustomerName}}", $"{order.User?.FirstName} {order.User?.LastName}")
@@ -113,7 +116,8 @@ namespace JohnHenryFashionWeb.Services
                               .Replace("{{SubTotal}}", order.TotalAmount.ToString("C"))
                               .Replace("{{ShippingCost}}", 0m.ToString("C"))
                               .Replace("{{TotalAmount}}", order.TotalAmount.ToString("C"))
-                              .Replace("{{OrderTrackingUrl}}", $"{_emailSettings.BaseUrl}/Account/Orders/{order.Id}");
+                              .Replace("{{OrderTrackingUrl}}", $"{_emailSettings.BaseUrl}/Account/Orders/{order.Id}")
+                              .Replace("{{RewardPoints}}", rewardPoints.ToString("N0"));
 
             return await SendEmailAsync(email, $"Xác nhận đơn hàng #{order.OrderNumber}", body, null, null, true);
         }

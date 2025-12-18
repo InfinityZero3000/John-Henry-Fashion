@@ -24,6 +24,7 @@ namespace JohnHenryFashionWeb.Controllers
         private readonly IReportingService _reportingService;
         private readonly IUserManagementService _userManagementService;
         private readonly ILogger<AdminController> _logger;
+        private readonly IEmailService _emailService;
 
         public AdminController(
             ApplicationDbContext context, 
@@ -33,7 +34,8 @@ namespace JohnHenryFashionWeb.Controllers
             IAnalyticsService analyticsService,
             IReportingService reportingService,
             IUserManagementService userManagementService,
-            ILogger<AdminController> logger)
+            ILogger<AdminController> logger,
+            IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
@@ -43,6 +45,7 @@ namespace JohnHenryFashionWeb.Controllers
             _reportingService = reportingService;
             _userManagementService = userManagementService;
             _logger = logger;
+            _emailService = emailService;
         }
 
         [HttpGet("")]

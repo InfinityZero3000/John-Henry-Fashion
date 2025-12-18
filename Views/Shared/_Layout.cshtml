@@ -283,8 +283,10 @@
         
         /* Search Suggestions Dropdown */
         .search-suggestions {
-            position: fixed !important;
-            /* Position will be calculated by JavaScript */
+            position: absolute !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: calc(100% + 5px) !important;
             background: #ffffff !important; /* Pure white, no transparency */
             border: none !important; /* No border */
             border-radius: 12px !important;
@@ -292,14 +294,21 @@
             z-index: 999999999 !important; /* Maximum z-index */
             max-height: 450px;
             overflow-y: auto;
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: none;
-            pointer-events: auto !important;
+            opacity: 0;
+            visibility: hidden;
+            display: block;
+            pointer-events: none;
             backdrop-filter: none !important; /* Remove blur effect */
             -webkit-backdrop-filter: none !important;
             filter: none !important; /* Remove any filter effects */
             transform: none !important; /* Remove any transform that creates stacking context */
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+        
+        .search-suggestions.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
         }
         
         .suggestions-loading {
@@ -2490,31 +2499,15 @@
                     e.stopPropagation();
                 });
                 
-                // Update dropdown position on scroll and resize
-                window.addEventListener('scroll', function() {
-                    if (suggestionsDropdown.style.display === 'block') {
-                        const inputRect = searchInput.getBoundingClientRect();
-                        const searchSectionRect = searchInput.closest('.search-section').getBoundingClientRect();
-                        suggestionsDropdown.style.top = `${inputRect.bottom + 5}px`;
-                        suggestionsDropdown.style.left = `${searchSectionRect.left}px`;
-                    }
-                }, { passive: true });
-                
-                window.addEventListener('resize', function() {
-                    if (suggestionsDropdown.style.display === 'block') {
-                        const inputRect = searchInput.getBoundingClientRect();
-                        const searchSectionRect = searchInput.closest('.search-section').getBoundingClientRect();
-                        suggestionsDropdown.style.top = `${inputRect.bottom + 5}px`;
-                        suggestionsDropdown.style.left = `${searchSectionRect.left}px`;
-                        suggestionsDropdown.style.width = `${searchSectionRect.width}px`;
-                    }
-                });
+                // No need to update position on scroll/resize - CSS handles positioning
             }
             
             function fetchSuggestions(query) {
                 // Show loading state
                 suggestionsList.innerHTML = '<div class="suggestions-loading">Đang tìm kiếm</div>';
-                suggestionsDropdown.style.display = 'block';
+                
+                // Show with class (position handled by CSS)
+                suggestionsDropdown.classList.add('show');
                 
                 fetch(`/Home/SearchSuggestions?query=${encodeURIComponent(query)}`)
                     .then(response => response.json())
@@ -2569,19 +2562,12 @@
             }
             
             function showSuggestions() {
-                // Calculate position based on search input
-                const inputRect = searchInput.getBoundingClientRect();
-                const searchSectionRect = searchInput.closest('.search-section').getBoundingClientRect();
-                
-                // Position dropdown below the search input
-                suggestionsDropdown.style.top = `${inputRect.bottom + 5}px`;
-                suggestionsDropdown.style.left = `${searchSectionRect.left}px`;
-                suggestionsDropdown.style.width = `${searchSectionRect.width}px`;
-                suggestionsDropdown.style.display = 'block';
+                // Position handled by CSS, just show with class
+                suggestionsDropdown.classList.add('show');
             }
             
             function hideSuggestions() {
-                suggestionsDropdown.style.display = 'none';
+                suggestionsDropdown.classList.remove('show');
             }
             
             function highlightMatch(text, query) {

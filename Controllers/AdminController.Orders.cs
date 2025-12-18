@@ -195,7 +195,20 @@ namespace JohnHenryFashionWeb.Controllers
 
                 _logger.LogInformation($"Order {order.OrderNumber} status changed from {oldStatus} to {request.Status}");
 
-                // TODO: Send email notification to customer
+                // Send email notification to customer
+                if (order.User != null && !string.IsNullOrEmpty(order.User.Email))
+                {
+                    try
+                    {
+                        await _emailService.SendOrderStatusUpdateEmailAsync(order.User.Email, order);
+                        _logger.LogInformation($"Order status update email sent to {order.User.Email} for order {order.OrderNumber}");
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogError(emailEx, $"Failed to send order status update email for order {order.OrderNumber}");
+                        // Don't fail the whole request if email fails
+                    }
+                }
 
                 return Json(new { success = true, message = "Cập nhật trạng thái đơn hàng thành công" });
             }

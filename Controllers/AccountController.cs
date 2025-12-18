@@ -427,6 +427,18 @@ namespace JohnHenryFashionWeb.Controllers
                             $"Vui lòng xác nhận tài khoản của bạn bằng cách click vào link: <a href='{callbackUrl}'>Xác nhận email</a>", isHtml: true);
 
                         await _userManager.AddToRoleAsync(user, "Customer");
+                        
+                        // Send welcome email
+                        try
+                        {
+                            var userName = $"{user.FirstName} {user.LastName}";
+                            await _emailService.SendWelcomeEmailAsync(user.Email, userName);
+                            _logger.LogInformation("Welcome email sent to {Email}", user.Email);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to send welcome email to {Email}", user.Email);
+                        }
 
                         ViewBag.Message = "Tài khoản đã được tạo thành công. Vui lòng kiểm tra email để xác nhận tài khoản.";
                         return View("RegisterConfirmation");
@@ -1560,6 +1572,18 @@ namespace JohnHenryFashionWeb.Controllers
                 // Add user to Customer role
                 await _userManager.AddToRoleAsync(user, "Customer");
                 
+                // Send welcome email with template
+                try
+                {
+                    var userName = $"{registrationData.FirstName} {registrationData.LastName}";
+                    await _emailService.SendWelcomeEmailAsync(user.Email, userName);
+                    _logger.LogInformation("Welcome email sent to {Email}", user.Email);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send welcome email to {Email}", user.Email);
+                }
+                
                 // Remove both codes from cache
                 await _cacheService.RemoveAsync(verificationCacheKey);
                 await _cacheService.RemoveAsync(registrationCacheKey);
@@ -1952,14 +1976,9 @@ namespace JohnHenryFashionWeb.Controllers
             {
                 try
                 {
-                    await _emailService.SendEmailAsync(user.Email ?? string.Empty, "Chào mừng bạn đến với John Henry Fashion",
-                        $@"
-                        <h2>Chào mừng {user.FirstName} {user.LastName}!</h2>
-                        <p>Tài khoản của bạn đã được tạo thành công thông qua Google.</p>
-                        <p>Bạn có thể bắt đầu mua sắm ngay bây giờ!</p>
-                        <p>Cảm ơn bạn đã gia nhập cộng đồng John Henry Fashion!</p>
-                        <p>Trân trọng,<br>Đội ngũ John Henry</p>
-                        ", isHtml: true);
+                    var userName = $"{user.FirstName} {user.LastName}";
+                    await _emailService.SendWelcomeEmailAsync(user.Email ?? string.Empty, userName);
+                    _logger.LogInformation("Welcome email sent to {Email} (Google login)", user.Email);
                 }
                 catch (Exception ex)
                 {

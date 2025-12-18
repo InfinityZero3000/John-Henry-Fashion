@@ -483,10 +483,10 @@
             value = m.Revenue 
         })));
 
-        var topProducts = @Html.Raw(Json.Serialize(Model.TopProductsData.Take(5).Select(p => new { 
+        var topProducts = @Html.Raw(Json.Serialize(Model.TopProductsData?.Take(5).Select(p => new { 
             label = p.Label, 
             value = p.Value 
-        })));
+        }) ?? Enumerable.Empty<object>()));
 
         var categorySales = @Html.Raw(Json.Serialize(Model.CategorySalesData.Select(c => new { 
             label = c.Label, 
