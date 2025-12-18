@@ -271,6 +271,94 @@
                 
                 <!-- Reviews List -->
                 <div class="col-lg-8">
+                    <!-- Write Review Form (Moved to Top) -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="write-review-section mb-4 p-3 bg-light rounded">
+                            <h5 class="mb-3">
+                                <i class="fas fa-pen-alt me-2 text-danger"></i>Viết đánh giá của bạn
+                            </h5>
+                            <form asp-controller="Review" asp-action="Submit" method="post" id="reviewForm">
+                                <input type="hidden" name="ProductId" value="@Model.Id" />
+                                
+                                <!-- Rating Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        Đánh giá của bạn <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="star-rating-input">
+                                        <input type="hidden" name="Rating" id="ratingValue" required />
+                                        <div class="star-buttons d-inline-block">
+                                            <button type="button" class="star-btn" data-rating="1">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="2">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="3">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="4">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                            <button type="button" class="star-btn" data-rating="5">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted ms-2">Click vào sao để chọn đánh giá</small>
+                                    </div>
+                                </div>
+
+                                <!-- Review Title -->
+                                <div class="mb-3">
+                                    <label for="reviewTitle" class="form-label fw-semibold">
+                                        Tiêu đề đánh giá
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control form-control-sm" 
+                                           id="reviewTitle" 
+                                           name="Title" 
+                                           placeholder="Nhập tiêu đề cho đánh giá của bạn (không bắt buộc)"
+                                           maxlength="100">
+                                </div>
+
+                                <!-- Review Comment -->
+                                <div class="mb-3">
+                                    <label for="reviewComment" class="form-label fw-semibold">
+                                        Nội dung đánh giá <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control form-control-sm" 
+                                              id="reviewComment" 
+                                              name="Comment" 
+                                              rows="3" 
+                                              placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                                              required
+                                              maxlength="1000"></textarea>
+                                    <small class="text-muted float-end mt-1">
+                                        <span id="charCount">0</span>/1000 ký tự
+                                    </small>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="write-review-section mb-4 p-3 bg-light rounded">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Bạn cần <a href="/Account/Login?returnUrl=/Products/@Model.Id" class="alert-link fw-bold">đăng nhập</a> 
+                                để viết đánh giá sản phẩm.
+                            </div>
+                        </div>
+                    }
+
                     @if (Model.Reviews != null && Model.Reviews.Any())
                     {
                         <div class="reviews-list mb-5">
@@ -345,94 +433,6 @@
                             <i class="far fa-comment-dots fa-4x text-muted mb-3"></i>
                             <h5 class="text-muted">Chưa có đánh giá nào</h5>
                             <p class="text-muted">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
-                        </div>
-                    }
-
-                    <!-- Write Review Form -->
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <div class="write-review-section mt-5 pt-4 border-top">
-                            <h4 class="mb-4">
-                                <i class="fas fa-pen-alt me-2 text-danger"></i>Viết đánh giá của bạn
-                            </h4>
-                            <form asp-controller="Review" asp-action="Submit" method="post" id="reviewForm">
-                                <input type="hidden" name="ProductId" value="@Model.Id" />
-                                
-                                <!-- Rating Selection -->
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold">
-                                        Đánh giá của bạn <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="star-rating-input mb-2">
-                                        <input type="hidden" name="Rating" id="ratingValue" required />
-                                        <div class="star-buttons">
-                                            <button type="button" class="star-btn" data-rating="1">
-                                                <i class="far fa-star"></i>
-                                            </button>
-                                            <button type="button" class="star-btn" data-rating="2">
-                                                <i class="far fa-star"></i>
-                                            </button>
-                                            <button type="button" class="star-btn" data-rating="3">
-                                                <i class="far fa-star"></i>
-                                            </button>
-                                            <button type="button" class="star-btn" data-rating="4">
-                                                <i class="far fa-star"></i>
-                                            </button>
-                                            <button type="button" class="star-btn" data-rating="5">
-                                                <i class="far fa-star"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">Click vào sao để chọn đánh giá</small>
-                                </div>
-
-                                <!-- Review Title -->
-                                <div class="mb-3">
-                                    <label for="reviewTitle" class="form-label fw-semibold">
-                                        Tiêu đề đánh giá
-                                    </label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           id="reviewTitle" 
-                                           name="Title" 
-                                           placeholder="Nhập tiêu đề cho đánh giá của bạn (không bắt buộc)"
-                                           maxlength="100">
-                                </div>
-
-                                <!-- Review Comment -->
-                                <div class="mb-3">
-                                    <label for="reviewComment" class="form-label fw-semibold">
-                                        Nội dung đánh giá <span class="text-danger">*</span>
-                                    </label>
-                                    <textarea class="form-control" 
-                                              id="reviewComment" 
-                                              name="Comment" 
-                                              rows="5" 
-                                              placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
-                                              required
-                                              maxlength="1000"></textarea>
-                                    <small class="text-muted float-end mt-1">
-                                        <span id="charCount">0</span>/1000 ký tự
-                                    </small>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <div class="text-end">
-                                    <button type="submit" class="btn btn-danger px-5 py-2">
-                                        <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="write-review-section mt-5 pt-4 border-top">
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Bạn cần <a href="/Account/Login?returnUrl=/Products/@Model.Id" class="alert-link fw-bold">đăng nhập</a> 
-                                để viết đánh giá sản phẩm.
-                            </div>
                         </div>
                     }
                 </div>
@@ -1253,38 +1253,48 @@
 
         #wishlistBtn:hover {
             transform: scale(1.05);
+            border-color: #dc3545 !important;
         }
 
         #wishlistBtn:focus {
             box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
         }
 
-        #wishlistBtn.btn-outline-danger:hover {
-            background-color: #dc3545;
+        /* Khi chưa thích (outline) - không fill background khi hover */
+        #wishlistBtn.btn-outline-danger {
+            background-color: transparent !important;
             border-color: #dc3545;
         }
 
+        #wishlistBtn.btn-outline-danger:hover {
+            background-color: transparent !important;
+            border-color: #dc3545 !important;
+        }
+
+        /* Khi đã thích (filled) - fill background đỏ */
         #wishlistBtn.btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
         }
 
         #wishlistBtn.btn-danger:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
+            background-color: #c82333 !important;
+            border-color: #bd2130 !important;
         }
 
+        /* Icon color */
         #wishlistIcon {
             transition: all 0.3s ease;
         }
 
+        /* Icon đỏ khi outline */
         #wishlistBtn.btn-outline-danger #wishlistIcon {
-            color: #dc3545;
+            color: #dc3545 !important;
         }
 
-        #wishlistBtn.btn-danger #wishlistIcon,
-        #wishlistBtn.btn-outline-danger:hover #wishlistIcon {
-            color: #ffffff;
+        /* Icon trắng khi filled hoặc hover outline */
+        #wishlistBtn.btn-danger #wishlistIcon {
+            color: #ffffff !important;
         }
 
         /* Related Products Styles - Match Home Page */
