@@ -19,201 +19,630 @@
         }
         
         .email-container {
-            max-width: 600px;
+            max-width: 1000px;
             margin: 0 auto;
             background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
-        .header {
+        /* Hero Banner Section */
+        .hero-banner {
+            position: relative;
+            height: 350px;
+            background: linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(220,53,69,0.85) 100%), 
+                        url('https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_018d84a8.jpg') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            border: 3px solid white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .success-icon::after {
+            content: "✓";
+            font-size: 50px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .hero-banner h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        
+        .hero-banner p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            max-width: 500px;
+            margin: 0 auto;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Order Status Badge */
+        .status-badge {
+            display: inline-block;
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-            padding: 30px 20px;
-            text-align: center;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
         }
         
-        .header h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        
+        /* Order Info Box */
         .order-info {
-            background-color: #e3f2fd;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #2196f3;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            padding: 25px;
+            margin: 30px 20px;
+            border-radius: 12px;
+            border-left: 5px solid #dc3545;
+            box-shadow: 0 3px 10px rgba(220,53,69,0.1);
         }
         
         .order-info h2 {
-            color: #1976d2;
-            margin-bottom: 15px;
+            color: #dc3545;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: 600;
         }
         
         .order-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 20px;
         }
         
         .detail-item {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .detail-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         
         .detail-label {
-            font-weight: bold;
+            font-weight: 600;
             color: #666;
-            font-size: 0.9em;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
         .detail-value {
-            color: #333;
-            font-size: 1em;
+            color: #1a1a2e;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        /* Order Timeline */
+        .order-timeline {
+            margin: 30px 20px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .timeline-title {
+            font-size: 1.3em;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .timeline-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 0 10px;
+        }
+        
+        .timeline-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #dee2e6;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #adb5bd;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .timeline-step.active .step-circle {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-color: #28a745;
+            color: white;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.4);
+        }
+        
+        .timeline-step.active .step-circle::after {
+            content: "✓";
+            font-size: 20px;
+        }
+        
+        .step-label {
+            font-size: 0.8em;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .timeline-step.active .step-label {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            right: -50%;
+            height: 3px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+        
+        .timeline-step:last-child .timeline-line {
+            display: none;
         }
         
         .content {
-            padding: 20px 30px;
+            padding: 0 20px 30px 20px;
         }
         
+        .section-title {
+            font-size: 1.4em;
+            color: #1a1a2e;
+            margin: 30px 0 15px 0;
+            font-weight: 600;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 10px;
+        }
+        
+        /* Order Items Table */
         .order-items-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
             background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            overflow: hidden;
         }
         
         .order-items-table th {
-            background-color: #f1f3f4;
-            padding: 12px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 15px 12px;
             text-align: left;
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #dee2e6;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .order-items-table td {
-            padding: 12px;
+            padding: 15px 12px;
             border-bottom: 1px solid #dee2e6;
+        }
+        
+        .order-items-table tr:last-child td {
+            border-bottom: none;
         }
         
         .order-items-table tr:hover {
             background-color: #f8f9fa;
         }
         
+        /* Price Summary */
         .price-summary {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
+            background: linear-gradient(135deg, #fff8f8 0%, #fff0f0 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border: 2px solid #ffe5e5;
+            box-shadow: 0 3px 10px rgba(220,53,69,0.08);
         }
         
         .price-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+            color: #495057;
         }
         
         .price-row.total {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: #28a745;
-            border-top: 2px solid #dee2e6;
-            padding-top: 10px;
+            font-weight: 700;
+            font-size: 1.4em;
+            color: #dc3545;
+            border-top: 3px solid #dc3545;
+            padding-top: 15px;
             margin-top: 15px;
         }
         
+        /* Promo Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+            border: 2px solid #ffc107;
+        }
+        
+        .promo-banner h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .promo-banner p {
+            color: #856404;
+            margin: 5px 0;
+            font-weight: 500;
+        }
+        
+        /* CTA Section */
         .cta-section {
             text-align: center;
-            margin: 30px 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
+            margin: 35px 0;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+        }
+        
+        .cta-section h3 {
+            margin-bottom: 15px;
+            color: #1a1a2e;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+        
+        .cta-section p {
+            margin-bottom: 25px;
+            color: #666;
+            font-size: 1.05em;
+            line-height: 1.6;
         }
         
         .cta-button {
             display: inline-block;
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
-            padding: 15px 30px;
+            padding: 14px 35px;
             text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05em;
             margin: 10px;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
         }
         
         .cta-button:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(220,53,69,0.4);
         }
         
-        .footer {
-            background-color: #333;
+        .cta-button-secondary {
+            background: white;
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+        
+        .cta-button-secondary:hover {
+            background: #dc3545;
             color: white;
-            padding: 30px;
+        }
+        
+        /* Info Boxes */
+        .info-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        
+        .info-box-warning {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+        
+        .info-box-warning h4 {
+            color: #856404;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .info-box-warning ul {
+            color: #856404;
+            margin-left: 20px;
+        }
+        
+        .info-box-warning li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .info-box-info {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+        }
+        
+        .info-box-info h4 {
+            color: #0c5460;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .info-box-info p {
+            color: #0c5460;
+            margin: 5px 0;
+        }
+        
+        /* Support Section */
+        .support-section {
             text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            margin: 25px 0;
+            border: 2px solid #81c784;
+        }
+        
+        .support-section h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .support-section p {
+            color: #1b5e20;
+            margin: 8px 0;
+            font-size: 1.05em;
+        }
+        
+        .support-section strong {
+            color: #1b5e20;
+            font-weight: 600;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .footer-brand {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #dc3545;
         }
         
         .footer p {
             margin-bottom: 10px;
-            opacity: 0.8;
+            opacity: 0.9;
+            font-size: 0.95em;
         }
         
-        @media (max-width: 600px) {
+        .footer-social {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background: #dc3545;
+            transform: translateY(-3px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 700px) {
             .email-container {
                 margin: 0;
                 box-shadow: none;
+            }
+            
+            .hero-banner {
+                height: 280px;
+                padding: 30px 15px;
+            }
+            
+            .hero-banner h1 {
+                font-size: 1.8em;
+            }
+            
+            .hero-banner p {
+                font-size: 1em;
+            }
+            
+            .success-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .success-icon::after {
+                font-size: 35px;
             }
             
             .order-details {
                 grid-template-columns: 1fr;
             }
             
+            .timeline-steps {
+                flex-wrap: wrap;
+            }
+            
+            .timeline-step {
+                margin-bottom: 20px;
+            }
+            
+            .timeline-line {
+                display: none;
+            }
+            
             .content {
-                padding: 15px 20px;
+                padding: 0 15px 20px 15px;
             }
             
             .order-items-table {
-                font-size: 0.9em;
+                font-size: 0.85em;
             }
             
             .order-items-table th,
             .order-items-table td {
-                padding: 8px 6px;
+                padding: 10px 8px;
+            }
+            
+            .price-row.total {
+                font-size: 1.2em;
+            }
+            
+            .cta-button {
+                display: block;
+                margin: 10px 0;
+            }
+            
+            .social-icons {
+                flex-wrap: wrap;
             }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
-        <div class="header">
-            <h1>Đơn hàng đã được xác nhận</h1>
-            <p>Cảm ơn bạn đã đặt hàng tại John Henry Fashion</p>
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <div class="success-icon"></div>
+            <h1>ĐƠN HÀNG ĐÃ ĐƯỢC XÁC NHẬN</h1>
+            <p>Cảm ơn bạn đã tin tưởng và mua sắm tại John Henry Fashion!</p>
+            <span class="status-badge">Đơn hàng mới</span>
         </div>
         
-        <div class="content">
-            <div class="order-info">
-                <h2>Thông tin đơn hàng #{{OrderNumber}}</h2>
-                <div class="order-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Khách hàng:</span>
-                        <span class="detail-value">{{CustomerName}}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Ngày đặt hàng:</span>
-                        <span class="detail-value">{{OrderDate}}</span>
-                    </div>
+        <!-- Order Info -->
+        <div class="order-info">
+            <h2>Thông tin đơn hàng #{{OrderNumber}}</h2>
+            <div class="order-details">
+                <div class="detail-item">
+                    <span class="detail-label">Khách hàng</span>
+                    <span class="detail-value">{{CustomerName}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Ngày đặt</span>
+                    <span class="detail-value">{{OrderDate}}</span>
                 </div>
             </div>
+        </div>
+        
+        <!-- Order Timeline -->
+        <div class="order-timeline">
+            <h3 class="timeline-title">Tiến trình đơn hàng</h3>
+            <div class="timeline-steps">
+                <div class="timeline-step active">
+                    <div class="step-circle"></div>
+                    <div class="step-label">Đặt hàng</div>
+                    <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Xác nhận</div>
+                    <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Đóng gói</div>
+                    <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Vận chuyển</div>
+                    <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Giao hàng</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Promo Banner -->
+        <div class="content">
+            <div class="promo-banner">
+                <h3>TÍCH ĐIỂM - NHẬN QUÀ</h3>
+                <p>Đơn hàng này được cộng <strong>{{RewardPoints}}</strong> điểm thưởng!</p>
+                <p>Đổi điểm lấy voucher giảm giá lên đến <strong>500.000đ</strong></p>
+            </div>
             
-            <h3 style="margin: 25px 0 15px 0; color: #333;">Chi tiết sản phẩm:</h3>
+            <!-- Order Items -->
+            <h3 class="section-title">Chi tiết sản phẩm</h3>
             {{OrderItems}}
             
+            <!-- Price Summary -->
             <div class="price-summary">
                 <div class="price-row">
                     <span>Tạm tính:</span>
@@ -224,38 +653,69 @@
                     <span>{{ShippingCost}}</span>
                 </div>
                 <div class="price-row total">
-                    <span>Tổng cộng:</span>
+                    <span>TỔNG CỘNG:</span>
                     <span>{{TotalAmount}}</span>
                 </div>
             </div>
             
+            <!-- CTA Section -->
             <div class="cta-section">
-                <h3 style="margin-bottom: 15px; color: #333;">Theo dõi đơn hàng của bạn</h3>
-                <p style="margin-bottom: 20px; color: #666;">
-                    Bạn có thể theo dõi tình trạng đơn hàng và xem chi tiết giao hàng bằng cách nhấp vào nút bên dưới.
+                <h3>Theo dõi đơn hàng của bạn</h3>
+                <p>
+                    Bạn có thể xem trạng thái và thông tin giao hàng chi tiết bằng cách 
+                    nhấp vào nút bên dưới. Chúng tôi sẽ cập nhật bạn về tình trạng đơn hàng qua email.
                 </p>
                 <a href="{{OrderTrackingUrl}}" class="cta-button">Theo dõi đơn hàng</a>
+                <a href="https://johnhenryfashion.com/products" class="cta-button cta-button-secondary">Tiếp tục mua sắm</a>
             </div>
             
-            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                <h4 style="color: #856404; margin-bottom: 10px;">Thông tin giao hàng:</h4>
-                <ul style="color: #856404; margin-left: 20px;">
-                    <li>Đơn hàng sẽ được xử lý trong vòng 1-2 ngày làm việc</li>
-                    <li>Thời gian giao hàng: 3-7 ngày làm việc</li>
-                    <li>Miễn phí giao hàng cho đơn hàng từ 500.000đ</li>
-                    <li>Hỗ trợ đổi trả trong vòng 30 ngày</li>
+            <!-- Shipping Info -->
+            <div class="info-box info-box-warning">
+                <h4>Thông tin giao hàng quan trọng:</h4>
+                <ul>
+                    <li><strong>Xử lý đơn hàng:</strong> 1-2 ngày làm việc</li>
+                    <li><strong>Thời gian giao hàng:</strong> 3-7 ngày làm việc (tùy khu vực)</li>
+                    <li><strong>Miễn phí ship:</strong> Cho đơn hàng từ 500.000đ</li>
+                    <li><strong>Đổi trả:</strong> Trong vòng 30 ngày kể từ khi nhận hàng</li>
+                    <li><strong>Kiểm tra hàng:</strong> Vui lòng kiểm tra kỹ trước khi nhận</li>
                 </ul>
             </div>
             
-            <p style="text-align: center; color: #666; margin-top: 25px;">
-                Nếu bạn có bất kỳ câu hỏi nào về đơn hàng, vui lòng liên hệ với chúng tôi qua hotline 0123 456 789 hoặc email support@johnhenry.com
-            </p>
+            <!-- Return Policy -->
+            <div class="info-box info-box-info">
+                <h4>Chính sách đổi trả:</h4>
+                <p>• Đổi size/màu miễn phí trong 7 ngày</p>
+                <p>• Hoàn tiền 100% nếu sản phẩm lỗi</p>
+                <p>• Hỗ trợ đổi trả tận nhà (phí 30.000đ)</p>
+                <p>• Sản phẩm chưa qua sử dụng, còn nguyên tem mác</p>
+            </div>
+            
+            <!-- Support Section -->
+            <div class="support-section">
+                <h4>Cần hỗ trợ?</h4>
+                <p>Đội ngũ chăm sóc khách hàng của chúng tôi luôn sẵn sàng hỗ trợ bạn!</p>
+                <p><strong>Hotline:</strong> 0123 456 789 (8:00 - 22:00)</p>
+                <p><strong>Email:</strong> support@johnhenry.com</p>
+                <p><strong>Zalo/Messenger:</strong> Tìm kiếm "John Henry Fashion"</p>
+            </div>
         </div>
         
+        <!-- Footer -->
         <div class="footer">
+            <div class="footer-brand">JOHN HENRY FASHION</div>
             <p>&copy; 2025 John Henry Fashion. Tất cả quyền được bảo lưu.</p>
             <p>Địa chỉ: 123 Đường Thời Trang, Quận 1, TP. Hồ Chí Minh</p>
             <p>Hotline: 0123 456 789 | Email: support@johnhenry.com</p>
+            
+            <div class="footer-social">
+                <p>Kết nối với chúng tôi:</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">f</a>
+                    <a href="#" class="social-icon">📷</a>
+                    <a href="#" class="social-icon">Z</a>
+                    <a href="#" class="social-icon">✉</a>
+                </div>
+            </div>
         </div>
     </div>
 </body>

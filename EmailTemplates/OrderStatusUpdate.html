@@ -19,172 +19,414 @@
         }
         
         .email-container {
-            max-width: 600px;
+            max-width: 1000px;
             margin: 0 auto;
             background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
-        .header {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            padding: 30px 20px;
+        /* Dynamic Hero Banner */
+        .hero-banner {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(103,58,183,0.85) 100%), 
+                        url('https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_018d84a8.jpg') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
+            color: white;
+            padding: 40px 20px;
         }
         
-        .header h1 {
-            font-size: 2em;
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            border: 3px solid white;
+            backdrop-filter: blur(10px);
+            font-size: 45px;
+        }
+        
+        .hero-banner h1 {
+            font-size: 2.2em;
             margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
         }
         
+        .hero-banner p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Status Badge */
         .status-badge {
             display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.9em;
-            margin-top: 10px;
+            font-size: 0.95em;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+            color: white;
         }
         
-        .status-pending { background-color: #ffc107; color: #856404; }
-        .status-confirmed { background-color: #17a2b8; color: white; }
-        .status-processing { background-color: #fd7e14; color: white; }
-        .status-shipped { background-color: #6f42c1; color: white; }
-        .status-delivered { background-color: #28a745; color: white; }
-        .status-cancelled { background-color: #dc3545; color: white; }
-        
-        .content {
-            padding: 30px;
-        }
-        
+        /* Order Info */
         .order-info {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            margin: 30px 20px;
+            border-radius: 12px;
+            border-left: 5px solid #6f42c1;
+            box-shadow: 0 3px 10px rgba(111,66,193,0.1);
+        }
+        
+        .order-info h2 {
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: 600;
         }
         
         .order-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 20px;
         }
         
         .detail-item {
             background-color: white;
             padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .detail-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         
         .detail-label {
-            font-weight: bold;
+            font-weight: 600;
             color: #666;
-            font-size: 0.9em;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
         .detail-value {
-            color: #333;
+            color: #1a1a2e;
             font-size: 1.1em;
+            font-weight: 500;
         }
         
+        /* Status Message */
         .status-message {
-            background-color: #e3f2fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 20px;
+            border-left: 5px solid #2196f3;
+            box-shadow: 0 3px 10px rgba(33,150,243,0.1);
         }
         
         .status-message h3 {
             color: #1976d2;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 1.3em;
         }
         
+        .status-message p {
+            color: #0d47a1;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+        
+        /* Timeline */
         .timeline {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
         .timeline h3 {
-            color: #333;
-            margin-bottom: 15px;
+            color: #1a1a2e;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: 600;
         }
         
         .timeline-item {
-            padding: 10px 0;
+            padding: 15px 0 15px 25px;
             border-left: 3px solid #dee2e6;
-            padding-left: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item.completed {
+            border-left-color: #28a745;
         }
         
         .timeline-item.active {
-            border-left-color: #007bff;
+            border-left-color: #6f42c1;
+            background-color: rgba(111,66,193,0.05);
+            margin-left: -10px;
+            padding-left: 35px;
+            border-radius: 8px;
         }
         
         .timeline-item::before {
             content: '';
             position: absolute;
-            left: -6px;
-            top: 15px;
-            width: 10px;
-            height: 10px;
+            left: -8px;
+            top: 20px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background-color: #dee2e6;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #dee2e6;
+        }
+        
+        .timeline-item.completed::before {
+            background-color: #28a745;
+            box-shadow: 0 0 0 2px #28a745;
+        }
+        
+        .timeline-item.completed::after {
+            content: "✓";
+            position: absolute;
+            left: -5px;
+            top: 18px;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
         }
         
         .timeline-item.active::before {
-            background-color: #007bff;
+            background-color: #6f42c1;
+            box-shadow: 0 0 0 2px #6f42c1, 0 0 15px rgba(111,66,193,0.5);
+            animation: pulse 2s infinite;
         }
         
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .timeline-item strong {
+            color: #333;
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-item.active strong {
+            color: #6f42c1;
+            font-weight: 700;
+        }
+        
+        .timeline-item small {
+            display: block;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .content {
+            padding: 0 20px 30px 20px;
+        }
+        
+        /* CTA Section */
         .cta-section {
             text-align: center;
             margin: 30px 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+        }
+        
+        .cta-section h3 {
+            margin-bottom: 15px;
+            color: #1a1a2e;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+        
+        .cta-section p {
+            margin-bottom: 25px;
+            color: #666;
+            font-size: 1.05em;
         }
         
         .cta-button {
             display: inline-block;
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
-            padding: 15px 30px;
+            padding: 14px 35px;
             text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05em;
             margin: 10px;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
         }
         
         .cta-button:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(220,53,69,0.4);
         }
         
-        .footer {
-            background-color: #333;
+        .cta-button-secondary {
+            background: white;
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+        
+        .cta-button-secondary:hover {
+            background: #dc3545;
             color: white;
-            padding: 30px;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border: 2px solid #b8daff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #17a2b8;
+        }
+        
+        .info-box h4 {
+            color: #0c5460;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+        
+        .info-box ul {
+            color: #0c5460;
+            margin-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* Support Section */
+        .support-section {
             text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            margin: 25px 0;
+            border: 2px solid #81c784;
+        }
+        
+        .support-section h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .support-section p {
+            color: #1b5e20;
+            margin: 8px 0;
+            font-size: 1.05em;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .footer-brand {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #dc3545;
         }
         
         .footer p {
             margin-bottom: 10px;
-            opacity: 0.8;
+            opacity: 0.9;
+            font-size: 0.95em;
         }
         
-        @media (max-width: 600px) {
+        .footer-social {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background: #dc3545;
+            transform: translateY(-3px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 700px) {
             .email-container {
                 margin: 0;
                 box-shadow: none;
+            }
+            
+            .hero-banner {
+                height: 250px;
+                padding: 30px 15px;
+            }
+            
+            .hero-banner h1 {
+                font-size: 1.6em;
+            }
+            
+            .status-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
             }
             
             .order-details {
@@ -192,90 +434,126 @@
             }
             
             .content {
-                padding: 20px;
+                padding: 0 15px 20px 15px;
+            }
+            
+            .cta-button {
+                display: block;
+                margin: 10px 0;
             }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
-        <div class="header">
-            <h1>Cập nhật đơn hàng</h1>
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <div class="status-icon"></div>
+            <h1>CẬP NHẬT ĐƠN HÀNG</h1>
             <p>Đơn hàng #{{OrderNumber}}</p>
-            <div class="status-badge status-{{OrderStatus}}">{{OrderStatus}}</div>
+            <span class="status-badge">{{OrderStatus}}</span>
+        </div>
+        
+        <!-- Order Info -->
+        <div class="order-info">
+            <h2>Thông tin đơn hàng</h2>
+            <div class="order-details">
+                <div class="detail-item">
+                    <span class="detail-label">Khách hàng</span>
+                    <span class="detail-value">{{CustomerName}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Trạng thái</span>
+                    <span class="detail-value">{{OrderStatus}}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Message -->
+        <div class="status-message">
+            <h3>Thông báo cập nhật</h3>
+            <p>{{StatusMessage}}</p>
         </div>
         
         <div class="content">
-            <div class="order-info">
-                <h2 style="color: #333; margin-bottom: 15px;">Thông tin đơn hàng</h2>
-                <div class="order-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Khách hàng:</span>
-                        <span class="detail-value">{{CustomerName}}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Trạng thái mới:</span>
-                        <span class="detail-value">{{OrderStatus}}</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="status-message">
-                <h3>Thông báo cập nhật</h3>
-                <p>{{StatusMessage}}</p>
-            </div>
-            
+            <!-- Timeline -->
             <div class="timeline">
                 <h3>Tiến trình đơn hàng</h3>
-                <div class="timeline-item active">
+                <div class="timeline-item completed">
                     <strong>Đã đặt hàng</strong>
-                    <small style="display: block; color: #666;">Đơn hàng đã được tạo thành công</small>
+                    <small>Đơn hàng đã được tạo thành công</small>
                 </div>
-                <div class="timeline-item">
+                <div class="timeline-item completed">
                     <strong>Xác nhận</strong>
-                    <small style="display: block; color: #666;">Xác nhận thông tin và thanh toán</small>
+                    <small>Đã xác nhận thông tin và thanh toán</small>
                 </div>
-                <div class="timeline-item">
+                <div class="timeline-item active">
                     <strong>Đang xử lý</strong>
-                    <small style="display: block; color: #666;">Chuẩn bị sản phẩm và đóng gói</small>
+                    <small>Đang chuẩn bị sản phẩm và đóng gói</small>
                 </div>
                 <div class="timeline-item">
                     <strong>Đang giao</strong>
-                    <small style="display: block; color: #666;">Đơn hàng đang được vận chuyển</small>
+                    <small>Đơn hàng đang được vận chuyển</small>
                 </div>
                 <div class="timeline-item">
                     <strong>Hoàn thành</strong>
-                    <small style="display: block; color: #666;">Đã giao hàng thành công</small>
+                    <small>Đã giao hàng thành công</small>
                 </div>
             </div>
             
+            <!-- CTA Section -->
             <div class="cta-section">
-                <h3 style="margin-bottom: 15px; color: #333;">Theo dõi chi tiết</h3>
-                <p style="margin-bottom: 20px; color: #666;">
-                    Nhấp vào nút bên dưới để xem chi tiết đơn hàng và theo dõi tiến trình giao hàng.
+                <h3>Theo dõi chi tiết đơn hàng</h3>
+                <p>
+                    Nhấp vào nút bên dưới để xem thông tin chi tiết và 
+                    theo dõi tiến trình giao hàng realtime.
                 </p>
-                <a href="{{OrderTrackingUrl}}" class="cta-button">Xem chi tiết đơn hàng</a>
+                <a href="{{OrderTrackingUrl}}" class="cta-button">Xem chi tiết</a>
+                <a href="tel:0123456789" class="cta-button cta-button-secondary">Liên hệ hỗ trợ</a>
             </div>
             
-            <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                <h4 style="color: #0c5460; margin-bottom: 10px;">Lưu ý quan trọng:</h4>
-                <ul style="color: #0c5460; margin-left: 20px;">
+            <!-- Info Box -->
+            <div class="info-box">
+                <h4>Lưu ý quan trọng:</h4>
+                <ul>
                     <li>Vui lòng kiểm tra thông tin giao hàng kỹ càng</li>
-                    <li>Liên hệ hotline 0123 456 789 nếu cần hỗ trợ</li>
-                    <li>Đơn hàng có thể được đổi trả trong vòng 30 ngày</li>
+                    <li>Liên hệ hotline <strong>0123 456 789</strong> nếu cần hỗ trợ</li>
+                    <li>Đơn hàng có thể được đổi trả trong vòng <strong>30 ngày</strong></li>
+                    <li>Kiểm tra hàng trước khi thanh toán với shipper</li>
                     <li>Giữ lại email này để tham khảo khi cần</li>
                 </ul>
             </div>
             
-            <p style="text-align: center; color: #666; margin-top: 25px;">
-                Cảm ơn bạn đã tin tương và mua sắm tại John Henry Fashion!
+            <!-- Support Section -->
+            <div class="support-section">
+                <h4>Cần hỗ trợ?</h4>
+                <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng!</p>
+                <p><strong>Hotline:</strong> 0123 456 789 (8:00 - 22:00)</p>
+                <p><strong>Email:</strong> support@johnhenry.com</p>
+                <p><strong>Zalo/Messenger:</strong> John Henry Fashion</p>
+            </div>
+            
+            <p style="text-align: center; color: #666; margin-top: 30px; font-size: 1.1em;">
+                Cảm ơn bạn đã tin tưởng và mua sắm tại John Henry Fashion!
             </p>
         </div>
         
+        <!-- Footer -->
         <div class="footer">
+            <div class="footer-brand">JOHN HENRY FASHION</div>
             <p>&copy; 2025 John Henry Fashion. Tất cả quyền được bảo lưu.</p>
             <p>Địa chỉ: 123 Đường Thời Trang, Quận 1, TP. Hồ Chí Minh</p>
             <p>Hotline: 0123 456 789 | Email: support@johnhenry.com</p>
+            
+            <div class="footer-social">
+                <p>Kết nối với chúng tôi:</p>
+                <div class="social-icons">
+                    <a href="#" class="social-icon">f</a>
+                    <a href="#" class="social-icon">📷</a>
+                    <a href="#" class="social-icon">Z</a>
+                    <a href="#" class="social-icon">✉</a>
+                </div>
+            </div>
         </div>
     </div>
 </body>

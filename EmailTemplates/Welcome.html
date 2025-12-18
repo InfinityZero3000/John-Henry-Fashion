@@ -19,55 +19,95 @@
         }
         
         .email-container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
-        .header {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        /* Hero Banner Section */
+        .hero-banner {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+        }
+        
+        .hero-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(220,53,69,0.7) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             color: white;
-            padding: 40px 20px;
             text-align: center;
+            padding: 20px;
         }
         
-        .header h1 {
-            font-size: 2.5em;
+        .hero-overlay h1 {
+            font-size: 3em;
             margin-bottom: 10px;
-            font-weight: 300;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+        .hero-overlay p {
+            font-size: 1.3em;
+            opacity: 0.95;
+            font-weight: 300;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
         }
         
         .content {
-            padding: 40px 30px;
+            padding: 40px 35px;
         }
         
         .welcome-message {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
         
         .welcome-message h2 {
             color: #dc3545;
-            font-size: 1.8em;
+            font-size: 2em;
             margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .welcome-message p {
+            color: #555;
+            font-size: 1.05em;
+            line-height: 1.8;
         }
         
         .benefits {
-            background-color: #f8f9fa;
-            padding: 25px;
-            border-left: 4px solid #dc3545;
-            margin: 25px 0;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            padding: 30px;
+            border-left: 5px solid #dc3545;
+            margin: 30px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(220,53,69,0.1);
         }
         
         .benefits h3 {
             color: #dc3545;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: 600;
         }
         
         .benefits ul {
@@ -76,9 +116,11 @@
         }
         
         .benefits li {
-            padding: 8px 0;
+            padding: 10px 0;
             position: relative;
-            padding-left: 25px;
+            padding-left: 30px;
+            font-size: 1.05em;
+            color: #444;
         }
         
         .benefits li:before {
@@ -87,119 +129,194 @@
             left: 0;
             color: #dc3545;
             font-weight: bold;
+            font-size: 1.3em;
         }
         
         .cta-button {
             text-align: center;
-            margin: 30px 0;
+            margin: 35px 0;
         }
         
         .cta-button a {
             display: inline-block;
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
-            padding: 15px 30px;
+            padding: 16px 40px;
             text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 1.1em;
-            transition: transform 0.3s ease;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.15em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
         }
         
         .cta-button a:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(220,53,69,0.4);
+        }
+        
+        .promo-banner {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+        
+        .promo-banner h3 {
+            font-size: 1.6em;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .promo-banner p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #dc3545, transparent);
+            margin: 30px 0;
         }
         
         .footer {
-            background-color: #333;
+            background-color: #1a1a2e;
             color: white;
-            padding: 30px;
+            padding: 35px 30px;
             text-align: center;
         }
         
         .footer p {
             margin-bottom: 10px;
-            opacity: 0.8;
+            opacity: 0.85;
+            font-size: 0.95em;
+        }
+        
+        .footer .brand-name {
+            font-weight: 700;
+            color: #dc3545;
+            font-size: 1.1em;
         }
         
         .social-links {
-            margin-top: 20px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
         }
         
         .social-links a {
             color: white;
             text-decoration: none;
-            margin: 0 10px;
+            margin: 0 15px;
             opacity: 0.8;
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
         
         .social-links a:hover {
             opacity: 1;
+            color: #dc3545;
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 650px) {
             .email-container {
                 margin: 0;
                 box-shadow: none;
             }
             
-            .header {
-                padding: 30px 15px;
+            .hero-banner {
+                height: 250px;
             }
             
-            .header h1 {
+            .hero-overlay h1 {
                 font-size: 2em;
+                letter-spacing: 2px;
+            }
+            
+            .hero-overlay p {
+                font-size: 1.1em;
             }
             
             .content {
                 padding: 30px 20px;
+            }
+            
+            .welcome-message h2 {
+                font-size: 1.6em;
+            }
+            
+            .benefits {
+                padding: 20px;
+            }
+            
+            .cta-button a {
+                padding: 14px 30px;
+                font-size: 1em;
             }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
-        <div class="header">
-            <h1>John Henry</h1>
-            <p>Thời trang cao cấp dành cho phái mạnh</p>
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <img src="https://raw.githubusercontent.com/InfinityZero3000/Image-CDN/refs/heads/main/banner_018d84a8.jpg" alt="John Henry Fashion Banner">
+            <div class="hero-overlay">
+                <h1>JOHN HENRY</h1>
+                <p>Thời Trang Cao Cấp - Phong Cách Đẳng Cấp</p>
+            </div>
         </div>
         
         <div class="content">
             <div class="welcome-message">
-                <h2>Chào mừng {{UserName}}!</h2>
-                <p>Cảm ơn bạn đã đăng ký tài khoản tại John Henry Fashion. Chúng tôi rất vui mừng được chào đón bạn vào cộng đồng những người yêu thích thời trang.</p>
+                <h2>🎉 Chào Mừng {{UserName}}!</h2>
+                <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>John Henry Fashion</strong>. Chúng tôi rất vui mừng được chào đón bạn vào cộng đồng những người yêu thích thời trang cao cấp và phong cách đẳng cấp!</p>
             </div>
             
+            <div class="promo-banner">
+                <h3>Ưu Đãi Đặc Biệt</h3>
+                <p>Giảm ngay <strong>15%</strong> cho đơn hàng đầu tiên của bạn!</p>
+            </div>
+            
+            <div class="divider"></div>
+            
             <div class="benefits">
-                <h3>Những lợi ích dành cho thành viên:</h3>
+                <h3>🌟 Đặc Quyền Thành Viên</h3>
                 <ul>
-                    <li>Ưu đãi đặc biệt và giảm giá độc quyền</li>
-                    <li>Thông báo sớm về các sản phẩm mới</li>
-                    <li>Tích điểm và đổi quà hấp dẫn</li>
-                    <li>Miễn phí vận chuyển cho đơn hàng trên 500.000đ</li>
-                    <li>Hỗ trợ khách hàng 24/7</li>
+                    <li>Ưu đãi đặc biệt và giảm giá độc quyền dành riêng cho thành viên</li>
+                    <li>Thông báo sớm về bộ sưu tập mới và sản phẩm hot trend</li>
+                    <li>Tích điểm thưởng và đổi quà hấp dẫn với mỗi đơn hàng</li>
+                    <li>Miễn phí vận chuyển toàn quốc cho đơn hàng từ 500.000đ</li>
+                    <li>Chính sách đổi trả linh hoạt trong vòng 30 ngày</li>
+                    <li>Hỗ trợ khách hàng tận tâm 24/7 qua hotline và chat</li>
                 </ul>
             </div>
             
             <div class="cta-button">
-                <a href="{{LoginUrl}}">Bắt đầu mua sắm ngay</a>
+                <a href="{{LoginUrl}}">Khám Phá Ngay</a>
             </div>
             
-            <p style="text-align: center; color: #666; margin-top: 25px;">
-                Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi qua email hoặc hotline.
+            <div class="divider"></div>
+            
+            <p style="text-align: center; color: #666; margin-top: 25px; font-size: 1.05em;">
+                Nếu bạn có bất kỳ câu hỏi nào hoặc cần hỗ trợ, đừng ngần ngại liên hệ với chúng tôi. 
+                Đội ngũ John Henry luôn sẵn sàng phục vụ bạn! 💼
             </p>
         </div>
         
         <div class="footer">
-            <p>&copy; 2025 {{CompanyName}}. Tất cả quyền được bảo lưu.</p>
-            <p>Địa chỉ: 123 Đường Thời Trang, Quận 1, TP. Hồ Chí Minh</p>
-            <p>Hotline: 0123 456 789 | Email: support@johnhenry.com</p>
+            <p class="brand-name">{{CompanyName}}</p>
+            <p>&copy; 2025 Tất cả quyền được bảo lưu.</p>
+            <p>123 Đường Thời Trang, Quận 1, TP. Hồ Chí Minh</p>
+            <p>Hotline: <strong>0123 456 789</strong> | Email: <strong>support@johnhenry.com</strong></p>
             
             <div class="social-links">
                 <a href="#">Facebook</a>
                 <a href="#">Instagram</a>
                 <a href="#">YouTube</a>
+                <a href="#">Zalo</a>
             </div>
         </div>
     </div>
