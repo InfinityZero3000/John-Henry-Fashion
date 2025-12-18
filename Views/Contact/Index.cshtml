@@ -406,18 +406,18 @@
             color: #dc3545;
         }
         
-        /* Force equal height columns */
-        .row {
+        /* Force equal height columns - only for contact form area */
+        .container > .row:first-of-type {
             display: flex;
             flex-wrap: wrap;
         }
         
-        .row > [class*='col-'] {
+        .container > .row:first-of-type > [class*='col-'] {
             display: flex;
             flex-direction: column;
         }
         
-        .card {
+        .container > .row:first-of-type .card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
@@ -425,21 +425,21 @@
             min-height: 600px; /* Ensure minimum height */
         }
         
-        .card-body {
+        .container > .row:first-of-type .card-body {
             display: flex;
             flex-direction: column;
             flex: 1;
         }
         
         /* Make form take up available space */
-        .card-body form {
+        .container > .row:first-of-type .card-body form {
             display: flex;
             flex-direction: column;
             flex: 1;
         }
         
         /* Contact info should fill available space */
-        .contact-info {
+        .container > .row:first-of-type .contact-info {
             display: flex;
             flex-direction: column;
             justify-content: space-evenly; /* Changed from space-between to space-evenly */
@@ -492,6 +492,12 @@
         .support-section .card {
             min-height: auto;
             border: 1px solid #ddd;
+            height: auto;
+        }
+
+        .support-section .card-body {
+            height: auto;
+            padding: 1.5rem;
         }
 
         .support-section .card:hover {

@@ -291,7 +291,7 @@
             border: none !important; /* No border */
             border-radius: 12px !important;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important; /* Softer shadow */
-            z-index: 999999999 !important; /* Maximum z-index */
+            z-index: 99999 !important; /* Higher than header (9995) and cart sidebar (9999) */
             max-height: 450px;
             overflow-y: auto;
             opacity: 0;
@@ -1235,6 +1235,16 @@
                         <i class="fas fa-search" id="header-search-icon" style="cursor: pointer;"></i>
                         <input type="text" name="query" id="header-search-input" placeholder="Áo thun nam, đầm, váy,..." class="form-control" autocomplete="off">
                     </form>
+                    
+                    <!-- Search Suggestions Dropdown -->
+                    <div id="search-suggestions" class="search-suggestions">
+                        <div class="suggestions-header">
+                            <strong>Gợi ý sản phẩm</strong>
+                        </div>
+                        <div id="suggestions-list" class="suggestions-list">
+                            <div class="suggestions-loading">Đang tìm kiếm</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Mobile Menu Toggle Button -->
@@ -2602,16 +2612,6 @@
     <!-- Cart Sidebar -->
     <div id="cart-sidebar-container">
         @await Html.PartialAsync("_CartSidebar", new List<JohnHenryFashionWeb.Models.ShoppingCartItem>())
-    </div>
-    
-    <!-- Search Suggestions Dropdown (Outside header for proper z-index stacking) -->
-    <div id="search-suggestions" class="search-suggestions" style="display: none;">
-        <div class="suggestions-header">
-            <strong>Gợi ý sản phẩm</strong>
-        </div>
-        <div id="suggestions-list" class="suggestions-list">
-            <div class="suggestions-loading">Đang tìm kiếm</div>
-        </div>
     </div>
 </body>
 </html>
