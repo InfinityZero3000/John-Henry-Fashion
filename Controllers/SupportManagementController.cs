@@ -30,14 +30,37 @@ namespace JohnHenryFashionWeb.Controllers
             ViewData["CurrentSection"] = "Support";
             ViewData["Title"] = "Quản lý hỗ trợ khách hàng";
 
-            // Thống kê Tickets
-            var totalTickets = await _context.SupportTickets.CountAsync();
-            var openTickets = await _context.SupportTickets.CountAsync(t => t.Status != null && t.Status.ToLower() == "open");
-            var inProgressTickets = await _context.SupportTickets.CountAsync(t => t.Status != null && (t.Status.ToLower() == "in_progress" || t.Status.ToLower() == "inprogress"));
-            var resolvedTickets = await _context.SupportTickets.CountAsync(t => t.Status != null && t.Status.ToLower() == "resolved");
+            // Thống kê Tickets từ form Contact (category = "contact")
+            var contactTickets = _context.SupportTickets.Where(t => t.Category != null && t.Category.ToLower() == "contact");
+            var totalContactTickets = await contactTickets.CountAsync();
+            var openContactTickets = await contactTickets.CountAsync(t => t.Status != null && t.Status.ToLower() == "open");
+            var inProgressContactTickets = await contactTickets.CountAsync(t => t.Status != null && (t.Status.ToLower() == "in_progress" || t.Status.ToLower() == "inprogress"));
+            var resolvedContactTickets = await contactTickets.CountAsync(t => t.Status != null && t.Status.ToLower() == "resolved");
 
-            // Danh sách tickets theo bộ lọc
-            var ticketsQuery = _context.SupportTickets
+            // Danh sách tickets từ Contact Form
+            var contactTicketsList = await contactTickets
+                .Include(t => t.User)
+                .Include(t => t.AssignedAdmin)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(20)
+                .ToListAsync();
+
+            ViewBag.TotalContactTickets = totalContactTickets;
+            ViewBag.OpenContactTickets = openContactTickets;
+            ViewBag.InProgressContactTickets = inProgressContactTickets;
+            ViewBag.ResolvedContactTickets = resolvedContactTickets;
+            ViewBag.ContactTickets = contactTicketsList;
+
+            // Thống kê Tickets hệ thống (không phải từ contact form)
+            // Thống kê Tickets hệ thống (không phải từ contact form)
+            var systemTicketsQuery = _context.SupportTickets.Where(t => t.Category == null || t.Category.ToLower() != "contact");
+            var totalTickets = await systemTicketsQuery.CountAsync();
+            var openTickets = await systemTicketsQuery.CountAsync(t => t.Status != null && t.Status.ToLower() == "open");
+            var inProgressTickets = await systemTicketsQuery.CountAsync(t => t.Status != null && (t.Status.ToLower() == "in_progress" || t.Status.ToLower() == "inprogress"));
+            var resolvedTickets = await systemTicketsQuery.CountAsync(t => t.Status != null && t.Status.ToLower() == "resolved");
+
+            // Danh sách tickets theo bộ lọc (không bao gồm contact tickets)
+            var ticketsQuery = systemTicketsQuery
                 .Include(t => t.User)
                 .Include(t => t.AssignedAdmin)
                 .OrderByDescending(t => t.CreatedAt)

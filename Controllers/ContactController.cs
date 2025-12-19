@@ -14,17 +14,20 @@ namespace JohnHenryFashionWeb.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<ContactController> _logger;
         private readonly IEmailService _emailService;
+        private readonly INotificationService _notificationService;
 
         public ContactController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             ILogger<ContactController> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            INotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
             _emailService = emailService;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -67,16 +70,39 @@ namespace JohnHenryFashionWeb.Controllers
                     };
 
                     // Link to user if logged in
+                    string? userId = null;
                     if (User.Identity?.IsAuthenticated == true)
                     {
-                        contactMessage.UserId = _userManager.GetUserId(User);
+                        userId = _userManager.GetUserId(User);
+                        contactMessage.UserId = userId;
                     }
 
                     _context.ContactMessages.Add(contactMessage);
+
+                    // Tạo Support Ticket từ Contact Message
+                    var ticketNumber = $"TKT-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper()}";
+                    var supportTicket = new SupportTicket
+                    {
+                        Id = Guid.NewGuid(),
+                        TicketNumber = ticketNumber,
+                        UserId = userId ?? "guest", // Nếu không đăng nhập thì dùng "guest"
+                        UserType = "customer",
+                        Subject = model.Subject,
+                        Description = $"Từ: {model.Name}\nEmail: {model.Email}\n" + 
+                                    (string.IsNullOrEmpty(model.Phone) ? "" : $"SĐT: {model.Phone}\n") +
+                                    $"\nNội dung:\n{model.Message}",
+                        Category = "contact", // Category mới cho liên hệ từ form
+                        Priority = "medium",
+                        Status = "Open",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    _context.SupportTickets.Add(supportTicket);
                     await _context.SaveChangesAsync();
 
-                    _logger.LogInformation("New contact message received from {Email} with subject: {Subject}", 
-                        model.Email, model.Subject);
+                    _logger.LogInformation("New contact message received from {Email} with subject: {Subject}. Support ticket created: {TicketNumber}", 
+                        model.Email, model.Subject, ticketNumber);
 
                     // Send confirmation email to customer
                     try
@@ -100,6 +126,27 @@ namespace JohnHenryFashionWeb.Controllers
                     {
                         _logger.LogError(emailEx, "Failed to send admin notification for contact from {Email}", model.Email);
                         // Don't fail the whole operation if email fails
+                    }
+
+                    // Send in-app notification to all admin users
+                    try
+                    {
+                        var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+                        foreach (var admin in adminUsers)
+                        {
+                            await _notificationService.CreateNotificationAsync(
+                                admin.Id,
+                                "Tin nhắn liên hệ mới",
+                                $"Có tin nhắn liên hệ mới từ {model.Name} ({model.Email}). Chủ đề: {model.Subject}",
+                                "contact",
+                                $"/admin/support?ticketNumber={ticketNumber}");
+                        }
+                        _logger.LogInformation("In-app notifications sent to admin users for contact from {Email}", model.Email);
+                    }
+                    catch (Exception notifEx)
+                    {
+                        _logger.LogError(notifEx, "Failed to send in-app notifications for contact from {Email}", model.Email);
+                        // Don't fail the whole operation if notification fails
                     }
 
                     TempData["SuccessMessage"] = "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.";
