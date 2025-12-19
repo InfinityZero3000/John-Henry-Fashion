@@ -2602,21 +2602,23 @@ namespace JohnHenryFashionWeb.Controllers
             var previousStartDate = startDate.AddDays(-30);
             var previousEndDate = startDate;
 
-            // KPI Data
+            // KPI Data - Include all completed/delivered orders, not just "paid" status
             var currentRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && 
+                       (o.Status == "delivered" || o.Status == "completed" || o.PaymentStatus == "paid"))
                 .SumAsync(o => o.TotalAmount);
 
             var previousRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && 
+                       (o.Status == "delivered" || o.Status == "completed" || o.PaymentStatus == "paid"))
                 .SumAsync(o => o.TotalAmount);
 
             var currentOrders = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.Status != "cancelled")
                 .CountAsync();
 
             var previousOrders = await _context.Orders
-                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.CreatedAt >= previousStartDate && o.CreatedAt <= previousEndDate && o.Status != "cancelled")
                 .CountAsync();
 
             var currentCustomers = await _context.Users
@@ -2649,7 +2651,7 @@ namespace JohnHenryFashionWeb.Controllers
 
             // Sales Analytics Data
             var monthlyRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.CreatedAt >= startDate && o.Status != "cancelled")
                 .GroupBy(o => new { Year = o.CreatedAt.Year, Month = o.CreatedAt.Month })
                 .Select(g => new MonthlyData
                 {
@@ -2722,7 +2724,7 @@ namespace JohnHenryFashionWeb.Controllers
             // Top Products Data
             var topProducts = await _context.OrderItems
                 .Include(oi => oi.Product)
-                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.PaymentStatus == "paid" && oi.Order.Status != "cancelled")
+                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.Status != "cancelled")
                 .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
                 .Select(g => new Models.ChartData
                 {
@@ -2737,7 +2739,7 @@ namespace JohnHenryFashionWeb.Controllers
             var categorySales = await _context.OrderItems
                 .Include(oi => oi.Product)
                 .ThenInclude(p => p.Category)
-                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.PaymentStatus == "paid" && oi.Order.Status != "cancelled")
+                .Where(oi => oi.Order.CreatedAt >= startDate && oi.Order.Status != "cancelled")
                 .GroupBy(oi => oi.Product.Category.Name)
                 .Select(g => new Models.ChartData
                 {
@@ -2748,7 +2750,7 @@ namespace JohnHenryFashionWeb.Controllers
 
             // Payment Method Data
             var paymentMethodsRaw = await _context.Orders
-                .Where(o => o.CreatedAt >= startDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.CreatedAt >= startDate && o.Status != "cancelled")
                 .GroupBy(o => o.PaymentMethod)
                 .Select(g => new
                 {
@@ -2929,7 +2931,7 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         [HttpPost("inventory/update")]
-        public async Task<IActionResult> UpdateInventory(Guid productId, int quantityChange, int minStock, int maxStock, string? note)
+        public async Task<IActionResult> UpdateInventory(Guid productId, int quantityChange)
         {
             try
             {
@@ -2941,6 +2943,7 @@ namespace JohnHenryFashionWeb.Controllers
                 }
 
                 // Update stock quantity
+                var oldQuantity = product.StockQuantity;
                 product.StockQuantity += quantityChange;
                 
                 // Ensure stock doesn't go negative
@@ -2950,14 +2953,10 @@ namespace JohnHenryFashionWeb.Controllers
                     return RedirectToAction("Inventory");
                 }
 
-                // Update min/max stock
-                product.MinStock = minStock;
-                product.MaxStock = maxStock;
                 product.UpdatedAt = DateTime.UtcNow;
-
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Đã cập nhật tồn kho cho sản phẩm {product.Name}. Thay đổi: {(quantityChange > 0 ? "+" : "")}{quantityChange}";
+                TempData["SuccessMessage"] = $"Đã cập nhật tồn kho cho sản phẩm {product.Name}. Số lượng: {oldQuantity} → {product.StockQuantity}";
                 
                 return RedirectToAction("Inventory");
             }

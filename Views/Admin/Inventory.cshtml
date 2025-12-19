@@ -232,7 +232,7 @@
                                         Sửa
                                     </a>
                                     <button type="button" class="admin-btn admin-btn-sm admin-btn-secondary" 
-                                            onclick="openInventoryModal('@item.ProductId', '@item.ProductName', @item.CurrentStock, @item.MinStock, @item.MaxStock)" 
+                                            onclick="openInventoryModal('@item.ProductId', '@item.ProductName', @item.CurrentStock)" 
                                             title="Cập nhật tồn kho">
                                         <i data-lucide="package"></i>
                                         Tồn kho
@@ -358,34 +358,8 @@
                         </label>
                         <input type="number" name="quantityChange" class="admin-form-control" placeholder="Nhập số dương để thêm, số âm để giảm" required>
                         <small style="color: var(--admin-text-light); display: block; margin-top: 0.25rem;">
-                            Ví dụ: +50 để nhập thêm hàng, -10 để giảm tồn kho
+                            Ví dụ: 50 để nhập thêm hàng, -10 để giảm tồn kho
                         </small>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                        <div class="admin-form-group">
-                            <label class="admin-form-label">
-                                <i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i>
-                                Tồn kho tối thiểu
-                            </label>
-                            <input type="number" name="minStock" id="modal-min-stock" class="admin-form-control" required>
-                        </div>
-
-                        <div class="admin-form-group">
-                            <label class="admin-form-label">
-                                <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
-                                Tồn kho tối đa
-                            </label>
-                            <input type="number" name="maxStock" id="modal-max-stock" class="admin-form-control" required>
-                        </div>
-                    </div>
-
-                    <div class="admin-form-group">
-                        <label class="admin-form-label">
-                            <i data-lucide="message-square" style="width: 14px; height: 14px;"></i>
-                            Ghi chú
-                        </label>
-                        <textarea name="note" class="admin-form-control" rows="3" placeholder="Lý do thay đổi tồn kho..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -409,12 +383,10 @@
         lucide.createIcons();
 
         // Open inventory update modal
-        function openInventoryModal(productId, productName, currentStock, minStock, maxStock) {
+        function openInventoryModal(productId, productName, currentStock) {
             document.getElementById('modal-product-id').value = productId;
             document.getElementById('modal-product-name').textContent = productName;
             document.getElementById('modal-current-stock').value = currentStock;
-            document.getElementById('modal-min-stock').value = minStock;
-            document.getElementById('modal-max-stock').value = maxStock;
             
             const modal = new bootstrap.Modal(document.getElementById('updateInventoryModal'));
             modal.show();
