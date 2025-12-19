@@ -668,3 +668,53 @@ function viewStoreAvailability(productId) {
     // This can be implemented later with actual store locations
     showToast('Thông báo', 'Tính năng đang được phát triển', 'info');
 }
+
+// Load and open cart sidebar with fresh user-specific data
+window.loadAndOpenCartSidebar = async function() {
+    console.log('🛒 Loading cart sidebar with user data...');
+    
+    try {
+        const response = await fetch('/Cart/GetSidebarData');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const html = await response.text();
+        
+        // Replace cart sidebar content
+        const container = document.getElementById('cart-sidebar-container');
+        if (container) {
+            container.innerHTML = html;
+            
+            // Re-initialize Lucide icons for new content
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+            
+            // Open the sidebar
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const cartOverlay = document.getElementById('cart-sidebar-overlay');
+            
+            if (cartSidebar) {
+                cartSidebar.classList.add('open');
+            }
+            if (cartOverlay) {
+                cartOverlay.classList.add('show');
+            }
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+            
+            console.log('✅ Cart sidebar loaded and opened');
+            
+            // Trigger re-initialization of cart sidebar event handlers
+            if (typeof window.initCartSidebarEvents === 'function') {
+                window.initCartSidebarEvents();
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error loading cart sidebar:', error);
+        showToast('Lỗi', 'Không thể tải giỏ hàng', 'error');
+    }
+};

@@ -395,6 +395,14 @@
         console.log('Cart sidebar initialized');
     }
 
+    // Expose init function for re-initialization after dynamic content load
+    window.initCartSidebarEvents = function() {
+        console.log('🔄 Re-initializing cart sidebar events...');
+        initCartSidebarControls();
+        initRemoveButtons();
+        initQuantityControls();
+    };
+
     // Export functions for external use
     window.cartSidebar = {
         open: openCartSidebar,
