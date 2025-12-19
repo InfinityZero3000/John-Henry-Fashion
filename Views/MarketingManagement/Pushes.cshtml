@@ -1,108 +1,123 @@
 @model List<JohnHenryFashionWeb.Models.PushNotificationCampaign>
 @{
-    ViewData["Title"] = "Push Notification Campaigns";
-    ViewData["Breadcrumbs"] = new[] { "Marketing", "Push Notifications" };
+    ViewData["Title"] = "Quản lý Push Notifications";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\"><a href=\"/admin/marketing\">Marketing</a></li><li class=\"breadcrumb-item active\">Push Notifications</li>";
+    
+    var sentCampaigns = Model.Count(p => p.Status == "sent");
+    var totalOpens = Model.Sum(p => p.OpenCount);
+    var totalClicks = Model.Sum(p => p.ClickCount);
+    var totalSent = Model.Sum(p => p.SentCount);
 }
 
 <div class="admin-content">
     <!-- Page Header -->
     <div class="admin-page-header">
-        <div class="admin-page-header-content">
+        <div class="admin-flex-between">
             <h1 class="admin-page-title">
                 <i data-lucide="bell"></i>
-                Push Notification Campaigns
+                Quản lý Push Notifications
             </h1>
-            <p class="admin-page-description">Quản lý chiến dịch push notification</p>
-        </div>
-        <div class="admin-page-header-actions">
             <a href="/admin/marketing/push/create" class="admin-btn admin-btn-primary">
                 <i data-lucide="plus"></i>
-                Tạo Campaign
+                Tạo Push Notification
             </a>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="admin-stats-grid" style="margin-bottom: 2rem;">
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
-                <i data-lucide="bell"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.Count</div>
-                <div class="admin-stat-label">Tổng Campaigns</div>
-            </div>
-        </div>
-        
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-                <i data-lucide="send"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.Sum(p => p.SentCount)</div>
-                <div class="admin-stat-label">Thông báo đã gửi</div>
-            </div>
-        </div>
-        
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
-                <i data-lucide="users"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.Sum(p => p.TotalRecipients)</div>
-                <div class="admin-stat-label">Tổng người nhận</div>
-            </div>
-        </div>
-        
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
-                <i data-lucide="mouse-pointer-click"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.Sum(p => p.ClickCount)</div>
-                <div class="admin-stat-label">Tổng clicks</div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Alert Messages -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="admin-alert admin-alert-success" style="margin-bottom: 1.5rem;">
+        <div class="admin-alert admin-alert-success">
             <i data-lucide="check-circle"></i>
             <span>@TempData["SuccessMessage"]</span>
         </div>
     }
 
-    <!-- Campaigns Table -->
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <div>
-                <h3 class="admin-card-title">Danh sách Campaigns</h3>
-                <p class="admin-card-description">@Model.Count campaigns tổng cộng</p>
+    <!-- Statistics -->
+    <div class="admin-stats-grid" style="margin-bottom: var(--spacing-lg);">
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng Campaigns</h3>
+                    <p class="value">@Model.Count</p>
+                    <p class="change">@sentCampaigns đã gửi</p>
+                </div>
+                <div class="admin-stat-card-icon primary">
+                    <i data-lucide="bell"></i>
+                </div>
             </div>
         </div>
-        <div class="admin-card-body">
-            @if (!Model.Any())
-            {
-                <div style="text-align: center; padding: 4rem 2rem; color: var(--admin-text-secondary);">
-                    <i data-lucide="inbox" style="width: 64px; height: 64px; margin-bottom: 1.5rem; opacity: 0.5;"></i>
-                    <p style="font-size: 1rem; margin: 0;">Chưa có campaign nào.</p>
-                    <p style="font-size: 0.875rem; margin-top: 0.5rem; opacity: 0.8;">Tạo campaign đầu tiên để gửi thông báo đến khách hàng</p>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Thông báo đã gửi</h3>
+                    <p class="value">@totalSent.ToString("N0")</p>
+                    <p class="change">Tổng số thông báo</p>
                 </div>
-            }
-            else
-            {
-                <div class="admin-table-container">
+                <div class="admin-stat-card-icon success">
+                    <i data-lucide="send"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tỷ lệ mở</h3>
+                    <p class="value">@((totalSent > 0 ? (totalOpens * 100.0 / totalSent).ToString("F1") : "0"))%</p>
+                    <p class="change">@totalOpens.ToString("N0") lượt mở</p>
+                </div>
+                <div class="admin-stat-card-icon warning">
+                    <i data-lucide="eye"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Tổng Clicks</h3>
+                    <p class="value">@totalClicks.ToString("N0")</p>
+                    <p class="change">@((totalSent > 0 ? (totalClicks * 100.0 / totalSent).ToString("F1") : "0"))% CTR</p>
+                </div>
+                <div class="admin-stat-card-icon info">
+                    <i data-lucide="mouse-pointer-click"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaigns List -->
+    @if (Model == null || !Model.Any())
+    {
+        <div class="admin-card">
+            <div class="admin-card-body admin-text-center" style="padding: 3rem;">
+                <i data-lucide="bell" style="width: 64px; height: 64px; color: var(--admin-text-muted); margin-bottom: 1rem;"></i>
+                <h3 style="margin-bottom: 0.5rem;">Chưa có Push Notification Campaign</h3>
+                <p style="color: var(--admin-text-light); margin-bottom: 1.5rem;">Tạo chiến dịch push notification đầu tiên</p>
+                <a href="/admin/marketing/push/create" class="admin-btn admin-btn-primary">
+                    <i data-lucide="plus"></i>
+                    Tạo Push Notification
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="admin-card">
+            <div class="admin-card-body" style="padding: 0;">
+                <div class="admin-table-wrapper" style="border: none; border-radius: 0;">
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th style="min-width: 250px;">Tiêu đề & Nội dung</th>
-                                <th style="min-width: 120px;">Đối tượng</th>
-                                <th style="min-width: 180px;">Thống kê</th>
-                                <th style="min-width: 160px;">Lịch gửi</th>
-                                <th style="min-width: 100px;">Trạng thái</th>
-                                <th style="width: 150px; text-align: center;">Thao tác</th>
+                                <th>Tiêu đề & Nội dung</th>
+                                <th>Đối tượng</th>
+                                <th>Thống kê</th>
+                                <th>Lịch gửi</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 120px; text-align: center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -110,82 +125,108 @@
                             {
                                 <tr>
                                     <td>
-                                        <div style="font-weight: 500; color: var(--admin-text-primary); margin-bottom: 0.5rem;">
-                                            @push.Title
+                                        <div class="admin-table-item-title">@push.Title</div>
+                                        <div class="admin-table-item-subtitle">
+                                            @(push.Message.Length > 100 ? push.Message.Substring(0, 100) + "..." : push.Message)
                                         </div>
-                                        <div style="color: var(--admin-text-secondary); font-size: 0.875rem; line-height: 1.4;">
-                                            @(push.Message.Length > 80 ? push.Message.Substring(0, 80) + "..." : push.Message)
-                                        </div>
+                                        @if (!string.IsNullOrEmpty(push.ImageUrl))
+                                        {
+                                            <div style="margin-top: 0.5rem;">
+                                                <span class="admin-badge admin-badge-info" style="font-size: 0.75rem;">
+                                                    <i data-lucide="image" style="width: 12px; height: 12px;"></i>
+                                                    Có hình ảnh
+                                                </span>
+                                            </div>
+                                        }
                                     </td>
                                     <td>
-                                        <span class="admin-badge admin-badge-secondary" style="white-space: nowrap;">
+                                        <span class="admin-badge admin-badge-secondary">
                                             <i data-lucide="users"></i>
                                             @push.TargetAudience
                                         </span>
+                                        @if (push.TotalRecipients > 0)
+                                        {
+                                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--admin-text-light);">
+                                                @push.TotalRecipients.ToString("N0") người
+                                            </div>
+                                        }
                                     </td>
                                     <td>
                                         @if (push.SentCount > 0)
                                         {
                                             <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
-                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                                    <i data-lucide="send" style="width: 14px; height: 14px;"></i>
-                                                    <span>@push.SentCount / @push.TotalRecipients gửi</span>
+                                                <div class="admin-stat-mini">
+                                                    <i data-lucide="send" style="width: 14px; height: 14px; color: #10b981;"></i>
+                                                    <span><strong>@push.SentCount.ToString("N0")</strong> / @push.TotalRecipients.ToString("N0") gửi</span>
                                                 </div>
-                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
-                                                    <span>@push.OpenCount mở</span>
+                                                <div class="admin-stat-mini">
+                                                    <i data-lucide="eye" style="width: 14px; height: 14px; color: #3b82f6;"></i>
+                                                    <span><strong>@push.OpenCount.ToString("N0")</strong> mở (@((push.SentCount > 0 ? (push.OpenCount * 100.0 / push.SentCount).ToString("F1") : "0"))%)</span>
                                                 </div>
-                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                                    <i data-lucide="mouse-pointer-click" style="width: 14px; height: 14px;"></i>
-                                                    <span>@push.ClickCount clicks</span>
+                                                <div class="admin-stat-mini">
+                                                    <i data-lucide="mouse-pointer-click" style="width: 14px; height: 14px; color: #f59e0b;"></i>
+                                                    <span><strong>@push.ClickCount.ToString("N0")</strong> clicks (@((push.SentCount > 0 ? (push.ClickCount * 100.0 / push.SentCount).ToString("F1") : "0"))%)</span>
                                                 </div>
                                             </div>
                                         }
                                         else
                                         {
-                                            <span style="color: var(--admin-text-secondary); font-size: 0.875rem;">Chưa gửi</span>
+                                            <span style="color: var(--admin-text-light); font-size: 0.875rem;">Chưa gửi</span>
                                         }
                                     </td>
                                     <td>
                                         @if (push.ScheduledAt.HasValue)
                                         {
                                             <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
-                                                <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--admin-text-secondary);"></i>
-                                                <span>@push.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                                <i data-lucide="clock" style="width: 16px; height: 16px; color: #f59e0b;"></i>
+                                                <div>
+                                                    <div style="font-weight: 500;">@push.ScheduledAt.Value.ToString("dd/MM/yyyy")</div>
+                                                    <div style="color: var(--admin-text-light); font-size: 0.75rem;">@push.ScheduledAt.Value.ToString("HH:mm")</div>
+                                                </div>
                                             </div>
                                         }
                                         else if (push.SentAt.HasValue)
                                         {
                                             <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #10b981;">
                                                 <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
-                                                <span>@push.SentAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                                <div>
+                                                    <div style="font-weight: 500;">@push.SentAt.Value.ToString("dd/MM/yyyy")</div>
+                                                    <div style="opacity: 0.8; font-size: 0.75rem;">@push.SentAt.Value.ToString("HH:mm")</div>
+                                                </div>
                                             </div>
                                         }
                                         else
                                         {
-                                            <span style="color: var(--admin-text-secondary); font-size: 0.875rem;">Chưa định</span>
+                                            <span style="color: var(--admin-text-light); font-size: 0.875rem;">Chưa định lịch</span>
                                         }
                                     </td>
                                     <td>
                                         @{
-                                            var badgeClass = push.Status switch
+                                            var (badgeClass, statusText, statusIcon) = push.Status switch
                                             {
-                                                "sent" => "admin-badge-success",
-                                                "sending" => "admin-badge-warning",
-                                                "scheduled" => "admin-badge-info",
-                                                _ => "admin-badge-secondary"
+                                                "sent" => ("admin-badge-success", "Đã gửi", "check-circle"),
+                                                "sending" => ("admin-badge-warning", "Đang gửi", "loader"),
+                                                "scheduled" => ("admin-badge-info", "Đã lên lịch", "clock"),
+                                                "draft" => ("admin-badge-secondary", "Nháp", "file-text"),
+                                                _ => ("admin-badge-secondary", push.Status, "circle")
                                             };
                                         }
-                                        <span class="admin-badge @badgeClass">@push.Status</span>
+                                        <span class="admin-badge @badgeClass">
+                                            <i data-lucide="@statusIcon"></i>
+                                            @statusText
+                                        </span>
                                     </td>
                                     <td>
-                                        <div class="admin-table-actions" style="justify-content: center; gap: 0.5rem;">
+                                        <div class="admin-table-actions" style="justify-content: center;">
                                             <a href="/admin/marketing/push/@push.Id" class="admin-btn admin-btn-sm admin-btn-secondary" title="Chỉnh sửa">
                                                 <i data-lucide="edit-2"></i>
                                             </a>
-                                            <button onclick="deletePushCampaign('@push.Id')" class="admin-btn admin-btn-sm admin-btn-danger" title="Xóa">
-                                                <i data-lucide="trash-2"></i>
-                                            </button>
+                                            @if (push.Status != "sent" && push.Status != "sending")
+                                            {
+                                                <button onclick="deletePushCampaign('@push.Id')" class="admin-btn admin-btn-sm admin-btn-danger" title="Xóa">
+                                                    <i data-lucide="trash-2"></i>
+                                                </button>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
@@ -193,9 +234,9 @@
                         </tbody>
                     </table>
                 </div>
-            }
+            </div>
         </div>
-    </div>
+    }
 </div>
 
 <form id="antiforgeryForm" style="display:none;">
