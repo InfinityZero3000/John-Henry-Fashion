@@ -169,47 +169,55 @@ namespace JohnHenryFashionWeb.Controllers
             // Apply coupon if provided
             if (!string.IsNullOrWhiteSpace(couponCode))
             {
-                appliedCoupon = await _context.Coupons
-                    .FirstOrDefaultAsync(c => c.Code.ToUpper() == couponCode.ToUpper() && 
-                                             c.IsActive &&
-                                             (c.StartDate == null || c.StartDate <= DateTime.UtcNow) &&
-                                             (c.EndDate == null || c.EndDate >= DateTime.UtcNow));
+                var couponQuery = await _context.Coupons
+                    .FirstOrDefaultAsync(c => c.Code.ToUpper() == couponCode.ToUpper());
 
-                if (appliedCoupon != null)
+                if (couponQuery == null)
                 {
-                    // Check usage limits
-                    if (appliedCoupon.UsageLimit.HasValue && appliedCoupon.UsageCount >= appliedCoupon.UsageLimit.Value)
-                    {
-                        TempData["ErrorMessage"] = "Mã giảm giá đã được sử dụng hết";
-                    }
-                    else if (appliedCoupon.MinOrderAmount.HasValue && subtotal < appliedCoupon.MinOrderAmount.Value)
-                    {
-                        TempData["ErrorMessage"] = $"Đơn hàng tối thiểu {appliedCoupon.MinOrderAmount.Value:C} để sử dụng mã này";
-                    }
-                    else
-                    {
-                        // Calculate discount
-                        if (appliedCoupon.Type == "percentage")
-                        {
-                            discountAmount = subtotal * (appliedCoupon.Value / 100);
-                        }
-                        else
-                        {
-                            discountAmount = appliedCoupon.Value;
-                        }
-
-                        // Ensure discount doesn't exceed subtotal
-                        if (discountAmount > subtotal)
-                        {
-                            discountAmount = subtotal;
-                        }
-
-                        TempData["SuccessMessage"] = $"Áp dụng mã giảm giá {appliedCoupon.Code} thành công!";
-                    }
+                    TempData["ErrorMessage"] = "Mã giảm giá không tồn tại";
+                }
+                else if (!couponQuery.IsActive)
+                {
+                    TempData["ErrorMessage"] = "Mã giảm giá đã bị vô hiệu hóa";
+                }
+                else if (couponQuery.StartDate.HasValue && couponQuery.StartDate > DateTime.UtcNow)
+                {
+                    TempData["ErrorMessage"] = $"Mã giảm giá chưa có hiệu lực. Có hiệu lực từ {couponQuery.StartDate.Value:dd/MM/yyyy}";
+                }
+                else if (couponQuery.EndDate.HasValue && couponQuery.EndDate < DateTime.UtcNow)
+                {
+                    TempData["ErrorMessage"] = $"Mã giảm giá đã hết hạn vào ngày {couponQuery.EndDate.Value:dd/MM/yyyy}";
+                }
+                else if (couponQuery.UsageLimit.HasValue && couponQuery.UsageCount >= couponQuery.UsageLimit.Value)
+                {
+                    TempData["ErrorMessage"] = "Mã giảm giá đã được sử dụng hết";
+                }
+                else if (couponQuery.MinOrderAmount.HasValue && subtotal < couponQuery.MinOrderAmount.Value)
+                {
+                    TempData["ErrorMessage"] = $"Đơn hàng tối thiểu {couponQuery.MinOrderAmount.Value:N0}₫ để sử dụng mã này";
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Mã giảm giá không hợp lệ hoặc đã hết hạn";
+                    // Coupon is valid, apply it
+                    appliedCoupon = couponQuery;
+                    
+                    // Calculate discount
+                    if (appliedCoupon.Type == "percentage")
+                    {
+                        discountAmount = subtotal * (appliedCoupon.Value / 100);
+                    }
+                    else
+                    {
+                        discountAmount = appliedCoupon.Value;
+                    }
+
+                    // Ensure discount doesn't exceed subtotal
+                    if (discountAmount > subtotal)
+                    {
+                        discountAmount = subtotal;
+                    }
+
+                    TempData["SuccessMessage"] = $"Áp dụng mã giảm giá {appliedCoupon.Code} thành công!";
                 }
             }
 

@@ -190,7 +190,13 @@ namespace JohnHenryFashionWeb.Controllers
                 // Calculate totals
                 var subtotal = cartItems.Sum(item => item.Price * item.Quantity);
                 var shippingFee = await CalculateShippingFeeAsync(model.ShippingMethod, subtotal);
-                var discountAmount = await CalculateDiscountAsync(model.CouponCode, subtotal);
+                
+                // Validate and calculate discount
+                var (discountAmount, couponError) = await ValidateAndCalculateDiscountAsync(model.CouponCode, subtotal);
+                if (!string.IsNullOrEmpty(couponError))
+                {
+                    return Json(new { success = false, message = couponError });
+                }
                 
                 // Auto discount for orders >= 500k (5% discount)
                 var autoDiscount = CalculateAutoDiscount(subtotal);
@@ -601,6 +607,43 @@ namespace JohnHenryFashionWeb.Controllers
                 return 0;
 
             return method.Cost;
+        }
+
+        private async Task<(decimal discount, string? error)> ValidateAndCalculateDiscountAsync(string? couponCode, decimal subtotal)
+        {
+            if (string.IsNullOrEmpty(couponCode))
+                return (0, null);
+
+            var coupon = await _context.Coupons
+                .FirstOrDefaultAsync(c => c.Code.ToUpper() == couponCode.ToUpper());
+
+            if (coupon == null)
+                return (0, "Mã giảm giá không tồn tại");
+
+            if (!coupon.IsActive)
+                return (0, "Mã giảm giá đã bị vô hiệu hóa");
+
+            if (coupon.StartDate.HasValue && coupon.StartDate > DateTime.UtcNow)
+                return (0, $"Mã giảm giá chưa có hiệu lực. Có hiệu lực từ {coupon.StartDate.Value:dd/MM/yyyy}");
+
+            if (coupon.EndDate.HasValue && coupon.EndDate < DateTime.UtcNow)
+                return (0, $"Mã giảm giá đã hết hạn vào ngày {coupon.EndDate.Value:dd/MM/yyyy}");
+
+            if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit.Value)
+                return (0, "Mã giảm giá đã được sử dụng hết");
+
+            if (coupon.MinOrderAmount.HasValue && subtotal < coupon.MinOrderAmount.Value)
+                return (0, $"Đơn hàng tối thiểu {coupon.MinOrderAmount.Value:N0}₫ để sử dụng mã này");
+
+            // Calculate discount
+            var discount = coupon.Type switch
+            {
+                "percentage" => subtotal * (coupon.Value / 100),
+                "fixed_amount" => coupon.Value,
+                _ => 0
+            };
+
+            return (discount, null);
         }
 
         private async Task<decimal> CalculateDiscountAsync(string? couponCode, decimal subtotal)

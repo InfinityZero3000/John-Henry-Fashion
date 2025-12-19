@@ -94,11 +94,11 @@ namespace JohnHenryFashionWeb.Controllers
             var userId = _userManager.GetUserId(User);
             ViewBag.Orders = await _context.Orders
                 .Where(o => o.UserId == userId)
-                .OrderByDescending(o => o.OrderDate)
+                .OrderByDescending(o => o.CreatedAt)
                 .Select(o => new { 
                     o.Id, 
                     o.OrderNumber,
-                    o.OrderDate,
+                    OrderDate = o.CreatedAt,
                     o.TotalAmount 
                 })
                 .Take(20) // Chỉ lấy 20 đơn gần nhất
@@ -199,8 +199,8 @@ namespace JohnHenryFashionWeb.Controllers
             var currentUserId = _userManager.GetUserId(User);
             ViewBag.Orders = await _context.Orders
                 .Where(o => o.UserId == currentUserId)
-                .OrderByDescending(o => o.OrderDate)
-                .Select(o => new { o.Id, o.OrderNumber, o.OrderDate, o.TotalAmount })
+                .OrderByDescending(o => o.CreatedAt)
+                .Select(o => new { o.Id, o.OrderNumber, OrderDate = o.CreatedAt, o.TotalAmount })
                 .Take(20)
                 .ToListAsync();
 
