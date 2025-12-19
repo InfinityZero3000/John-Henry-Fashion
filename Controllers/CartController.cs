@@ -265,6 +265,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Cart/GetSidebarData
         [HttpGet]
         [AllowAnonymous]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> GetSidebarData()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

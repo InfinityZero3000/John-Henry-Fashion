@@ -162,6 +162,11 @@ function addToCart(productId, buttonElement, quantity = 1, size = null, color = 
             updateCartCount(data.cartCount);
             showToast('Success', data.message, 'success');
             
+            // Load and open cart sidebar with updated data
+            if (typeof window.loadAndOpenCartSidebar === 'function') {
+                window.loadAndOpenCartSidebar();
+            }
+            
             // Reset button after 2 seconds
             setTimeout(() => {
                 buttonElement.innerHTML = originalText;
@@ -432,6 +437,11 @@ function quickAddToCartDirect(productSku) {
         if (data.success) {
             showToast('Thành công', data.message || 'Đã thêm vào giỏ hàng', 'success');
             updateCartCount(data.cartCount);
+            
+            // Load and open cart sidebar with updated data
+            if (typeof window.loadAndOpenCartSidebar === 'function') {
+                window.loadAndOpenCartSidebar();
+            }
         } else {
             showToast('Lỗi', data.message || 'Không thể thêm vào giỏ hàng', 'error');
         }
@@ -648,6 +658,11 @@ function confirmQuickAdd(productSku, modalId) {
             
             showToast('Thành công', data.message || 'Đã thêm vào giỏ hàng', 'success');
             updateCartCount(data.cartCount);
+            
+            // Load and open cart sidebar with updated data
+            if (typeof window.loadAndOpenCartSidebar === 'function') {
+                window.loadAndOpenCartSidebar();
+            }
         } else {
             showToast('Lỗi', data.message || 'Không thể thêm vào giỏ hàng', 'error');
         }
@@ -674,7 +689,16 @@ window.loadAndOpenCartSidebar = async function() {
     console.log('🛒 Loading cart sidebar with user data...');
     
     try {
-        const response = await fetch('/Cart/GetSidebarData');
+        // Add timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/Cart/GetSidebarData?t=${timestamp}`, {
+            method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

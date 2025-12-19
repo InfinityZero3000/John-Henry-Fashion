@@ -852,6 +852,12 @@
                     if (cartCount) {
                         cartCount.textContent = data.cartCount || 0;
                     }
+                    
+                    // Load and open cart sidebar with updated data
+                    if (typeof window.loadAndOpenCartSidebar === 'function') {
+                        window.loadAndOpenCartSidebar();
+                    }
+                    
                     // Show success animation
                     buttonElement.innerHTML = '<i class="fas fa-check"></i>';
                     setTimeout(() => {

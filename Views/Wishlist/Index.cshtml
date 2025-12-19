@@ -625,6 +625,11 @@
                     updateCartCount(result.cartCount);
                     showToast(result.message, 'success');
                     
+                    // Load and open cart sidebar with updated data
+                    if (typeof window.loadAndOpenCartSidebar === 'function') {
+                        window.loadAndOpenCartSidebar();
+                    }
+                    
                     setTimeout(() => {
                         button.innerHTML = originalIcon;
                     }, 2000);

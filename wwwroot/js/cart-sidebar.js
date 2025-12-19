@@ -94,12 +94,13 @@
                 console.log('🗑️ Removing cart item:', cartItemId);
                 
                 try {
-                    const formData = new FormData();
-                    formData.append('cartItemId', cartItemId);
-                    
                     const response = await fetch('/Cart/RemoveItem', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ cartItemId: cartItemId })
                     });
                     
                     const result = await response.json();
@@ -107,33 +108,35 @@
                     if (result.success) {
                         console.log('Item removed successfully');
                         
-                        // Remove from DOM with animation
-                        const cartItem = this.closest('.cart-item');
-                        cartItem.style.opacity = '0';
-                        cartItem.style.transform = 'translateX(100px)';
-                        
-                        setTimeout(() => {
-                            cartItem.remove();
-                            
-                            // Update counts and totals
-                            updateCartCounts(result.cartCount, result.cartTotal);
-                            
-                            // Show empty state if no items
-                            if (result.cartCount === 0) {
-                                showEmptyCartState();
-                            }
-                            
-                            // Dispatch event for other components
-                            document.dispatchEvent(new CustomEvent('cartUpdated', {
-                                detail: {
-                                    cartCount: result.cartCount,
-                                    cartTotal: result.cartTotal
-                                }
-                            }));
-                        }, 300);
-                        
                         // Show success toast
                         showToast('Đã xóa sản phẩm khỏi giỏ hàng', 'success');
+                        
+                        // Refresh entire cart sidebar from server to ensure sync
+                        if (typeof window.loadAndOpenCartSidebar === 'function') {
+                            console.log('Refreshing cart sidebar after remove');
+                            window.loadAndOpenCartSidebar();
+                        } else {
+                            // Fallback: manual update if refresh function not available
+                            const cartItem = this.closest('.cart-item');
+                            cartItem.style.opacity = '0';
+                            cartItem.style.transform = 'translateX(100px)';
+                            
+                            setTimeout(() => {
+                                cartItem.remove();
+                                updateCartCounts(result.cartCount, result.cartTotal);
+                                
+                                if (result.cartCount === 0) {
+                                    showEmptyCartState();
+                                }
+                                
+                                document.dispatchEvent(new CustomEvent('cartUpdated', {
+                                    detail: {
+                                        cartCount: result.cartCount,
+                                        cartTotal: result.cartTotal
+                                    }
+                                }));
+                            }, 300);
+                        }
                     } else {
                         console.error('Remove failed:', result.message);
                         showToast(result.message || 'Không thể xóa sản phẩm', 'error');
@@ -169,12 +172,17 @@
                 buttons.forEach(b => b.disabled = true);
                 
                 try {
-                    const formData = new FormData();
-                    formData.append('cartItemId', cartItemId);
-                    formData.append('quantity', newQty);
-                    
                     const response = await fetch('/Cart/UpdateQuantity', {
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ 
+                            cartItemId: cartItemId, 
+                            quantity: newQty 
+                        })
+                    });
                         body: formData
                     });
                     
