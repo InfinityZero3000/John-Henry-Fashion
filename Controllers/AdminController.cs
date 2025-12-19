@@ -1806,11 +1806,8 @@ namespace JohnHenryFashionWeb.Controllers
         [HttpGet("pages")]
         public IActionResult Pages()
         {
-            ViewData["CurrentSection"] = "pages";
-            ViewData["Title"] = "Quản lý trang tĩnh";
-            
-            // Placeholder for pages management
-            return View();
+            // Redirect to Blog management as static content is managed there
+            return RedirectToAction("Blog");
         }
 
         [HttpGet("banners")]
