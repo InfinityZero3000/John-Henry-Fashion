@@ -1,0 +1,345 @@
+@model JohnHenryFashionWeb.ViewModels.TicketDetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết yêu cầu - " + Model.Ticket.TicketNumber;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var statusBadgeClass = Model.Ticket.Status switch
+    {
+        "Open" => "bg-warning text-dark",
+        "InProgress" or "In_Progress" => "bg-info text-white",
+        "Resolved" => "bg-success",
+        "Closed" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+
+    var categoryBadgeClass = Model.Ticket.Category?.ToLower() switch
+    {
+        "order" => "bg-primary",
+        "product" => "bg-success",
+        "payment" => "bg-danger",
+        "account" => "bg-info",
+        "refund" => "bg-warning text-dark",
+        "technical" => "bg-dark",
+        "contact" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+
+    var priorityBadgeClass = Model.Ticket.Priority?.ToLower() switch
+    {
+        "urgent" => "bg-danger",
+        "high" => "bg-warning text-dark",
+        "medium" => "bg-info",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Thông tin yêu cầu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Mã yêu cầu</small>
+                        <strong class="text-primary fs-5">@Model.Ticket.TicketNumber</strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Trạng thái</small>
+                        <span class="badge @statusBadgeClass">
+                            @(Model.Ticket.Status switch
+                            {
+                                "Open" => "Đang chờ",
+                                "InProgress" or "In_Progress" => "Đang xử lý",
+                                "Resolved" => "Đã giải quyết",
+                                "Closed" => "Đã đóng",
+                                _ => Model.Ticket.Status
+                            })
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Danh mục</small>
+                        <span class="badge @categoryBadgeClass">
+                            @(Model.Ticket.Category?.ToLower() switch
+                            {
+                                "order" => "Đơn hàng",
+                                "product" => "Sản phẩm",
+                                "payment" => "Thanh toán",
+                                "account" => "Tài khoản",
+                                "refund" => "Hoàn tiền",
+                                "technical" => "Kỹ thuật",
+                                "contact" => "Liên hệ",
+                                _ => "Chung"
+                            })
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Mức độ ưu tiên</small>
+                        <span class="badge @priorityBadgeClass">
+                            @(Model.Ticket.Priority?.ToLower() switch
+                            {
+                                "urgent" => "Khẩn cấp",
+                                "high" => "Cao",
+                                "medium" => "Trung bình",
+                                _ => "Thấp"
+                            })
+                        </span>
+                    </div>
+
+                    <hr />
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="far fa-calendar-alt me-1"></i>Ngày tạo
+                        </small>
+                        <span>@Model.Ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="far fa-clock me-1"></i>Cập nhật lần cuối
+                        </small>
+                        <span>@Model.Ticket.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+
+                    @if (Model.Ticket.ReplyCount > 0)
+                    {
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">
+                                <i class="far fa-comments me-1"></i>Số phản hồi
+                            </small>
+                            <span>@Model.Ticket.ReplyCount tin nhắn</span>
+                        </div>
+                    }
+
+                    @if (Model.AssignedAdmin != null)
+                    {
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">
+                                <i class="fas fa-user-tie me-1"></i>Người phụ trách
+                            </small>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    @(Model.AssignedAdmin.FirstName?.Substring(0, 1) ?? "A")
+                                </div>
+                                <span>@Model.AssignedAdmin.FirstName @Model.AssignedAdmin.LastName</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Related Items -->
+            @if (Model.RelatedOrder != null)
+            {
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-shopping-cart me-2"></i>Đơn hàng liên quan
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>@Model.RelatedOrder.OrderNumber</strong></p>
+                        <p class="mb-1 text-muted">@Model.RelatedOrder.OrderDate.ToString("dd/MM/yyyy")</p>
+                        <p class="mb-0">
+                            <strong class="text-primary">@Model.RelatedOrder.TotalAmount.ToString("N0")đ</strong>
+                        </p>
+                        <a href="/user/orders/@Model.RelatedOrder.Id" class="btn btn-sm btn-outline-primary mt-2">
+                            Xem đơn hàng
+                        </a>
+                    </div>
+                </div>
+            }
+
+            @if (Model.RelatedProduct != null)
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-box me-2"></i>Sản phẩm liên quan
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>@Model.RelatedProduct.Name</strong></p>
+                        <p class="mb-1 text-muted">SKU: @Model.RelatedProduct.SKU</p>
+                        <a href="/products/@Model.RelatedProduct.Slug" class="btn btn-sm btn-outline-primary mt-2">
+                            Xem sản phẩm
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <!-- Actions -->
+            @if (Model.Ticket.Status != "Closed")
+            {
+                <div class="card border-0 shadow-sm mt-3">
+                    <div class="card-body">
+                        <form asp-action="CloseTicket" asp-route-id="@Model.Ticket.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn đóng yêu cầu này? Yêu cầu đã đóng không thể mở lại.');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-times-circle me-2"></i>Đóng yêu cầu
+                            </button>
+                        </form>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Đóng yêu cầu khi vấn đề đã được giải quyết xong
+                        </small>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Original Message -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">@Model.Ticket.Subject</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-muted mb-3">
+                        <i class="far fa-calendar-alt me-2"></i>
+                        @Model.Ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                    <div style="white-space: pre-wrap; line-height: 1.6;">@Model.Ticket.Description</div>
+                </div>
+            </div>
+
+            <!-- Conversation Thread -->
+            @if (Model.Replies.Any())
+            {
+                <h5 class="mb-3">
+                    <i class="fas fa-comments me-2"></i>Lịch sử trao đổi (@Model.Replies.Count)
+                </h5>
+
+                @foreach (var reply in Model.Replies)
+                {
+                    <div class="card border-0 shadow-sm mb-3 @(reply.IsAdminReply ? "border-start border-primary border-4" : "")">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                <div class="avatar @(reply.IsAdminReply ? "bg-primary" : "bg-secondary") text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                    @if (reply.IsAdminReply)
+                                    {
+                                        <i class="fas fa-user-tie"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user"></i>
+                                    }
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>
+                                                @if (reply.IsAdminReply)
+                                                {
+                                                    <span class="text-primary">
+                                                        @(reply.User?.FirstName ?? "Admin") @(reply.User?.LastName ?? "")
+                                                    </span>
+                                                    <span class="badge bg-primary ms-2">Nhân viên hỗ trợ</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Bạn</span>
+                                                }
+                                            </strong>
+                                            <br />
+                                            <small class="text-muted">
+                                                <i class="far fa-clock me-1"></i>
+                                                @reply.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div style="white-space: pre-wrap; line-height: 1.6;">@reply.Message</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- Reply Form -->
+            @if (Model.Ticket.Status != "Closed")
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-reply me-2"></i>Gửi phản hồi
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="AddReply" asp-route-id="@Model.Ticket.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <textarea name="message" class="form-control" rows="5" placeholder="Nhập nội dung phản hồi của bạn..." required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Phản hồi sẽ được gửi đến nhân viên hỗ trợ
+                                </small>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Gửi phản hồi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary">
+                    <i class="fas fa-lock me-2"></i>
+                    Yêu cầu này đã đóng. Không thể thêm phản hồi mới.
+                </div>
+            }
+
+            <div class="mt-4">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+
+        // Auto scroll to bottom of conversation
+        $(document).ready(function() {
+            $('html, body').animate({
+                scrollTop: $('.card-body form').offset()?.top - 100
+            }, 500);
+        });
+    </script>
+}

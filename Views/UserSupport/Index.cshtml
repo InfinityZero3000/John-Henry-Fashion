@@ -1,0 +1,266 @@
+@model List<JohnHenryFashionWeb.Models.SupportTicket>
+@{
+    ViewData["Title"] = "Yêu cầu hỗ trợ của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-life-ring text-primary me-2"></i>
+                    Yêu cầu hỗ trợ của tôi
+                </h1>
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Tạo yêu cầu mới
+                </a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Statistics Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-primary mb-2">@ViewBag.TotalTickets</div>
+                            <h6 class="text-muted mb-0">Tổng số</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-warning mb-2">@ViewBag.OpenTickets</div>
+                            <h6 class="text-muted mb-0">Đang chờ</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-info mb-2">@ViewBag.InProgressTickets</div>
+                            <h6 class="text-muted mb-0">Đang xử lý</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-success mb-2">@ViewBag.ResolvedTickets</div>
+                            <h6 class="text-muted mb-0">Đã giải quyết</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Trạng thái</label>
+                            <select name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="">Tất cả</option>
+                                <option value="open" @(ViewBag.StatusFilter == "open" ? "selected" : "")>Đang chờ</option>
+                                <option value="inprogress" @(ViewBag.StatusFilter == "inprogress" ? "selected" : "")>Đang xử lý</option>
+                                <option value="resolved" @(ViewBag.StatusFilter == "resolved" ? "selected" : "")>Đã giải quyết</option>
+                                <option value="closed" @(ViewBag.StatusFilter == "closed" ? "selected" : "")>Đã đóng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Danh mục</label>
+                            <select name="category" class="form-select" onchange="this.form.submit()">
+                                <option value="">Tất cả</option>
+                                <option value="order" @(ViewBag.CategoryFilter == "order" ? "selected" : "")>Đơn hàng</option>
+                                <option value="product" @(ViewBag.CategoryFilter == "product" ? "selected" : "")>Sản phẩm</option>
+                                <option value="payment" @(ViewBag.CategoryFilter == "payment" ? "selected" : "")>Thanh toán</option>
+                                <option value="account" @(ViewBag.CategoryFilter == "account" ? "selected" : "")>Tài khoản</option>
+                                <option value="refund" @(ViewBag.CategoryFilter == "refund" ? "selected" : "")>Hoàn tiền</option>
+                                <option value="technical" @(ViewBag.CategoryFilter == "technical" ? "selected" : "")>Kỹ thuật</option>
+                                <option value="contact" @(ViewBag.CategoryFilter == "contact" ? "selected" : "")>Liên hệ</option>
+                                <option value="general" @(ViewBag.CategoryFilter == "general" ? "selected" : "")>Chung</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-redo me-2"></i>Làm mới
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tickets List -->
+            @if (Model.Any())
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã</th>
+                                        <th>Tiêu đề</th>
+                                        <th>Danh mục</th>
+                                        <th>Mức độ</th>
+                                        <th>Trạng thái</th>
+                                        <th>Phản hồi</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Cập nhật</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in Model)
+                                    {
+                                        var statusBadgeClass = ticket.Status switch
+                                        {
+                                            "Open" => "bg-warning text-dark",
+                                            "InProgress" or "In_Progress" => "bg-info text-white",
+                                            "Resolved" => "bg-success",
+                                            "Closed" => "bg-secondary",
+                                            _ => "bg-light text-dark"
+                                        };
+
+                                        var categoryBadgeClass = ticket.Category?.ToLower() switch
+                                        {
+                                            "order" => "bg-primary",
+                                            "product" => "bg-success",
+                                            "payment" => "bg-danger",
+                                            "account" => "bg-info",
+                                            "refund" => "bg-warning text-dark",
+                                            "technical" => "bg-dark",
+                                            "contact" => "bg-secondary",
+                                            _ => "bg-light text-dark"
+                                        };
+
+                                        var priorityBadgeClass = ticket.Priority?.ToLower() switch
+                                        {
+                                            "urgent" => "bg-danger",
+                                            "high" => "bg-warning text-dark",
+                                            "medium" => "bg-info",
+                                            _ => "bg-secondary"
+                                        };
+
+                                        <tr>
+                                            <td>
+                                                <strong class="text-primary">@ticket.TicketNumber</strong>
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 250px;" title="@ticket.Subject">
+                                                    @ticket.Subject
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge @categoryBadgeClass">
+                                                    @(ticket.Category?.ToLower() switch
+                                                    {
+                                                        "order" => "Đơn hàng",
+                                                        "product" => "Sản phẩm",
+                                                        "payment" => "Thanh toán",
+                                                        "account" => "Tài khoản",
+                                                        "refund" => "Hoàn tiền",
+                                                        "technical" => "Kỹ thuật",
+                                                        "contact" => "Liên hệ",
+                                                        _ => "Chung"
+                                                    })
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @priorityBadgeClass">
+                                                    @(ticket.Priority?.ToLower() switch
+                                                    {
+                                                        "urgent" => "Khẩn cấp",
+                                                        "high" => "Cao",
+                                                        "medium" => "Trung bình",
+                                                        _ => "Thấp"
+                                                    })
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @statusBadgeClass">
+                                                    @(ticket.Status switch
+                                                    {
+                                                        "Open" => "Đang chờ",
+                                                        "InProgress" or "In_Progress" => "Đang xử lý",
+                                                        "Resolved" => "Đã giải quyết",
+                                                        "Closed" => "Đã đóng",
+                                                        _ => ticket.Status
+                                                    })
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (ticket.ReplyCount > 0)
+                                                {
+                                                    <span class="badge bg-light text-dark">
+                                                        <i class="fas fa-comments me-1"></i>
+                                                        @ticket.ReplyCount
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@ticket.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("Details", new { id = ticket.Id })" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Xem
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Chưa có yêu cầu hỗ trợ nào</h5>
+                        <p class="text-muted mb-3">Tạo yêu cầu hỗ trợ đầu tiên của bạn!</p>
+                        <a href="@Url.Action("Create")" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Tạo yêu cầu mới
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+}

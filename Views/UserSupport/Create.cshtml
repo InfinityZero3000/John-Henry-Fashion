@@ -1,0 +1,200 @@
+@model JohnHenryFashionWeb.ViewModels.CreateTicketViewModel
+@{
+    ViewData["Title"] = "Tạo yêu cầu hỗ trợ mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-life-ring me-2"></i>
+                        Tạo yêu cầu hỗ trợ mới
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Category Selection -->
+                        <div class="mb-4">
+                            <label asp-for="Category" class="form-label fw-bold">
+                                <i class="fas fa-tags me-2"></i>Danh mục
+                            </label>
+                            <select asp-for="Category" class="form-select form-select-lg" id="categorySelect">
+                                <option value="general">Chung - Câu hỏi hoặc yêu cầu chung</option>
+                                <option value="order">Đơn hàng - Vấn đề về đơn hàng, giao hàng, tracking</option>
+                                <option value="product">Sản phẩm - Chất lượng, kích cỡ, màu sắc sản phẩm</option>
+                                <option value="payment">Thanh toán - Vấn đề thanh toán, giao dịch</option>
+                                <option value="account">Tài khoản - Đăng nhập, bảo mật, thông tin cá nhân</option>
+                                <option value="refund">Hoàn tiền - Yêu cầu hoàn tiền, đổi trả</option>
+                                <option value="technical">Kỹ thuật - Lỗi website, ứng dụng</option>
+                                <option value="contact">Liên hệ - Câu hỏi khác, feedback</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+
+                        <!-- Related Order (conditional) -->
+                        <div class="mb-4" id="orderSection" style="display: none;">
+                            <label asp-for="RelatedOrderId" class="form-label fw-bold">
+                                <i class="fas fa-shopping-cart me-2"></i>Đơn hàng liên quan (tùy chọn)
+                            </label>
+                            <select asp-for="RelatedOrderId" class="form-select">
+                                <option value="">-- Chọn đơn hàng --</option>
+                                @foreach (var order in ViewBag.Orders)
+                                {
+                                    <option value="@order.Id">
+                                        @order.OrderNumber - @order.OrderDate.ToString("dd/MM/yyyy") - @order.TotalAmount.ToString("N0")đ
+                                    </option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">Chọn đơn hàng nếu yêu cầu liên quan đến đơn hàng cụ thể</small>
+                        </div>
+
+                        <!-- Related Product (conditional) -->
+                        <div class="mb-4" id="productSection" style="display: none;">
+                            <label asp-for="RelatedProductId" class="form-label fw-bold">
+                                <i class="fas fa-box me-2"></i>Sản phẩm liên quan (tùy chọn)
+                            </label>
+                            <select asp-for="RelatedProductId" class="form-select">
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var product in ViewBag.Products)
+                                {
+                                    <option value="@product.Id">@product.Name (@product.SKU)</option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">Chọn sản phẩm nếu yêu cầu liên quan đến sản phẩm cụ thể</small>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="mb-4">
+                            <label asp-for="Priority" class="form-label fw-bold">
+                                <i class="fas fa-exclamation-circle me-2"></i>Mức độ ưu tiên
+                            </label>
+                            <select asp-for="Priority" class="form-select">
+                                <option value="low">Thấp - Câu hỏi chung, không gấp</option>
+                                <option value="medium" selected>Trung bình - Cần giải đáp trong 1-2 ngày</option>
+                                <option value="high">Cao - Vấn đề ảnh hưởng đến đơn hàng</option>
+                                <option value="urgent">Khẩn cấp - Cần xử lý ngay lập tức</option>
+                            </select>
+                            <span asp-validation-for="Priority" class="text-danger"></span>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="mb-4">
+                            <label asp-for="Subject" class="form-label fw-bold">
+                                <i class="fas fa-heading me-2"></i>Tiêu đề
+                            </label>
+                            <input asp-for="Subject" class="form-control form-control-lg" placeholder="Ví dụ: Đơn hàng chưa nhận được sau 5 ngày" maxlength="500" />
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-2"></i>Mô tả chi tiết
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="8" placeholder="Vui lòng mô tả chi tiết vấn đề của bạn. Cung cấp càng nhiều thông tin càng tốt để chúng tôi có thể hỗ trợ hiệu quả.&#10;&#10;Ví dụ:&#10;- Tôi đặt hàng ngày 10/12/2025&#10;- Mã đơn hàng: ORD-20251210-ABC123&#10;- Trạng thái hiện tại: Đang giao hàng&#10;- Vấn đề: Đơn hàng chưa được giao sau 5 ngày làm việc"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Cung cấp thông tin chi tiết giúp chúng tôi hỗ trợ bạn nhanh hơn
+                            </small>
+                        </div>
+
+                        <!-- Attachments -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-paperclip me-2"></i>Đính kèm tài liệu (tùy chọn)
+                            </label>
+                            <input type="file" name="Attachments" class="form-control" multiple accept="image/*,.pdf,.doc,.docx" />
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Hỗ trợ: hình ảnh, PDF, Word. Tối đa 5MB mỗi file.
+                            </small>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="alert alert-info mt-4">
+                <h6 class="alert-heading">
+                    <i class="fas fa-lightbulb me-2"></i>Mẹo để được hỗ trợ nhanh:
+                </h6>
+                <ul class="mb-0">
+                    <li>Cung cấp mã đơn hàng hoặc mã sản phẩm nếu có</li>
+                    <li>Đính kèm ảnh chụp màn hình hoặc hình ảnh liên quan</li>
+                    <li>Mô tả chi tiết vấn đề và các bước đã thử</li>
+                    <li>Chọn mức độ ưu tiên phù hợp với tình huống</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Show/hide related order/product sections based on category
+            $('#categorySelect').change(function() {
+                var category = $(this).val();
+                
+                // Show order section for order, refund categories
+                if (category === 'order' || category === 'refund') {
+                    $('#orderSection').slideDown();
+                } else {
+                    $('#orderSection').slideUp();
+                    $('#RelatedOrderId').val('');
+                }
+                
+                // Show product section for product, refund categories
+                if (category === 'product' || category === 'refund') {
+                    $('#productSection').slideDown();
+                } else {
+                    $('#productSection').slideUp();
+                    $('#RelatedProductId').val('');
+                }
+            });
+
+            // Character counter for subject
+            $('#Subject').on('input', function() {
+                var remaining = 500 - $(this).val().length;
+                var counter = $('#subjectCounter');
+                if (counter.length === 0) {
+                    counter = $('<small id="subjectCounter" class="form-text text-muted"></small>');
+                    $(this).after(counter);
+                }
+                counter.text(remaining + ' ký tự còn lại');
+                
+                if (remaining < 50) {
+                    counter.removeClass('text-muted').addClass('text-warning');
+                } else {
+                    counter.removeClass('text-warning').addClass('text-muted');
+                }
+            });
+
+            // Pre-select if coming from order/product page
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('orderId')) {
+                $('#categorySelect').val('order').trigger('change');
+            } else if (urlParams.has('productId')) {
+                $('#categorySelect').val('product').trigger('change');
+            }
+        });
+    </script>
+}
