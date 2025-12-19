@@ -204,10 +204,36 @@
         <img src="~/images/Uniform/banner-uniform-3.jpg" alt="Banner Uniform 3" class="banner-img">
     </div>
 
-    <!-- Banner 4 -->
-    <div class="banner-section">
+    <!-- Banner 4 with infinite scroll -->
+    <style>
+        .infinite-scroll {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .infinite-scroll .scroll-track {
+            display: flex;
+            width: max-content;
+            animation: marquee 20s linear infinite;
+        }
+
+        .infinite-scroll .scroll-track img {
+            width: 100vw;
+            height: auto;
+            flex-shrink: 0;
+        }
+
+        @@keyframes marquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+    </style>
+    <div class="banner-section infinite-scroll">
         <h2 class="section-title">Khách hàng của UNIFORM PRO</h2>
-        <img src="~/images/Uniform/banner-uniform-4.jpg" alt="Banner Uniform 4" class="banner-img">
+        <div class="scroll-track">
+            <img src="~/images/Uniform/banner-uniform-4.jpg" alt="Banner Uniform 4">
+            <img src="~/images/Uniform/banner-uniform-4.jpg" alt="Banner Uniform 4">
+        </div>
     </div>
 
 
