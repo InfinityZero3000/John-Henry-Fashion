@@ -79,24 +79,24 @@
                             <label class="form-label">Trạng thái</label>
                             <select name="status" class="form-select" onchange="this.form.submit()">
                                 <option value="">Tất cả</option>
-                                <option value="open" @(ViewBag.StatusFilter == "open" ? "selected" : "")>Đang chờ</option>
-                                <option value="inprogress" @(ViewBag.StatusFilter == "inprogress" ? "selected" : "")>Đang xử lý</option>
-                                <option value="resolved" @(ViewBag.StatusFilter == "resolved" ? "selected" : "")>Đã giải quyết</option>
-                                <option value="closed" @(ViewBag.StatusFilter == "closed" ? "selected" : "")>Đã đóng</option>
+                                <option value="open" selected="@(ViewBag.StatusFilter == "open" ? "selected" : null)">Đang chờ</option>
+                                <option value="inprogress" selected="@(ViewBag.StatusFilter == "inprogress" ? "selected" : null)">Đang xử lý</option>
+                                <option value="resolved" selected="@(ViewBag.StatusFilter == "resolved" ? "selected" : null)">Đã giải quyết</option>
+                                <option value="closed" selected="@(ViewBag.StatusFilter == "closed" ? "selected" : null)">Đã đóng</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Danh mục</label>
                             <select name="category" class="form-select" onchange="this.form.submit()">
                                 <option value="">Tất cả</option>
-                                <option value="order" @(ViewBag.CategoryFilter == "order" ? "selected" : "")>Đơn hàng</option>
-                                <option value="product" @(ViewBag.CategoryFilter == "product" ? "selected" : "")>Sản phẩm</option>
-                                <option value="payment" @(ViewBag.CategoryFilter == "payment" ? "selected" : "")>Thanh toán</option>
-                                <option value="account" @(ViewBag.CategoryFilter == "account" ? "selected" : "")>Tài khoản</option>
-                                <option value="refund" @(ViewBag.CategoryFilter == "refund" ? "selected" : "")>Hoàn tiền</option>
-                                <option value="technical" @(ViewBag.CategoryFilter == "technical" ? "selected" : "")>Kỹ thuật</option>
-                                <option value="contact" @(ViewBag.CategoryFilter == "contact" ? "selected" : "")>Liên hệ</option>
-                                <option value="general" @(ViewBag.CategoryFilter == "general" ? "selected" : "")>Chung</option>
+                                <option value="order" selected="@(ViewBag.CategoryFilter == "order" ? "selected" : null)">Đơn hàng</option>
+                                <option value="product" selected="@(ViewBag.CategoryFilter == "product" ? "selected" : null)">Sản phẩm</option>
+                                <option value="payment" selected="@(ViewBag.CategoryFilter == "payment" ? "selected" : null)">Thanh toán</option>
+                                <option value="account" selected="@(ViewBag.CategoryFilter == "account" ? "selected" : null)">Tài khoản</option>
+                                <option value="refund" selected="@(ViewBag.CategoryFilter == "refund" ? "selected" : null)">Hoàn tiền</option>
+                                <option value="technical" selected="@(ViewBag.CategoryFilter == "technical" ? "selected" : null)">Kỹ thuật</option>
+                                <option value="contact" selected="@(ViewBag.CategoryFilter == "contact" ? "selected" : null)">Liên hệ</option>
+                                <option value="general" selected="@(ViewBag.CategoryFilter == "general" ? "selected" : null)">Chung</option>
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
