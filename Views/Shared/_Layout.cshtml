@@ -247,12 +247,11 @@
             max-width: 500px;
             margin: 0 30px;
             position: relative;
-            z-index: 10000; /* Ensure search suggestions appear above header */
+            /* DO NOT set z-index here - it creates stacking context that limits child z-index */
         }
         
         .search-box {
             position: relative;
-            z-index: 1;
         }
         
         .search-box input {
@@ -264,7 +263,6 @@
             transition: all 0.3s ease;
             background-color: #dcddde;
             position: relative;
-            z-index: 1;
         }
         
         .search-box input:focus {
@@ -281,27 +279,25 @@
             z-index: 2;
         }
         
-        /* Search Suggestions Dropdown */
+        /* Search Suggestions Dropdown - Uses position: fixed from z-index-hierarchy.css */
         .search-suggestions {
-            position: absolute !important;
-            left: 0 !important;
-            right: 0 !important;
-            top: calc(100% + 5px) !important;
-            background: #ffffff !important; /* Pure white, no transparency */
-            border: none !important; /* No border */
+            /* position: fixed set in z-index-hierarchy.css - DO NOT override to absolute! */
+            /* left, width, top will be set dynamically by JavaScript */
+            background: #ffffff !important;
+            border: none !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important; /* Softer shadow */
-            z-index: 99999 !important; /* Higher than header (9995) and cart sidebar (9999) */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+            /* z-index: 999999 set in z-index-hierarchy.css */
             max-height: 450px;
             overflow-y: auto;
             opacity: 0;
             visibility: hidden;
             display: block;
             pointer-events: none;
-            backdrop-filter: none !important; /* Remove blur effect */
+            backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-            filter: none !important; /* Remove any filter effects */
-            transform: none !important; /* Remove any transform that creates stacking context */
+            filter: none !important;
+            transform: none !important;
             transition: opacity 0.15s ease, visibility 0.15s ease;
         }
         
@@ -2572,12 +2568,41 @@
             }
             
             function showSuggestions() {
-                // Position handled by CSS, just show with class
+                // Update position for fixed positioning
+                updateSuggestionsPosition();
                 suggestionsDropdown.classList.add('show');
             }
             
             function hideSuggestions() {
                 suggestionsDropdown.classList.remove('show');
+            }
+            
+            function updateSuggestionsPosition() {
+                // Get search box position and size
+                const searchBoxRect = searchInput.getBoundingClientRect();
+                const searchSectionRect = searchForm.getBoundingClientRect();
+                
+                // Set position to align with search box
+                suggestionsDropdown.style.left = searchSectionRect.left + 'px';
+                suggestionsDropdown.style.width = searchSectionRect.width + 'px';
+                suggestionsDropdown.style.top = (searchBoxRect.bottom + 5) + 'px';
+            }
+            
+            // Update position on window resize and scroll
+            if (searchForm && suggestionsDropdown) {
+                let resizeTimeout;
+                const updatePosition = () => {
+                    if (suggestionsDropdown.classList.contains('show')) {
+                        updateSuggestionsPosition();
+                    }
+                };
+                
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(updatePosition, 100);
+                });
+                
+                window.addEventListener('scroll', updatePosition, { passive: true });
             }
             
             function highlightMatch(text, query) {
