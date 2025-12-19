@@ -1803,12 +1803,6 @@ namespace JohnHenryFashionWeb.Controllers
         #endregion
 
         #region Content Management
-        [HttpGet("pages")]
-        public IActionResult Pages()
-        {
-            // Redirect to Blog management as static content is managed there
-            return RedirectToAction("Blog");
-        }
 
         [HttpGet("banners")]
         public async Task<IActionResult> Banners()
@@ -2932,6 +2926,47 @@ namespace JohnHenryFashionWeb.Controllers
             };
                 
             return View(viewModel);
+        }
+
+        [HttpPost("inventory/update")]
+        public async Task<IActionResult> UpdateInventory(Guid productId, int quantityChange, int minStock, int maxStock, string? note)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy sản phẩm";
+                    return RedirectToAction("Inventory");
+                }
+
+                // Update stock quantity
+                product.StockQuantity += quantityChange;
+                
+                // Ensure stock doesn't go negative
+                if (product.StockQuantity < 0)
+                {
+                    TempData["ErrorMessage"] = "Số lượng tồn kho không thể âm";
+                    return RedirectToAction("Inventory");
+                }
+
+                // Update min/max stock
+                product.MinStock = minStock;
+                product.MaxStock = maxStock;
+                product.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Đã cập nhật tồn kho cho sản phẩm {product.Name}. Thay đổi: {(quantityChange > 0 ? "+" : "")}{quantityChange}";
+                
+                return RedirectToAction("Inventory");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating inventory");
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi cập nhật tồn kho";
+                return RedirectToAction("Inventory");
+            }
         }
         
         #endregion
