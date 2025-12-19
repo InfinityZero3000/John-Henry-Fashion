@@ -22,6 +22,13 @@
     var underReviewDisputes = ViewBag.UnderReviewDisputes ?? 0;
     var resolvedDisputes = ViewBag.ResolvedDisputes ?? 0;
     var recentDisputes = ViewBag.RecentDisputes as List<JohnHenryFashionWeb.Models.Dispute> ?? new List<JohnHenryFashionWeb.Models.Dispute>();
+
+    // Contact Tickets từ form liên hệ
+    var totalContactTickets = ViewBag.TotalContactTickets ?? 0;
+    var openContactTickets = ViewBag.OpenContactTickets ?? 0;
+    var inProgressContactTickets = ViewBag.InProgressContactTickets ?? 0;
+    var resolvedContactTickets = ViewBag.ResolvedContactTickets ?? 0;
+    var contactTickets = ViewBag.ContactTickets as List<JohnHenryFashionWeb.Models.SupportTicket> ?? new List<JohnHenryFashionWeb.Models.SupportTicket>();
 }
 
 <div class="admin-content">
@@ -46,13 +53,13 @@
         </div>
     }
 
-    <!-- Statistics Cards -->
-    <div class="admin-stats-grid">
+    <!-- Unified Statistics Cards -->
+    <div class="admin-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
         <div class="admin-stat-card">
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Chờ xử lý</h3>
-                    <p class="value">@openTickets</p>
+                    <p class="value">@(openTickets + openContactTickets)</p>
                     <p class="change">Cần hỗ trợ ngay</p>
                 </div>
                 <div class="admin-stat-card-icon warning">
@@ -65,7 +72,7 @@
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Đang xử lý</h3>
-                    <p class="value">@inProgressTickets</p>
+                    <p class="value">@(inProgressTickets + inProgressContactTickets)</p>
                     <p class="change">Đang được hỗ trợ</p>
                 </div>
                 <div class="admin-stat-card-icon info">
@@ -78,8 +85,8 @@
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
                     <h3>Đã giải quyết</h3>
-                    <p class="value">@resolvedTickets</p>
-                    <p class="change">@((resolvedTickets > 0 ? (resolvedTickets * 100.0 / totalTickets).ToString("F1") : "0"))% tổng số</p>
+                    <p class="value">@(resolvedTickets + resolvedContactTickets)</p>
+                    <p class="change">Hoàn thành</p>
                 </div>
                 <div class="admin-stat-card-icon success">
                     <i data-lucide="check-circle"></i>
@@ -90,13 +97,59 @@
         <div class="admin-stat-card">
             <div class="admin-stat-card-content">
                 <div class="admin-stat-card-info">
-                    <h3>Tổng yêu cầu</h3>
-                    <p class="value">@totalTickets</p>
-                    <p class="change">Tất cả tickets</p>
+                    <h3>Tổng tickets</h3>
+                    <p class="value">@(totalTickets + totalContactTickets)</p>
+                    <p class="change">Tất cả yêu cầu</p>
                 </div>
                 <div class="admin-stat-card-icon primary">
                     <i data-lucide="inbox"></i>
                 </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card" style="border: 2px solid #ffc107;">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>Contact Form</h3>
+                    <p class="value" style="color: #ffc107;">@totalContactTickets</p>
+                    <p class="change">Từ trang liên hệ</p>
+                </div>
+                <div class="admin-stat-card-icon" style="background: #fff3cd; color: #ffc107;">
+                    <i data-lucide="mail"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-stat-card" style="border: 2px solid #0d6efd;">
+            <div class="admin-stat-card-content">
+                <div class="admin-stat-card-info">
+                    <h3>User Portal</h3>
+                    <p class="value" style="color: #0d6efd;">@totalTickets</p>
+                    <p class="change">Từ hệ thống</p>
+                </div>
+                <div class="admin-stat-card-icon" style="background: #cfe2ff; color: #0d6efd;">
+                    <i data-lucide="headphones"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="admin-card" style="margin-top: 2rem; margin-bottom: 0;">
+        <div class="admin-card-body" style="padding: 0;">
+            <div class="ticket-tabs" style="display: flex; border-bottom: 2px solid var(--admin-border); background: var(--admin-bg-secondary);">
+                <button class="ticket-tab active" data-tab="all" style="flex: 1; padding: 1rem; border: none; background: white; font-weight: 600; cursor: pointer; border-bottom: 3px solid var(--admin-primary); transition: all 0.3s;">
+                    <i data-lucide="layers" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+                    Tất cả Tickets (@(totalTickets + totalContactTickets))
+                </button>
+                <button class="ticket-tab" data-tab="contact" style="flex: 1; padding: 1rem; border: none; background: transparent; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                    <i data-lucide="mail" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+                    Contact Form (@totalContactTickets)
+                </button>
+                <button class="ticket-tab" data-tab="system" style="flex: 1; padding: 1rem; border: none; background: transparent; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                    <i data-lucide="headphones" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+                    User Portal (@totalTickets)
+                </button>
             </div>
         </div>
     </div>
