@@ -16,9 +16,9 @@
                     <i data-lucide="ticket"></i>
                     Ticket #@Model.TicketNumber
                 </h1>
-                <p class="admin-page-subtitle">@Model.Subject</p>
+                <p class="admin-page-description" style="margin-top: 0.5rem;">@Model.Subject</p>
             </div>
-            <div class="admin-flex admin-gap-sm">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
                 @{
                     var normalizedStatus = (Model.Status ?? string.Empty).ToLower();
                     var statusClass = normalizedStatus switch
@@ -80,13 +80,13 @@
     }
 
     <!-- Main Content Grid -->
-    <div class="row g-4" style="margin-top: 0.5rem;">
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: var(--spacing-lg); margin-top: var(--spacing-lg);">
         <!-- Left Column - Ticket Details & Description -->
-        <div class="col-lg-8">
+        <div>
             <!-- Ticket Description -->
-            <div class="admin-card" style="margin-bottom: 1.5rem;">
-                <div class="admin-card-header admin-flex-between">
-                    <h3 class="admin-card-title">
+            <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                <div class="admin-card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3 class="admin-card-title" style="margin: 0;">
                         <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
                         Chi tiết yêu cầu
                     </h3>
@@ -96,18 +96,18 @@
                     </button>
                 </div>
                 <div class="admin-card-body">
-                    <div style="white-space: pre-wrap; line-height: 1.8; color: var(--admin-text); font-size: 0.9375rem; padding: 0.5rem 0;">
+                    <div style="white-space: pre-wrap; line-height: 1.6; color: var(--admin-text); font-size: 0.9375rem;">
                         @Model.Description
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.AttachmentUrls))
                     {
-                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--admin-border);">
-                            <strong style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; color: var(--admin-text); font-size: 0.9375rem; font-weight: 600;">
+                        <div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--admin-border);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: var(--spacing-md); color: var(--admin-text); font-size: 0.875rem; font-weight: 600;">
                                 <i data-lucide="paperclip" style="width:16px;height:16px"></i>
                                 Tệp đính kèm
-                            </strong>
-                            <div class="admin-flex admin-gap-sm" style="flex-wrap: wrap;">
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 @foreach (var url in Model.AttachmentUrls.Split(','))
                                 {
                                     var fileName = url.Split('/').LastOrDefault() ?? "Attachment";
@@ -125,80 +125,78 @@
             <!-- Conversation / Replies -->
             <div class="admin-card">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title">
+                    <h3 class="admin-card-title" style="margin: 0;">
                         <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
                         Lịch sử phản hồi
                         @if (Model.Replies != null && Model.Replies.Any())
                         {
-                            <span class="admin-badge admin-badge-info" style="margin-left:0.5rem;">@Model.Replies.Count phản hồi</span>
+                            <span class="admin-badge admin-badge-info" style="margin-left: 0.5rem;">@Model.Replies.Count</span>
                         }
                     </h3>
                 </div>
                 <div class="admin-card-body">
                     @if (Model.Replies != null && Model.Replies.Any())
                     {
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
                             @foreach (var reply in Model.Replies.OrderBy(r => r.CreatedAt))
                             {
-                                <div style="background: @(reply.IsInternal ? "#fffbf0" : "var(--admin-bg)"); 
-                                            padding: 1.25rem; 
-                                            border-radius: 10px; 
-                                            border-left: 4px solid @(reply.IsInternal ? "#ffc107" : "var(--admin-primary)");
-                                            box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
-                                    <div class="admin-flex-between" style="margin-bottom: 0.75rem;">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <div style="width: 38px; height: 38px; border-radius: 50%; background: @(reply.IsInternal ? "#ffc107" : "var(--admin-primary)"); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9375rem; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+                                <div style="background: @(reply.IsInternal ? "var(--status-warning-bg)" : "var(--admin-bg-secondary)"); 
+                                            padding: var(--spacing-lg); 
+                                            border-radius: var(--radius-md); 
+                                            border-left: 3px solid @(reply.IsInternal ? "var(--status-warning)" : "var(--admin-primary)");">
+                                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                                        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                            <div style="width: 36px; height: 36px; border-radius: 50%; background: @(reply.IsInternal ? "var(--status-warning)" : "var(--admin-primary)"); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
                                                 @(reply.User?.FullName?.Substring(0, 1).ToUpper() ?? "?")
                                             </div>
                                             <div>
-                                                <strong style="color: var(--admin-text); display: block; font-size: 0.9375rem; margin-bottom: 0.25rem;">
+                                                <div style="color: var(--admin-text); font-weight: 500; font-size: 0.875rem;">
                                                     @(reply.User?.FullName ?? reply.User?.Email ?? "Unknown")
-                                                </strong>
+                                                </div>
                                                 @if (reply.IsInternal)
                                                 {
-                                                    <span class="admin-badge admin-badge-warning" style="font-size: 0.75rem;">
-                                                        <i data-lucide="lock" style="width:11px;height:11px"></i> Internal Note
+                                                    <span class="admin-badge admin-badge-warning" style="font-size: 0.75rem; margin-top: 0.25rem;">
+                                                        <i data-lucide="lock" style="width:10px;height:10px"></i> Internal
                                                     </span>
                                                 }
                                             </div>
                                         </div>
                                         <div style="text-align: right;">
-                                            <small style="color: var(--admin-text-light); font-size: 0.8125rem; display: block; font-weight: 500;">@reply.CreatedAt.ToString("dd/MM/yyyy")</small>
-                                            <small style="color: var(--admin-text-secondary); font-size: 0.75rem;">@reply.CreatedAt.ToString("HH:mm")</small>
+                                            <div style="color: var(--admin-text-light); font-size: 0.75rem;">@reply.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                            <div style="color: var(--admin-text-muted); font-size: 0.75rem;">@reply.CreatedAt.ToString("HH:mm")</div>
                                         </div>
                                     </div>
-                                    <div style="color: var(--admin-text); white-space: pre-wrap; line-height: 1.7; font-size: 0.9375rem; margin-left: 48px; padding: 0.5rem 0;">@reply.Message</div>
+                                    <div style="color: var(--admin-text); white-space: pre-wrap; line-height: 1.6; font-size: 0.875rem; margin-left: 44px;">@reply.Message</div>
                                 </div>
                             }
                         </div>
                     }
                     else
                     {
-                        <div class="admin-text-center" style="padding: 2rem; color: var(--admin-text-light);">
-                            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 0.75rem; opacity: 0.5;"></i>
+                        <div style="text-align: center; padding: 3rem 1rem; color: var(--admin-text-muted);">
+                            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: var(--spacing-md); opacity: 0.3;"></i>
                             <p style="margin: 0; font-size: 0.875rem;">Chưa có phản hồi nào</p>
                         </div>
                     }
 
                     <!-- Reply Form -->
                     <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--admin-border); background: var(--admin-bg); padding: 1.5rem; border-radius: 8px; margin-left: -1rem; margin-right: -1rem; margin-bottom: -1rem;">
-                        <h4 style="margin-bottom: 1rem; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--admin-text); font-weight: 600;">
-                            <i data-lucide="send" style="width:18px;height:18px"></i>
+                        <h4 style="margin-bovar(--spacing-xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--admin-border);">
+                        <h4 style="margin-bottom: var(--spacing-md); font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem; color: var(--admin-text); font-weight: 600;">
+                            <i data-lucide="send" style="width:16px;height:16px"></i>
                             Trả lời ticket
                         </h4>
                         <form method="post" asp-action="ReplyTicket" asp-route-id="@Model.Id">
                             @Html.AntiForgeryToken()
-                            <div class="admin-form-group" style="margin-bottom: 1rem;">
+                            <div class="admin-form-group">
                                 <label class="admin-form-label">Nội dung phản hồi</label>
                                 <textarea name="message" class="admin-form-control" rows="5" 
-                                          placeholder="Nhập nội dung trả lời cho khách hàng..." required
-                                          style="resize: vertical;"></textarea>
+                                          placeholder="Nhập nội dung trả lời cho khách hàng..." required></textarea>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 0.75rem; background: #fffbf0; border-radius: 6px; border: 1px solid #ffc107;">
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--status-warning-bg); border-radius: var(--radius-sm); border: 1px solid var(--status-warning);">
                                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin: 0;">
-                                    <input type="checkbox" name="isInternal" style="width: 18px; height: 18px; cursor: pointer;">
-                                    <span style="color: var(--admin-text); font-size: 0.875rem; display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
-                                        <i data-lucide="lock" style="width:14px;height:14px"></i>
+                                    <input type="checkbox" name="isInternal" style="width: 16px; height: 16px; cursor: pointer;">
+                                    <span style="color: var(--admin-text); font-size: 0.875rem; display: flex; align-items: center; gap: 0.375rem
                                         Internal Note (chỉ admin xem được)
                                     </span>
                                 </label>
@@ -214,28 +212,28 @@
         </div>
 
         <!-- Right Column - Info & Actions -->
-        <div class="col-lg-4">
-            <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <div>
+            <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title">
+                    <h3 class="admin-card-title" style="margin: 0;">
                         <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                         Thông tin ticket
                     </h3>
                 </div>
-                <div class="admin-card-body">
+                <div class="admin-card-body" style="padding: 0;">
                     <table class="admin-info-table">
                         <tr>
-                            <td width="120">
-                                <div class="d-flex align-items-center gap-2">
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.375rem;">
                                     <i data-lucide="user" style="width: 14px; height: 14px;"></i>
-                                    <strong>Khách hàng</strong>
+                                    <span>Khách hàng</span>
                                 </div>
                             </td>
                             <td>
                                 @if (Model.User != null)
                                 {
-                                    <div style="font-weight: 600;">@Model.User.FullName</div>
-                                    <small class="text-muted">@Model.User.Email</small>
+                                    <div style="font-weight: 500;">@Model.User.FullName</div>
+                                    <div style="color: var(--admin-text-muted); font-size: 0.8125rem; margin-top: 0.125rem;">@Model.User.Email</div>
                                 }
                                 else
                                 {
@@ -245,9 +243,9 @@
                         </tr>
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
+                                <div style="display: flex; align-items: center; gap: 0.375rem;">
                                     <i data-lucide="tag" style="width: 14px; height: 14px;"></i>
-                                    <strong>Danh mục</strong>
+                                    <span>Danh mục</span>
                                 </div>
                             </td>
                             <td>
@@ -266,16 +264,16 @@
                         </tr>
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
+                                <div style="display: flex; align-items: center; gap: 0.375rem;">
                                     <i data-lucide="user-check" style="width: 14px; height: 14px;"></i>
-                                    <strong>Người phụ trách</strong>
+                                    <span>Người phụ trách</span>
                                 </div>
                             </td>
                             <td>
                                 @if (Model.AssignedAdmin != null)
                                 {
-                                    <div style="font-weight: 600;">@Model.AssignedAdmin.FullName</div>
-                                    <small class="text-muted">@Model.AssignedAdmin.Email</small>
+                                    <div style="font-weight: 500;">@Model.AssignedAdmin.FullName</div>
+                                    <div style="color: var(--admin-text-muted); font-size: 0.8125rem; margin-top: 0.125rem;">@Model.AssignedAdmin.Email</div>
                                 }
                                 else
                                 {
@@ -285,9 +283,9 @@
                         </tr>
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
+                                <div style="display: flex; align-items: center; gap: 0.375rem;">
                                     <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
-                                    <strong>Ngày tạo</strong>
+                                    <span>Ngày tạo</span>
                                 </div>
                             </td>
                             <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
@@ -296,39 +294,39 @@
                         {
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
                                         <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
-                                        <strong>Đã giải quyết</strong>
+                                        <span>Đã giải quyết</span>
                                     </div>
                                 </td>
-                                <td class="text-success">@Model.ResolvedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td style="color: var(--status-success);">@Model.ResolvedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
                             </tr>
                         }
                         @if (Model.ClosedAt.HasValue)
                         {
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
                                         <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
-                                        <strong>Đã đóng</strong>
+                                        <span>Đã đóng</span>
                                     </div>
                                 </td>
-                                <td class="text-muted">@Model.ClosedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td style="color: var(--admin-text-muted);">@Model.ClosedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
                             </tr>
                         }
                         @if (Model.RelatedOrderId.HasValue && Model.RelatedOrder != null)
                         {
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
                                         <i data-lucide="shopping-bag" style="width: 14px; height: 14px;"></i>
-                                        <strong>Đơn hàng</strong>
+                                        <span>Đơn hàng</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="@Url.Action("OrderDetails", "Admin", new { id = Model.RelatedOrderId })" class="admin-link fw-semibold">
+                                    <a href="@Url.Action("OrderDetails", "Admin", new { id = Model.RelatedOrderId })" style="color: var(--admin-primary); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
                                         #@Model.RelatedOrder.OrderNumber
-                                        <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                                        <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -337,15 +335,15 @@
                         {
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
                                         <i data-lucide="box" style="width: 14px; height: 14px;"></i>
-                                        <strong>Sản phẩm</strong>
+                                        <span>Sản phẩm</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="@Url.Action("Edit", "Products", new { id = Model.RelatedProductId })" class="admin-link fw-semibold">
+                                    <a href="@Url.Action("Edit", "Products", new { id = Model.RelatedProductId })" style="color: var(--admin-primary); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
                                         @Model.RelatedProduct.Name
-                                        <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                                        <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -354,13 +352,11 @@
                 </div>
             </div>
 
-            <!-- THAO TÁC -->
             @if (Model.AssignedTo == null)
             {
-                <h6 class="admin-section-title mb-3 mt-4">PHÂN CÔNG</h6>
-                <div class="admin-card" style="margin-bottom: 1.5rem;">
+                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
                     <div class="admin-card-header">
-                        <h3 class="admin-card-title">
+                        <h3 class="admin-card-title" style="margin: 0;">
                             <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
                             Phân công ticket
                         </h3>
@@ -390,9 +386,9 @@
                 </div>
             }
 
-            <div class="admin-card" style="margin-bottom: 1.5rem;">
+            <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title">
+                    <h3 class="admin-card-title" style="margin: 0;">
                         <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
                         Cập nhật trạng thái
                     </h3>
@@ -411,7 +407,7 @@
                         </div>
                         <button type="submit" class="admin-btn admin-btn-success" style="width: 100%; justify-content: center;">
                             <i data-lucide="save"></i>
-                            Cập nhật Status
+                            Cập nhật
                         </button>
                     </form>
                 </div>
@@ -419,7 +415,7 @@
 
             <div class="admin-card">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title">
+                    <h3 class="admin-card-title" style="margin: 0;">
                         <i data-lucide="flag" style="width: 16px; height: 16px;"></i>
                         Cập nhật độ ưu tiên
                     </h3>
@@ -438,7 +434,7 @@
                         </div>
                         <button type="submit" class="admin-btn admin-btn-warning" style="width: 100%; justify-content: center;">
                             <i data-lucide="save"></i>
-                            Cập nhật Priority
+                            Cập nhật
                         </button>
                     </form>
                 </div>
