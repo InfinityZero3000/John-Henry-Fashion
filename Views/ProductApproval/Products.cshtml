@@ -235,27 +235,29 @@
                                         <span style="color: #4b5563;">@product.ViewCount</span>
                                     </td>
                                     <td class="actions">
-                                        <a href="/admin/approvals/products/@product.Id" class="admin-btn admin-btn-sm admin-btn-primary" title="Xem chi tiết">
-                                            <i data-lucide="eye"></i>
-                                            Xem
-                                        </a>
-                                        @if (product.Status != "active" && product.IsActive == false)
-                                        {
-                                            <form method="post" action="/admin/approvals/products/@product.Id/activate" style="display: inline; margin: 0;">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="admin-btn admin-btn-sm admin-btn-success" title="Kích hoạt">
-                                                    <i data-lucide="check"></i>
-                                                    Kích hoạt
+                                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                            <a href="/admin/approvals/products/@product.Id" class="admin-btn admin-btn-sm admin-btn-primary" title="Xem chi tiết">
+                                                <i data-lucide="eye"></i>
+                                            </a>
+                                            <a href="/admin/products/edit/@product.Id" class="admin-btn admin-btn-sm admin-btn-secondary" title="Chỉnh sửa">
+                                                <i data-lucide="edit"></i>
+                                            </a>
+                                            @if (product.Status != "active" && product.IsActive == false)
+                                            {
+                                                <form method="post" action="/admin/approvals/products/@product.Id/activate" style="display: inline; margin: 0;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="admin-btn admin-btn-sm admin-btn-success" title="Kích hoạt">
+                                                        <i data-lucide="check"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            @if (product.Status == "active" && product.IsActive == true)
+                                            {
+                                                <button type="button" class="admin-btn admin-btn-sm admin-btn-danger" onclick="showDeactivateModal(@product.Id, '@product.Name')" title="Vô hiệu hóa">
+                                                    <i data-lucide="ban"></i>
                                                 </button>
-                                            </form>
-                                        }
-                                        @if (product.Status == "active" && product.IsActive == true)
-                                        {
-                                            <button type="button" class="admin-btn admin-btn-sm admin-btn-danger" onclick="showDeactivateModal(@product.Id, '@product.Name')" title="Vô hiệu hóa">
-                                                <i data-lucide="ban"></i>
-                                                Vô hiệu hóa
-                                            </button>
-                                        }
+                                            }
+                                        </div>
                                     </td>
                                 </tr>
                             }

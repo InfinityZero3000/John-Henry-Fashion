@@ -229,10 +229,14 @@
                                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                     <a href="/admin/products/edit/@item.ProductId" class="admin-btn admin-btn-sm admin-btn-secondary" title="Chỉnh sửa">
                                         <i data-lucide="edit"></i>
+                                        Sửa
                                     </a>
-                                    <a href="/products/@item.ProductId" target="_blank" class="admin-btn admin-btn-sm admin-btn-secondary" title="Xem sản phẩm">
-                                        <i data-lucide="eye"></i>
-                                    </a>
+                                    <button type="button" class="admin-btn admin-btn-sm admin-btn-secondary" 
+                                            onclick="openInventoryModal('@item.ProductId', '@item.ProductName', @item.CurrentStock, @item.MinStock, @item.MaxStock)" 
+                                            title="Cập nhật tồn kho">
+                                        <i data-lucide="package"></i>
+                                        Tồn kho
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -319,10 +323,107 @@
     }
 </div>
 
+<!-- Update Inventory Modal -->
+<div class="modal fade" id="updateInventoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-lucide="package"></i>
+                    Cập nhật tồn kho
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/admin/inventory/update">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" id="modal-product-id">
+                <div class="modal-body">
+                    <div style="background: var(--admin-bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+                        <div style="font-weight: 500; color: var(--admin-text); margin-bottom: 0.25rem;">Sản phẩm</div>
+                        <div id="modal-product-name" style="font-size: 0.875rem; color: var(--admin-text-light);"></div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">
+                            <i data-lucide="box" style="width: 14px; height: 14px;"></i>
+                            Số lượng hiện tại
+                        </label>
+                        <input type="number" id="modal-current-stock" class="admin-form-control" readonly style="background: var(--admin-bg-secondary);">
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">
+                            <i data-lucide="plus-circle" style="width: 14px; height: 14px;"></i>
+                            Số lượng thay đổi
+                        </label>
+                        <input type="number" name="quantityChange" class="admin-form-control" placeholder="Nhập số dương để thêm, số âm để giảm" required>
+                        <small style="color: var(--admin-text-light); display: block; margin-top: 0.25rem;">
+                            Ví dụ: +50 để nhập thêm hàng, -10 để giảm tồn kho
+                        </small>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">
+                                <i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i>
+                                Tồn kho tối thiểu
+                            </label>
+                            <input type="number" name="minStock" id="modal-min-stock" class="admin-form-control" required>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">
+                                <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                                Tồn kho tối đa
+                            </label>
+                            <input type="number" name="maxStock" id="modal-max-stock" class="admin-form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">
+                            <i data-lucide="message-square" style="width: 14px; height: 14px;"></i>
+                            Ghi chú
+                        </label>
+                        <textarea name="note" class="admin-form-control" rows="3" placeholder="Lý do thay đổi tồn kho..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="admin-btn admin-btn-secondary" data-bs-dismiss="modal">
+                        <i data-lucide="x"></i>
+                        Hủy
+                    </button>
+                    <button type="submit" class="admin-btn admin-btn-primary">
+                        <i data-lucide="save"></i>
+                        Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // Open inventory update modal
+        function openInventoryModal(productId, productName, currentStock, minStock, maxStock) {
+            document.getElementById('modal-product-id').value = productId;
+            document.getElementById('modal-product-name').textContent = productName;
+            document.getElementById('modal-current-stock').value = currentStock;
+            document.getElementById('modal-min-stock').value = minStock;
+            document.getElementById('modal-max-stock').value = maxStock;
+            
+            const modal = new bootstrap.Modal(document.getElementById('updateInventoryModal'));
+            modal.show();
+        }
+
+        // Reinitialize icons after modal shown
+        document.getElementById('updateInventoryModal')?.addEventListener('shown.bs.modal', function() {
+            lucide.createIcons();
+        });
 
         // Highlight low stock items
         document.addEventListener('DOMContentLoaded', function() {
