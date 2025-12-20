@@ -81,13 +81,13 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">
-                        <i class="fas fa-bell me-2"></i>
+                        <i data-lucide="bell" class="me-2"></i>
                         Thông báo
                     </h4>
                     @if (Model.Notifications.Any(n => !n.IsRead))
                     {
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="markAllAsRead()">
-                            <i class="fas fa-check-double me-1"></i>
+                            <i data-lucide="check-check" class="me-1"></i>
                             Đánh dấu tất cả đã đọc
                         </button>
                     }
@@ -103,19 +103,25 @@
                                         @switch (notification.Type.ToLower())
                                         {
                                             case "order":
-                                                <i class="fas fa-shopping-bag text-primary"></i>
+                                                <i data-lucide="shopping-bag" class="text-primary"></i>
                                                 break;
                                             case "product":
-                                                <i class="fas fa-box text-success"></i>
+                                                <i data-lucide="package" class="text-success"></i>
                                                 break;
                                             case "system":
-                                                <i class="fas fa-cogs text-warning"></i>
+                                                <i data-lucide="settings" class="text-warning"></i>
                                                 break;
                                             case "welcome":
-                                                <i class="fas fa-hand-wave text-info"></i>
+                                                <i data-lucide="hand-wave" class="text-info"></i>
+                                                break;
+                                            case "payment":
+                                                <i data-lucide="credit-card" class="text-danger"></i>
+                                                break;
+                                            case "info":
+                                                <i data-lucide="info" class="text-info"></i>
                                                 break;
                                             default:
-                                                <i class="fas fa-bell text-secondary"></i>
+                                                <i data-lucide="bell" class="text-secondary"></i>
                                                 break;
                                         }
                                     </div>
@@ -137,13 +143,13 @@
                                                 {
                                                     <button type="button" class="btn btn-sm btn-outline-primary" 
                                                             onclick="markAsRead(@notification.Id)">
-                                                        <i class="fas fa-check"></i>
+                                                        <i data-lucide="check"></i>
                                                     </button>
                                                 }
                                                 @if (!string.IsNullOrEmpty(notification.ActionUrl))
                                                 {
                                                     <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary">
-                                                        <i class="fas fa-external-link-alt"></i>
+                                                        <i data-lucide="external-link"></i>
                                                     </a>
                                                 }
                                             </div>
@@ -167,7 +173,7 @@
                                     {
                                         <li class="page-item">
                                             <a class="page-link" href="@Url.Action("Notifications", new { page = Model.CurrentPage - 1 })">
-                                                <i class="fas fa-chevron-left"></i>
+                                                <i data-lucide="chevron-left"></i>
                                             </a>
                                         </li>
                                     }
@@ -183,7 +189,7 @@
                                     {
                                         <li class="page-item">
                                             <a class="page-link" href="@Url.Action("Notifications", new { page = Model.CurrentPage + 1 })">
-                                                <i class="fas fa-chevron-right"></i>
+                                                <i data-lucide="chevron-right"></i>
                                             </a>
                                         </li>
                                     }
@@ -194,7 +200,7 @@
                     else
                     {
                         <div class="text-center py-5">
-                            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                            <i data-lucide="bell-off" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
                             <h4>Không có thông báo</h4>
                             <p class="text-muted">Bạn chưa có thông báo nào.</p>
                         </div>
@@ -453,6 +459,11 @@ footer {
             .catch(error => {
                 console.error('Error marking all notifications as read:', error);
             });
+        }
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
         }
     </script>
 }

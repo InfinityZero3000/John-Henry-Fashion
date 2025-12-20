@@ -433,7 +433,7 @@
             transform: translateY(-2px);
         }
         
-        .cart-badge, .wishlist-badge {
+        .cart-badge, .wishlist-badge, .notification-badge {
             position: absolute;
             top: -8px;
             right: -8px;
@@ -449,12 +449,16 @@
             font-weight: bold;
         }
 
-        .cart-badge.show, .wishlist-badge.show {
+        .cart-badge.show, .wishlist-badge.show, .notification-badge.show {
             display: flex; /* Show when has items */
         }
         
         .wishlist-badge {
             background: #951329;
+        }
+        
+        .notification-badge {
+            background: #dc3545;
         }
         
         /* Account Dropdown Styles */
@@ -1252,6 +1256,14 @@
                         <i data-lucide="map-pin"></i>
                     </a>
                     
+                    @if (User?.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="@Url.Action("Notifications", "UserDashboard")" class="header-icon" title="Thông báo" id="notification-icon">
+                            <i data-lucide="bell"></i>
+                            <span class="notification-badge notification-count" style="display: none;">0</span>
+                        </a>
+                    }
+                    
                     <!-- Account Icon -->
                     @if (User?.Identity?.IsAuthenticated == true)
                     {
@@ -1783,6 +1795,33 @@
             });
         }
         
+        // Update notification count display
+        function updateNotificationCount(count) {
+            const notificationCount = typeof count === 'object' ? (count.count || 0) : (count || 0);
+            
+            const notificationElements = document.querySelectorAll('.notification-count');
+            notificationElements.forEach(element => {
+                element.textContent = notificationCount;
+                if (notificationCount > 0) {
+                    element.classList.add('show');
+                } else {
+                    element.classList.remove('show');
+                }
+            });
+        }
+        
+        // Load notification count
+        function loadNotificationCount() {
+            fetch('/api/Notifications/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateNotificationCount(data.count);
+                    }
+                })
+                .catch(error => console.error('Error loading notification count:', error));
+        }
+        
         // Cart Sidebar Functions
         function openCartSidebar() {
             console.log('openCartSidebar called - loading cart data...');
@@ -2215,6 +2254,8 @@
         // Make functions globally available
         window.updateCartCount = updateCartCount;
         window.updateWishlistCount = updateWishlistCount;
+        window.updateNotificationCount = updateNotificationCount;
+        window.loadNotificationCount = loadNotificationCount;
         window.openCartSidebar = openCartSidebar;
         window.loadAndOpenCartSidebar = loadAndOpenCartSidebar;
         window.refreshCartSidebar = refreshCartSidebar;
@@ -2224,6 +2265,14 @@
         document.addEventListener("DOMContentLoaded", function() {
             // Load initial counts
             loadCounts();
+            
+            // Load notification count for authenticated users
+            const isAuthenticated = document.querySelector('.user-authenticated');
+            if (isAuthenticated) {
+                loadNotificationCount();
+                // Reload notification count every 30 seconds
+                setInterval(loadNotificationCount, 30000);
+            }
             
             // Cart icon click event
             const cartIcon = document.getElementById('cart-icon');

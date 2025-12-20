@@ -690,6 +690,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/VNPay/Return
         public async Task<IActionResult> VNPayReturn()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 // Handle VNPay return
@@ -732,7 +733,6 @@ namespace JohnHenryFashionWeb.Controllers
                         _context.Payments.Add(payment);
                         
                         // Clear cart if not already cleared
-                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (!string.IsNullOrEmpty(userId))
                         {
                             var cartItems = await _context.ShoppingCartItems
@@ -755,13 +755,32 @@ namespace JohnHenryFashionWeb.Controllers
                     }
                 }
 
-                TempData["Error"] = "Thanh toán không thành công. Vui lòng thử lại.";
+                // Create notification instead of TempData for payment failure
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        userId,
+                        "Thanh toán không thành công",
+                        "Thanh toán VNPay không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.",
+                        "payment",
+                        "/Payment/Checkout"
+                    );
+                }
                 return RedirectToAction("Checkout");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing VNPay return");
-                TempData["Error"] = "Có lỗi xảy ra khi xử lý thanh toán.";
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        userId,
+                        "Lỗi thanh toán",
+                        "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.",
+                        "error",
+                        "/Payment/Checkout"
+                    );
+                }
                 return RedirectToAction("Checkout");
             }
         }
@@ -803,6 +822,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/MoMo/Return
         public async Task<IActionResult> MoMoReturn()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 // Handle MoMo return
@@ -851,7 +871,6 @@ namespace JohnHenryFashionWeb.Controllers
                         _context.Payments.Add(payment);
                         
                         // Clear cart if not already cleared
-                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (!string.IsNullOrEmpty(userId))
                         {
                             var cartItems = await _context.ShoppingCartItems
@@ -874,13 +893,32 @@ namespace JohnHenryFashionWeb.Controllers
                     }
                 }
 
-                TempData["Error"] = "Thanh toán không thành công. Vui lòng thử lại.";
+                // Create notification instead of TempData for payment failure
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        userId,
+                        "Thanh toán không thành công",
+                        "Thanh toán MoMo không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.",
+                        "payment",
+                        "/Payment/Checkout"
+                    );
+                }
                 return RedirectToAction("Checkout");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing MoMo return");
-                TempData["Error"] = "Có lỗi xảy ra khi xử lý thanh toán.";
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        userId,
+                        "Lỗi thanh toán",
+                        "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.",
+                        "error",
+                        "/Payment/Checkout"
+                    );
+                }
                 return RedirectToAction("Checkout");
             }
         }

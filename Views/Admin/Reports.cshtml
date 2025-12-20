@@ -703,15 +703,7 @@
                         bodyFont: { size: 13 },
          
 
-        function printReport() {
-            console.log('Printing report');
-            window.print();
-        }
-
-        function exportTabData(tabName) {
-            console.log('Exporting tab data:', tabName);
-            alert('Xuất dữ liệu ' + tabName + ' sẽ được phát triển sau.');
-        }               callbacks: {
+                        callbacks: {
                             label: function(context) {
                                 return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN', { 
                                     style: 'currency', 
@@ -794,6 +786,16 @@
         function scheduleReport() {
             console.log('Scheduling report');
             alert('Chức năng lập lịch báo cáo sẽ được phát triển sau.');
+        }
+
+        function printReport() {
+            console.log('Printing report');
+            window.print();
+        }
+
+        function exportTabData(tabName) {
+            console.log('Exporting tab data:', tabName);
+            alert('Xuất dữ liệu ' + tabName + ' sẽ được phát triển sau.');
         }
     </script>
 }
