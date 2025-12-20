@@ -314,7 +314,7 @@ namespace JohnHenryFashionWeb.Controllers
         /// <summary>
         /// Chi tiết sản phẩm để phê duyệt
         /// </summary>
-        [HttpGet("product/{id}")]
+        [HttpGet("products/{id}")]
         public async Task<IActionResult> ProductDetails(Guid id)
         {
             var product = await _context.Products
@@ -333,7 +333,7 @@ namespace JohnHenryFashionWeb.Controllers
         /// <summary>
         /// Kích hoạt sản phẩm
         /// </summary>
-        [HttpPost("product/{id}/activate")]
+        [HttpPost("products/{id}/activate")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActivateProduct(Guid id)
         {
@@ -358,7 +358,7 @@ namespace JohnHenryFashionWeb.Controllers
         /// <summary>
         /// Vô hiệu hóa sản phẩm
         /// </summary>
-        [HttpPost("product/{id}/deactivate")]
+        [HttpPost("products/{id}/deactivate")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeactivateProduct(Guid id, string? reason)
         {

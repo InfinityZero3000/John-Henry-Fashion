@@ -469,18 +469,18 @@
             // Debug modal - ensure it's properly initialized
             const sizeGuideModal = document.getElementById('sizeGuideModal');
             if (sizeGuideModal) {
-                console.log('✅ Size Guide Modal found');
+                console.log('Size Guide Modal found');
                 console.log('Modal HTML:', sizeGuideModal.outerHTML.substring(0, 200));
                 
                 // Add event listeners to debug
                 sizeGuideModal.addEventListener('show.bs.modal', function(e) {
-                    console.log('🔵 Modal is opening');
+                    console.log('Modal is opening');
                     console.log('Modal display:', window.getComputedStyle(this).display);
                     console.log('Modal z-index:', window.getComputedStyle(this).zIndex);
                 });
                 
                 sizeGuideModal.addEventListener('shown.bs.modal', function() {
-                    console.log('✅ Modal is fully shown');
+                    console.log('Modal is fully shown');
                     console.log('Modal classes:', this.className);
                     console.log('Modal position:', this.getBoundingClientRect());
                     
@@ -493,7 +493,7 @@
                 });
                 
                 sizeGuideModal.addEventListener('hide.bs.modal', function() {
-                    console.log('🔴 Modal is closing');
+                    console.log('Modal is closing');
                 });
                 
                 // Check backdrop
@@ -502,7 +502,7 @@
                     console.log('Number of backdrops:', backdrops.length);
                 }, 100);
             } else {
-                console.error('❌ Size Guide Modal NOT found!');
+                console.error('Size Guide Modal NOT found!');
             }
         });
 

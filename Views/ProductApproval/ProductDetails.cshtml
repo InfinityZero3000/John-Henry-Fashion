@@ -3,11 +3,6 @@
     ViewData["Title"] = "Product Details - " + Model.Name;
     Layout = "_AdminLayout";
     ViewData["CurrentSection"] = "ProductApproval";
-    ViewData["Breadcrumb"] = new List<(string Text, string Url)>
-    {
-        ("Product Approval", "/admin/approvals/products"),
-        ("Product Details", "")
-    };
 }
 
 <style>
@@ -57,14 +52,14 @@
 <div class="admin-page-header">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <a href="/admin/approvals/products" class="admin-link" style="text-decoration: none; margin-bottom: 0.5rem; display: inline-block;">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                Back to Products
-            </a>
             <h1 class="admin-page-title">@Model.Name</h1>
             <p style="color: #6b7280; margin: 0;">Product #@Model.Id</p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
+            <a href="/admin/approvals/products" class="admin-btn admin-btn-secondary" title="Quay lại danh sách">
+                <i data-lucide="arrow-left"></i>
+                Quay lại
+            </a>
             <a href="/admin/products/edit/@Model.Id" class="admin-btn admin-btn-secondary" title="Chỉnh sửa sản phẩm">
                 <i data-lucide="edit"></i>
                 Chỉnh sửa
@@ -175,10 +170,13 @@
                 <span class="info-value">@Model.Category?.Name</span>
             </div>
 
-            <div class="info-row">
-                <span class="info-label">Brand</span>
-                <span class="info-value">@Model.Brand?.Name</span>
-            </div>
+            @if (!string.IsNullOrEmpty(Model.Brand?.Name))
+            {
+                <div class="info-row">
+                    <span class="info-label">Brand</span>
+                    <span class="info-value">@Model.Brand.Name</span>
+                </div>
+            }
 
             <div class="info-row">
                 <span class="info-label">Price</span>
