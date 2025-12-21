@@ -1,0 +1,255 @@
+@using JohnHenryFashionWeb.Models
+@{
+    var seller = ViewBag.Seller as ApplicationUser;
+    var sellerId = ViewBag.SellerId as string;
+    var allPermissions = ViewBag.AllPermissions as Dictionary<string, List<PermissionInfo>> ?? new Dictionary<string, List<PermissionInfo>>();
+    var userPermissions = ViewBag.UserPermissions as List<string> ?? new List<string>();
+    
+    ViewData["Title"] = $"Quản lý quyền - {seller?.FirstName} {seller?.LastName}";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-content">
+    <!-- Header Section -->
+    <div class="admin-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Sellers", "Admin")">Người bán</a></li>
+                        <li class="breadcrumb-item active">Quản lý quyền</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-key me-2"></i>Quản lý quyền - @seller?.FirstName @seller?.LastName
+                </h1>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Sellers", "Admin")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Quay lại
+                </a>
+                <button type="button" class="btn btn-primary" onclick="savePermissions(this)">
+                    <i class="fas fa-save me-1"></i>Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Seller Info Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="card-title mb-3">Thông tin người bán</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Họ tên:</strong> @seller?.FirstName @seller?.LastName</p>
+                                <p class="mb-2"><strong>Email:</strong> @seller?.Email</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Số điện thoại:</strong> @(seller?.PhoneNumber ?? "Chưa cung cấp")</p>
+                                <p class="mb-2"><strong>ID:</strong> <code>@sellerId</code></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="quick-actions">
+                            <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="selectAll()">
+                                <i class="fas fa-check-square me-1"></i>Chọn tất cả
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mb-2" onclick="deselectAll()">
+                                <i class="fas fa-square me-1"></i>Bỏ chọn tất cả
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info mb-2" onclick="selectDefaults()">
+                                <i class="fas fa-magic me-1"></i>Quyền mặc định
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permissions Form -->
+        <form id="permissionsForm">
+            <div class="row">
+                @foreach (var category in allPermissions)
+                {
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-folder-open me-2"></i>@category.Key
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="permission-list">
+                                    @foreach (var permission in category.Value)
+                                    {
+                                        var isChecked = userPermissions.Contains(permission.Code);
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input permission-checkbox" 
+                                                   type="checkbox" 
+                                                   name="permissions" 
+                                                   value="@permission.Code" 
+                                                   id="perm_@permission.Code.Replace(".", "_")"
+                                                   @(isChecked ? "checked" : "")
+                                                   data-default="@(Permissions.GetDefaultSellerPermissions().Contains(permission.Code) ? "true" : "false")">
+                                            <label class="form-check-label" for="perm_@permission.Code.Replace(".", "_")">
+                                                <strong>@permission.Name</strong>
+                                                <br>
+                                                <small class="text-muted">@permission.Description</small>
+                                                <br>
+                                                <code class="small">@permission.Code</code>
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-0 text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Lưu ý: Thay đổi quyền sẽ có hiệu lực ngay lập tức sau khi lưu.
+                            </p>
+                        </div>
+                        <div>
+                            <a href="@Url.Action("Sellers", "Admin")" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times me-1"></i>Hủy
+                            </a>
+                            <button type="button" class="btn btn-primary" onclick="savePermissions(this)">
+                                <i class="fas fa-save me-1"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .permission-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .form-check {
+        padding: 12px;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+    }
+    
+    .form-check:hover {
+        background-color: var(--bs-gray-100);
+    }
+    
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin-top: 0.25rem;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+        margin-left: 8px;
+    }
+    
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .quick-actions button {
+        width: 180px;
+    }
+</style>
+
+<script>
+    function selectAll() {
+        document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = true);
+    }
+    
+    function deselectAll() {
+        document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
+    }
+    
+    function selectDefaults() {
+        document.querySelectorAll('.permission-checkbox').forEach(cb => {
+            cb.checked = cb.dataset.default === 'true';
+        });
+    }
+    
+    function savePermissions(button) {
+        const form = document.getElementById('permissionsForm');
+        const formData = new FormData(form);
+        
+        // Show loading
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang lưu...';
+        
+        fetch('@Url.Action("UpdateSellerPermissions", "Admin", new { sellerId = sellerId })', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.content-wrapper').firstChild);
+                
+                // Auto dismiss after 3 seconds
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 3000);
+            } else {
+                // Show error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.content-wrapper').firstChild);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi lưu quyền');
+        })
+        .finally(() => {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+</script>

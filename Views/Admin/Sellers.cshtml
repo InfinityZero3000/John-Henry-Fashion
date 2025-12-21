@@ -218,6 +218,9 @@
                                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewSeller('@seller.Id')">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                            <a href="@Url.Action("SellerPermissions", "Admin", new { sellerId = seller.Id })" class="btn btn-sm btn-outline-info" title="Quản lý quyền">
+                                                <i class="fas fa-key"></i>
+                                            </a>
                                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editSeller('@seller.Id')">
                                                 <i class="fas fa-edit"></i>
                                             </button>
