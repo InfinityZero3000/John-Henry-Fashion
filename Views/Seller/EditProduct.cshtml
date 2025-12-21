@@ -134,11 +134,25 @@
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                             <div>
                                 <label asp-for="Size" class="admin-form-label">Kích thước</label>
-                                <input asp-for="Size" class="admin-form-input" placeholder="S, M, L, XL...">
+                                <input asp-for="Size" type="hidden" id="sizeInput">
+                                <div id="sizeButtons" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <button type="button" class="size-btn" data-size="XS">XS</button>
+                                    <button type="button" class="size-btn" data-size="S">S</button>
+                                    <button type="button" class="size-btn" data-size="M">M</button>
+                                    <button type="button" class="size-btn" data-size="L">L</button>
+                                    <button type="button" class="size-btn" data-size="XL">XL</button>
+                                    <button type="button" class="size-btn" data-size="XXL">XXL</button>
+                                </div>
+                                <small style="color: var(--admin-text-muted); font-size: 0.875rem; display: block; margin-top: 0.5rem;">Chọn nhiều kích thước</small>
                             </div>
                             <div>
                                 <label asp-for="Color" class="admin-form-label">Màu sắc</label>
-                                <input asp-for="Color" class="admin-form-input" placeholder="Đen, Trắng, Xanh...">
+                                <input asp-for="Color" type="hidden" id="colorInput">
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="color" id="colorPicker" class="admin-form-input" style="width: 60px; height: 40px; padding: 2px; cursor: pointer;">
+                                    <div id="selectedColors" style="display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1;"></div>
+                                </div>
+                                <small style="color: var(--admin-text-muted); font-size: 0.875rem; display: block; margin-top: 0.5rem;">Chọn màu từ bảng màu</small>
                             </div>
                             <div>
                                 <label asp-for="Material" class="admin-form-label">Chất liệu</label>
@@ -393,9 +407,195 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <style>
+        /* Size Buttons */
+        .size-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--admin-border);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            color: var(--admin-text);
+        }
+
+        .size-btn:hover {
+            border-color: var(--admin-primary);
+            color: var(--admin-primary);
+            transform: translateY(-2px);
+        }
+
+        .size-btn.active {
+            background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+            border-color: #dc3545;
+            color: white;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Color Tags */
+        .color-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            background: var(--admin-bg-secondary);
+            border: 1px solid var(--admin-border);
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px var(--admin-border);
+        }
+
+        .color-remove {
+            background: none;
+            border: none;
+            color: var(--admin-text-muted);
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .color-remove:hover {
+            background: var(--admin-danger);
+            color: white;
+        }
+    </style>
+    
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // ========== SIZE SELECTION ==========
+        const sizeButtons = document.querySelectorAll('.size-btn');
+        const sizeInput = document.getElementById('sizeInput');
+        const selectedSizes = new Set();
+
+        // Parse existing sizes from model
+        const existingSizes = sizeInput.value.split(',').map(s => s.trim()).filter(s => s);
+        existingSizes.forEach(size => {
+            selectedSizes.add(size);
+            const btn = document.querySelector(`.size-btn[data-size="${size}"]`);
+            if (btn) btn.classList.add('active');
+        });
+
+        sizeButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const size = this.getAttribute('data-size');
+                
+                if (selectedSizes.has(size)) {
+                    selectedSizes.delete(size);
+                    this.classList.remove('active');
+                } else {
+                    selectedSizes.add(size);
+                    this.classList.add('active');
+                }
+                
+                sizeInput.value = Array.from(selectedSizes).join(', ');
+            });
+        });
+
+        // ========== COLOR SELECTION ==========
+        const colorPicker = document.getElementById('colorPicker');
+        const colorInput = document.getElementById('colorInput');
+        const selectedColorsDiv = document.getElementById('selectedColors');
+        const colorMap = {
+            '#000000': 'Đen', '#FFFFFF': 'Trắng', '#FF0000': 'Đỏ',
+            '#0000FF': 'Xanh dương', '#00FF00': 'Xanh lá', '#FFFF00': 'Vàng',
+            '#FFA500': 'Cam', '#800080': 'Tím', '#FFC0CB': 'Hồng',
+            '#A52A2A': 'Nâu', '#808080': 'Xám', '#00FFFF': 'Xanh ngọc',
+            '#FFD700': 'Vàng kim', '#C0C0C0': 'Bạc'
+        };
+        const selectedColors = new Map();
+
+        // Parse existing colors
+        const existingColors = colorInput.value.split(',').map(c => c.trim()).filter(c => c);
+        existingColors.forEach(colorName => {
+            const colorHex = Object.keys(colorMap).find(key => colorMap[key] === colorName) || '#808080';
+            selectedColors.set(colorHex, colorName);
+        });
+        renderSelectedColors();
+
+        function getColorName(hexColor) {
+            if (colorMap[hexColor.toUpperCase()]) {
+                return colorMap[hexColor.toUpperCase()];
+            }
+            const rgb = hexToRgb(hexColor);
+            let closestColor = hexColor;
+            let minDistance = Infinity;
+            for (const [hex, name] of Object.entries(colorMap)) {
+                const colorRgb = hexToRgb(hex);
+                const distance = Math.sqrt(
+                    Math.pow(rgb.r - colorRgb.r, 2) +
+                    Math.pow(rgb.g - colorRgb.g, 2) +
+                    Math.pow(rgb.b - colorRgb.b, 2)
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestColor = name;
+                }
+            }
+            return minDistance < 100 ? closestColor : 'Màu tùy chỉnh';
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        colorPicker.addEventListener('change', function() {
+            const color = this.value;
+            const colorName = getColorName(color);
+            if (!selectedColors.has(color)) {
+                selectedColors.set(color, colorName);
+                renderSelectedColors();
+                updateColorInput();
+            }
+        });
+
+        function renderSelectedColors() {
+            selectedColorsDiv.innerHTML = '';
+            selectedColors.forEach((name, color) => {
+                const colorTag = document.createElement('div');
+                colorTag.className = 'color-tag';
+                colorTag.innerHTML = `
+                    <span class="color-preview" style="background-color: ${color};"></span>
+                    <span>${name}</span>
+                    <button type="button" class="color-remove" onclick="removeColor('${color}')">×</button>
+                `;
+                selectedColorsDiv.appendChild(colorTag);
+            });
+        }
+
+        function removeColor(color) {
+            selectedColors.delete(color);
+            renderSelectedColors();
+            updateColorInput();
+        }
+
+        function updateColorInput() {
+            colorInput.value = Array.from(selectedColors.values()).join(', ');
+        }
+
+        window.removeColor = removeColor;
 
         // Initialize TinyMCE
         tinymce.init({

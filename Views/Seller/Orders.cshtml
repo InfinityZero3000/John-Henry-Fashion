@@ -4,6 +4,9 @@
     Layout = "~/Views/Shared/_SellerLayout.cshtml";
 }
 
+@* CSRF Token for AJAX requests *@
+@Html.AntiForgeryToken()
+
 <div class="admin-content">
     <!-- Page Header -->
     <div class="admin-page-header">
@@ -472,18 +475,18 @@
 
         // Quick Actions - 1-click updates
         function quickProcess(orderId) {
-            updateOrderStatusQuick(orderId, 'processing', '@Url.Action("QuickProcess", "Seller")');
+            updateOrderStatusQuick(orderId, 'processing', `/seller/orders/${orderId}/quick-process`);
         }
 
         function quickShip(orderId) {
             const trackingNumber = prompt('Nhập mã vận đơn (tùy chọn):');
             if (trackingNumber !== null) {
-                updateOrderStatusQuick(orderId, 'shipped', '@Url.Action("QuickShip", "Seller")', trackingNumber);
+                updateOrderStatusQuick(orderId, 'shipped', `/seller/orders/${orderId}/quick-ship`, trackingNumber);
             }
         }
 
         function quickDeliver(orderId) {
-            updateOrderStatusQuick(orderId, 'delivered', '@Url.Action("QuickDeliver", "Seller")');
+            updateOrderStatusQuick(orderId, 'delivered', `/seller/orders/${orderId}/quick-deliver`);
         }
 
         function updateOrderStatusQuick(orderId, status, url, trackingNumber = null) {
@@ -494,8 +497,15 @@
                 button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
                 
                 const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if (!token) {
+                    console.error('CSRF token not found!');
+                    showToast('error', 'Lỗi bảo mật. Vui lòng tải lại trang.');
+                    button.disabled = false;
+                    button.innerHTML = originalContent;
+                    return;
+                }
+                
                 const body = new URLSearchParams({
-                    id: orderId,
                     __RequestVerificationToken: token
                 });
                 if (trackingNumber) {
