@@ -93,10 +93,11 @@
                     }
                 </div>
                 <div class="card-body">
-                    @if (Model.Notifications.Any())
+                    @if (Model.Notifications.Count > 0)
                     {
-                        @foreach (var notification in Model.Notifications)
+                        @for (int i = 0; i < Model.Notifications.Count; i++)
                         {
+                            var notification = Model.Notifications[i];
                             <div class="notification-item @(!notification.IsRead ? "unread" : "")" data-id="@notification.Id">
                                 <div class="d-flex align-items-start">
                                     <div class="notification-icon me-3">
@@ -127,7 +128,7 @@
                                     </div>
                                     <div class="notification-content flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <div>
+                                            <div class="flex-grow-1">
                                                 <h6 class="notification-title @(!notification.IsRead ? "fw-bold" : "")">
                                                     @notification.Title
                                                 </h6>
@@ -141,14 +142,21 @@
                                             <div class="notification-actions">
                                                 @if (!notification.IsRead)
                                                 {
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                            onclick="markAsRead(@notification.Id)">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                                                            onclick="markAsRead(@notification.Id)"
+                                                            title="Đánh dấu đã đọc">
                                                         <i data-lucide="check"></i>
                                                     </button>
                                                 }
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="deleteNotification(@notification.Id)"
+                                                        title="Xóa thông báo">
+                                                    <i data-lucide="x"></i>
+                                                </button>
                                                 @if (!string.IsNullOrEmpty(notification.ActionUrl))
                                                 {
-                                                    <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary">
+                                                    <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary ms-1"
+                                                       title="Xem chi tiết">
                                                         <i data-lucide="external-link"></i>
                                                     </a>
                                                 }
@@ -161,13 +169,16 @@
                                     <div class="unread-indicator"></div>
                                 }
                             </div>
-                            <hr>
+                            @if (i < Model.Notifications.Count - 1)
+                            {
+                                <hr>
+                            }
                         }
 
                         <!-- Pagination -->
                         @if (Model.TotalPages > 1)
                         {
-                            <nav aria-label="Page navigation">
+                            <nav aria-label="Page navigation" class="mt-4">
                                 <ul class="pagination justify-content-center">
                                     @if (Model.HasPreviousPage)
                                     {
@@ -458,6 +469,42 @@ footer {
             })
             .catch(error => {
                 console.error('Error marking all notifications as read:', error);
+            });
+        }
+
+        function deleteNotification(notificationId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa thông báo này?')) {
+                return;
+            }
+
+            fetch('@Url.Action("DeleteNotification", "UserDashboard")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: JSON.stringify({ notificationId: notificationId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove notification item with animation
+                    const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+                    if (notificationItem) {
+                        notificationItem.style.transition = 'opacity 0.3s, transform 0.3s';
+                        notificationItem.style.opacity = '0';
+                        notificationItem.style.transform = 'translateX(100%)';
+                        setTimeout(() => {
+                            location.reload();
+                        }, 300);
+                    }
+                } else {
+                    alert('Không thể xóa thông báo: ' + (data.message || 'Lỗi không xác định'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting notification:', error);
+                alert('Có lỗi xảy ra khi xóa thông báo');
             });
         }
 

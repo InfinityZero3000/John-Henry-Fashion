@@ -335,51 +335,52 @@ namespace JohnHenryFashionWeb.Services
                 var endDate = DateTime.UtcNow.Date;
                 var startDate = endDate.AddDays(-days);
 
-                // Try to get data from SalesReports first (for sample data)
-                var salesReports = await _context.SalesReports
-                    .Where(r => r.ReportType == "daily" && 
-                               r.StartDate >= startDate && 
-                               r.EndDate <= endDate)
-                    .OrderBy(r => r.StartDate)
-                    .ToListAsync();
-
-                if (salesReports.Any())
-                {
-                    _logger.LogInformation($"✅ Using {salesReports.Count} SalesReports records for chart data");
-                    _logger.LogInformation($"   Date range: {salesReports.First().StartDate:yyyy-MM-dd} to {salesReports.Last().StartDate:yyyy-MM-dd}");
-                    _logger.LogInformation($"   First record: Revenue={salesReports.First().TotalRevenue}, Orders={salesReports.First().TotalOrders}");
-                    
-                    var chartData = salesReports
-                        .Select(r => new ChartData
-                        {
-                            Label = r.StartDate.ToString("MM/dd"),
-                            Value = r.TotalRevenue,
-                            AdditionalData = new Dictionary<string, object>
-                            {
-                                ["Orders"] = r.TotalOrders,
-                                ["Products"] = r.TotalProducts
-                            }
-                        })
-                        .ToList();
-                    
-                    _logger.LogInformation($"   Chart data created with {chartData.Count} points");
-                    return chartData;
-                }
-
-                // Fallback to Orders table if no SalesReports
-                _logger.LogInformation("No SalesReports found, falling back to Orders table");
+                // ALWAYS use real Orders data first for live updates
+                _logger.LogInformation($"📊 Getting sales chart data from Orders table (live data)");
                 var orders = await _context.Orders
                     .Where(o => o.CreatedAt >= startDate 
                         && o.CreatedAt <= endDate
-                        && o.PaymentStatus == "paid"
+                        && (o.PaymentStatus == "paid" || 
+                            (o.PaymentStatus == "COD Pending" && (o.Status == "processing" || o.Status == "shipped" || o.Status == "delivered")))
                         && o.Status != "cancelled")
                     .ToListAsync();
 
+                // If no orders, fall back to SalesReports (sample data)
                 if (!orders.Any())
                 {
-                    _logger.LogWarning("No orders found for chart data, returning empty list");
+                    _logger.LogInformation("No Orders found, falling back to SalesReports table");
+                    var salesReports = await _context.SalesReports
+                        .Where(r => r.ReportType == "daily" && 
+                                   r.StartDate >= startDate && 
+                                   r.EndDate <= endDate)
+                        .OrderBy(r => r.StartDate)
+                        .ToListAsync();
+
+                    if (salesReports.Any())
+                    {
+                        _logger.LogInformation($"✅ Using {salesReports.Count} SalesReports records for chart data");
+                        
+                        var chartData = salesReports
+                            .Select(r => new ChartData
+                            {
+                                Label = r.StartDate.ToString("MM/dd"),
+                                Value = r.TotalRevenue,
+                                AdditionalData = new Dictionary<string, object>
+                                {
+                                    ["Orders"] = r.TotalOrders,
+                                    ["Products"] = r.TotalProducts
+                                }
+                            })
+                            .ToList();
+                        
+                        return chartData;
+                    }
+
+                    _logger.LogWarning("No data found in Orders or SalesReports, returning empty list");
                     return new List<ChartData>();
                 }
+
+                _logger.LogInformation($"✅ Using {orders.Count} Orders for live chart data");
 
                 switch (period.ToLower())
                 {
@@ -476,53 +477,54 @@ namespace JohnHenryFashionWeb.Services
         {
             try
             {
-                // Try to get data from SalesReports first (for sample data)
-                var salesReports = await _context.SalesReports
-                    .Where(r => r.ReportType == "daily" && 
-                               r.StartDate >= startDate && 
-                               r.EndDate <= endDate)
-                    .OrderBy(r => r.StartDate)
-                    .ToListAsync();
-
-                if (salesReports.Any())
-                {
-                    _logger.LogInformation($"✅ Using {salesReports.Count} SalesReports records for time series data");
-                    _logger.LogInformation($"   Date range: {salesReports.First().StartDate:yyyy-MM-dd} to {salesReports.Last().StartDate:yyyy-MM-dd}");
-                    _logger.LogInformation($"   First record: Revenue={salesReports.First().TotalRevenue}, Orders={salesReports.First().TotalOrders}");
-                    
-                    var timeSeriesData = salesReports
-                        .Select(r => new TimeSeriesData
-                        {
-                            Date = r.StartDate,
-                            Value = r.TotalRevenue,
-                            Label = r.StartDate.ToString("MM/dd"),
-                            AdditionalData = new Dictionary<string, object>
-                            {
-                                ["Orders"] = r.TotalOrders,
-                                ["Products"] = r.TotalProducts,
-                                ["AvgOrderValue"] = r.AverageOrderValue
-                            }
-                        })
-                        .ToList();
-                    
-                    _logger.LogInformation($"   Time series data created with {timeSeriesData.Count} points");
-                    return timeSeriesData;
-                }
-
-                // Fallback to Orders table if no SalesReports
-                _logger.LogInformation("No SalesReports found, falling back to Orders table");
+                // ALWAYS use real Orders data first for live updates
+                _logger.LogInformation($"📊 Getting revenue time series from Orders table (live data)");
                 var orders = await _context.Orders
                     .Where(o => o.CreatedAt >= startDate 
                         && o.CreatedAt <= endDate
-                        && o.PaymentStatus == "paid"
+                        && (o.PaymentStatus == "paid" || 
+                            (o.PaymentStatus == "COD Pending" && (o.Status == "processing" || o.Status == "shipped" || o.Status == "delivered")))
                         && o.Status != "cancelled")
                     .ToListAsync();
 
+                // If no orders, fall back to SalesReports (sample data)
                 if (!orders.Any())
                 {
-                    _logger.LogWarning("No orders found for time series data, returning empty list");
+                    _logger.LogInformation("No Orders found, falling back to SalesReports table");
+                    var salesReports = await _context.SalesReports
+                        .Where(r => r.ReportType == "daily" && 
+                                   r.StartDate >= startDate && 
+                                   r.EndDate <= endDate)
+                        .OrderBy(r => r.StartDate)
+                        .ToListAsync();
+
+                    if (salesReports.Any())
+                    {
+                        _logger.LogInformation($"✅ Using {salesReports.Count} SalesReports records for time series data");
+                        
+                        var timeSeriesData = salesReports
+                            .Select(r => new TimeSeriesData
+                            {
+                                Date = r.StartDate,
+                                Value = r.TotalRevenue,
+                                Label = r.StartDate.ToString("MM/dd"),
+                                AdditionalData = new Dictionary<string, object>
+                                {
+                                    ["Orders"] = r.TotalOrders,
+                                    ["Products"] = r.TotalProducts,
+                                    ["AvgOrderValue"] = r.AverageOrderValue
+                                }
+                            })
+                            .ToList();
+                        
+                        return timeSeriesData;
+                    }
+
+                    _logger.LogWarning("No data found in Orders or SalesReports, returning empty list");
                     return new List<TimeSeriesData>();
                 }
+
+                _logger.LogInformation($"✅ Using {orders.Count} Orders for live time series data");
 
                 switch (granularity.ToLower())
                 {

@@ -304,7 +304,7 @@
                                 <small class="text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                             </td>
                             <td>
-                                <div class="admin-table-actions d-flex gap-1 flex-wrap">
+                                <div class="admin-table-actions d-flex gap-1" style="white-space: nowrap;">
                                     <a href="@Url.Action("OrderDetail", "Seller", new { id = order.Id })" 
                                        class="admin-btn admin-btn-sm admin-btn-outline" title="Chi tiết">
                                         <i data-lucide="eye"></i>
@@ -315,21 +315,21 @@
                                     {
                                         <button class="admin-btn admin-btn-sm admin-btn-success" 
                                                 onclick="quickProcess('@order.Id')" title="Duyệt đơn (1-click)">
-                                            <i data-lucide="check"></i> Duyệt
+                                            <i data-lucide="check"></i>
                                         </button>
                                     }
                                     else if (order.Status.ToLower() == "processing")
                                     {
                                         <button class="admin-btn admin-btn-sm admin-btn-primary" 
                                                 onclick="quickShip('@order.Id')" title="Gửi hàng (1-click)">
-                                            <i data-lucide="truck"></i> Gửi
+                                            <i data-lucide="truck"></i>
                                         </button>
                                     }
                                     else if (order.Status.ToLower() == "shipped")
                                     {
                                         <button class="admin-btn admin-btn-sm admin-btn-success" 
                                                 onclick="quickDeliver('@order.Id')" title="Hoàn thành (1-click)">
-                                            <i data-lucide="check-circle"></i> Hoàn thành
+                                            <i data-lucide="check-circle"></i>
                                         </button>
                                     }
                                     

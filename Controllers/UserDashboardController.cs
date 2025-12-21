@@ -206,6 +206,8 @@ namespace JohnHenryFashionWeb.Controllers
         public async Task<IActionResult> Notifications(int page = 1)
         {
             var userId = _userManager.GetUserId(User);
+            _logger.LogInformation($"Notifications page requested. UserId: {userId}, Page: {page}");
+            
             if (userId == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -216,12 +218,16 @@ namespace JohnHenryFashionWeb.Controllers
                 .Where(n => n.UserId == userId)
                 .CountAsync();
 
+            _logger.LogInformation($"Total notifications found: {totalNotifications}");
+
             var notifications = await _context.Notifications
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            _logger.LogInformation($"Notifications retrieved: {notifications.Count}");
 
             var viewModel = new UserNotificationsViewModel
             {
@@ -281,6 +287,31 @@ namespace JohnHenryFashionWeb.Controllers
                 notification.ReadAt = DateTime.UtcNow;
             }
 
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteNotification([FromBody] DeleteNotificationRequest request)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+
+            var notification = await _context.Notifications
+                .Where(n => n.Id == request.NotificationId && n.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            if (notification == null)
+            {
+                return Json(new { success = false, message = "Notification not found" });
+            }
+
+            _context.Notifications.Remove(notification);
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });
@@ -474,6 +505,11 @@ namespace JohnHenryFashionWeb.Controllers
         {
             public Guid OrderId { get; set; }
             public string? Reason { get; set; }
+        }
+
+        public class DeleteNotificationRequest
+        {
+            public int NotificationId { get; set; }
         }
     }
 }

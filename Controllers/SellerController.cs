@@ -1607,8 +1607,24 @@ namespace JohnHenryFashionWeb.Controllers
 
             // Update order status
             var oldStatus = order.Status;
+            var oldPaymentStatus = order.PaymentStatus;
             order.Status = newStatus.ToLower();
             order.UpdatedAt = DateTime.UtcNow;
+
+            // Update PaymentStatus for COD orders when seller confirms
+            if (order.PaymentStatus?.ToLower() == "cod pending" && 
+                (newStatus.ToLower() == "processing" || newStatus.ToLower() == "shipped" || newStatus.ToLower() == "delivered"))
+            {
+                order.PaymentStatus = "paid";
+            }
+
+            // Mark seller confirmation for marketplace flow
+            if (newStatus.ToLower() == "processing" && !order.IsSellerConfirmed)
+            {
+                order.IsSellerConfirmed = true;
+                order.SellerConfirmedAt = DateTime.UtcNow;
+                order.SellerConfirmedBy = currentUser.Id;
+            }
 
             // Update specific date fields based on new status
             switch (newStatus.ToLower())
