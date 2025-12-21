@@ -106,6 +106,9 @@ if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("EMAIL_ADMIN")
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
+    // Reduce EF Core SQL noise ("Executed DbCommand" at Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console()
@@ -252,6 +255,8 @@ builder.Services.AddScoped<JohnHenryFashionWeb.Services.IReportingService, JohnH
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IAuthService, JohnHenryFashionWeb.Services.AuthService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IPaymentService, JohnHenryFashionWeb.Services.PaymentService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IUserManagementService, JohnHenryFashionWeb.Services.UserManagementService>();
+builder.Services.AddScoped<JohnHenryFashionWeb.Services.IPermissionService, JohnHenryFashionWeb.Services.PermissionService>();
+builder.Services.AddScoped<JohnHenryFashionWeb.Services.PermissionSeedService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IAuditLogService, JohnHenryFashionWeb.Services.AuditLogService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.ILogService, JohnHenryFashionWeb.Services.LogService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.SeedDataService>();
@@ -379,6 +384,9 @@ using (var scope = app.Services.CreateScope())
         
         var seedService = services.GetRequiredService<JohnHenryFashionWeb.Services.SeedDataService>();
         await seedService.SeedAdminSystemDataAsync();
+
+        var permissionSeedService = services.GetRequiredService<JohnHenryFashionWeb.Services.PermissionSeedService>();
+        await permissionSeedService.SeedDefaultRolePermissionsAsync(seededBy: "system");
         
         logger.LogInformation("Admin System Data Seeding completed successfully!");
     }
