@@ -25,6 +25,7 @@ namespace JohnHenryFashionWeb.Controllers
         private readonly IUserManagementService _userManagementService;
         private readonly ILogger<AdminController> _logger;
         private readonly IEmailService _emailService;
+        private readonly IPermissionService _permissionService;
 
         public AdminController(
             ApplicationDbContext context, 
@@ -35,7 +36,8 @@ namespace JohnHenryFashionWeb.Controllers
             IReportingService reportingService,
             IUserManagementService userManagementService,
             ILogger<AdminController> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            IPermissionService permissionService)
         {
             _context = context;
             _userManager = userManager;
@@ -46,6 +48,7 @@ namespace JohnHenryFashionWeb.Controllers
             _userManagementService = userManagementService;
             _logger = logger;
             _emailService = emailService;
+            _permissionService = permissionService;
         }
 
         [HttpGet("")]
@@ -1799,6 +1802,89 @@ namespace JohnHenryFashionWeb.Controllers
             
             var roles = await _roleManager.Roles.ToListAsync();
             return View(roles);
+        }
+
+        [HttpGet("seller-permissions/{sellerId}")]
+        public async Task<IActionResult> SellerPermissions(string sellerId)
+        {
+            ViewData["CurrentSection"] = "sellers";
+            
+            var seller = await _userManager.FindByIdAsync(sellerId);
+            if (seller == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy seller";
+                return RedirectToAction(nameof(Sellers));
+            }
+
+            var isSeller = await _userManager.IsInRoleAsync(seller, UserRoles.Seller);
+            if (!isSeller)
+            {
+                TempData["ErrorMessage"] = "Người dùng không phải là seller";
+                return RedirectToAction(nameof(Sellers));
+            }
+
+            ViewData["Title"] = $"Quản lý quyền - {seller.FirstName} {seller.LastName}";
+            ViewBag.Seller = seller;
+            ViewBag.SellerId = sellerId;
+            
+            // Get all permissions grouped by category
+            var allPermissions = Models.Permissions.GetAllPermissions();
+            ViewBag.AllPermissions = allPermissions;
+            
+            // Get current user permissions
+            var userPermissions = await _permissionService.GetUserPermissionsAsync(sellerId);
+            ViewBag.UserPermissions = userPermissions;
+            
+            return View();
+        }
+
+        [HttpPost("seller-permissions/{sellerId}")]
+        public async Task<IActionResult> UpdateSellerPermissions(string sellerId, [FromForm] List<string> permissions)
+        {
+            try
+            {
+                var seller = await _userManager.FindByIdAsync(sellerId);
+                if (seller == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy seller" });
+                }
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                var allPermissions = Models.Permissions.GetAllPermissions()
+                    .SelectMany(g => g.Value.Select(p => p.Code))
+                    .ToList();
+
+                // Treat the checkbox list as the seller's explicit allow-list.
+                // Unchecked permissions are explicitly denied via UserPermissions (IsGranted=false)
+                // so they don't get inherited from role defaults.
+                permissions ??= new List<string>();
+                var selected = new HashSet<string>(permissions, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var permission in allPermissions)
+                {
+                    if (selected.Contains(permission))
+                    {
+                        await _permissionService.GrantPermissionAsync(
+                            sellerId,
+                            permission,
+                            currentUser?.Id ?? "system",
+                            $"Set by admin {currentUser?.Email ?? "system"}"
+                        );
+                    }
+                    else
+                    {
+                        await _permissionService.RevokePermissionAsync(sellerId, permission);
+                    }
+                }
+
+                TempData["SuccessMessage"] = "Cập nhật quyền thành công";
+                return Json(new { success = true, message = "Cập nhật quyền thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating seller permissions for {SellerId}", sellerId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật quyền" });
+            }
         }
         #endregion
 

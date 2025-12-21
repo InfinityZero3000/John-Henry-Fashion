@@ -501,6 +501,33 @@ namespace JohnHenryFashionWeb.Controllers
             }
         }
 
+        /// <summary>
+        /// Redirect to Wishlist controller
+        /// </summary>
+        [HttpGet]
+        public IActionResult Wishlist()
+        {
+            return RedirectToAction("Index", "Wishlist");
+        }
+
+        /// <summary>
+        /// Redirect to Account Addresses
+        /// </summary>
+        [HttpGet]
+        public IActionResult Addresses()
+        {
+            return RedirectToAction("Addresses", "Account");
+        }
+
+        /// <summary>
+        /// Redirect to Account ChangePassword
+        /// </summary>
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return RedirectToAction("ChangePassword", "Account");
+        }
+
         public class CancelOrderRequest
         {
             public Guid OrderId { get; set; }

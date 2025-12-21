@@ -10,7 +10,7 @@ using JohnHenryFashionWeb.Services;
 namespace JohnHenryFashionWeb.Controllers
 {
     [Authorize]
-    [Route("user/support")]
+    [Route("userdashboard/support")]
     public class UserSupportController : Controller
     {
         private readonly ApplicationDbContext _context;
