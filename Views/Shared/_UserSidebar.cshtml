@@ -13,6 +13,7 @@
     var isAddresses = currentController == "account" && currentAction == "addresses";
     var isChangePassword = currentController == "account" && currentAction == "changepassword";
     var isNotifications = currentController == "userdashboard" && currentAction == "notifications";
+    var isSupport = currentController == "userdashboard" && currentAction == "supports";
 }
 
 <nav class="col-md-3 col-lg-2 d-md-block user-sidebar">
@@ -40,19 +41,19 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(isWishlist ? "active" : "")" href="/Wishlist">
+                <a class="nav-link @(isWishlist ? "active" : "")" href="@Url.Action("Wishlist", "UserDashboard")">
                     <i data-lucide="heart" class="me-2"></i>
                     Yêu thích
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(isAddresses ? "active" : "")" href="@Url.Action("Addresses", "Account")">
+                <a class="nav-link @(isAddresses ? "active" : "")" href="@Url.Action("Addresses", "UserDashboard")">
                     <i data-lucide="map-pin" class="me-2"></i>
                     Địa chỉ
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(isChangePassword ? "active" : "")" href="@Url.Action("ChangePassword", "Account")">
+                <a class="nav-link @(isChangePassword ? "active" : "")" href="@Url.Action("ChangePassword", "UserDashboard")">
                     <i data-lucide="lock" class="me-2"></i>
                     Đổi mật khẩu
                 </a>
@@ -61,6 +62,12 @@
                 <a class="nav-link @(isNotifications ? "active" : "")" href="@Url.Action("Notifications", "UserDashboard")">
                     <i data-lucide="bell" class="me-2"></i>
                     Thông báo
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(isSupport ? "active" : "")" href="/userdashboard/support">
+                    <i data-lucide="life-buoy" class="me-2"></i>
+                    Hỗ trợ
                 </a>
             </li>
             <li class="nav-item">
