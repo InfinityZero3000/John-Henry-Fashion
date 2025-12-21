@@ -145,6 +145,7 @@ namespace JohnHenryFashionWeb.Data
         public DbSet<EmailConfiguration> EmailConfigurations { get; set; }
         public DbSet<PaymentGatewayConfiguration> PaymentGatewayConfigurations { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<PlatformFeeConfiguration> PlatformFeeConfigurations { get; set; }
         
         // Product Approval (New)
