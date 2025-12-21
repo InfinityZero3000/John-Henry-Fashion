@@ -1,20 +1,34 @@
 @model JohnHenryFashionWeb.ViewModels.CreateTicketViewModel
 @{
     ViewData["Title"] = "Tạo yêu cầu hỗ trợ mới";
+    ViewData["CurrentSection"] = "support";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-primary text-white py-3">
-                    <h4 class="mb-0">
-                        <i class="fas fa-life-ring me-2"></i>
-                        Tạo yêu cầu hỗ trợ mới
-                    </h4>
+<div class="container-fluid">
+    <div class="row">
+        <!-- User Sidebar -->
+        @await Html.PartialAsync("_UserSidebar")
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-life-ring text-primary me-2"></i>
+                    Tạo yêu cầu hỗ trợ mới
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
                 </div>
-                <div class="card-body p-4">
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Thông tin yêu cầu hỗ trợ</h6>
+                </div>
+                <div class="card-body">
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 

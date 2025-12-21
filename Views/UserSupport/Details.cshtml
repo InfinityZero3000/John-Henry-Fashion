@@ -1,6 +1,7 @@
 @model JohnHenryFashionWeb.ViewModels.TicketDetailViewModel
 @{
     ViewData["Title"] = "Chi tiết yêu cầu - " + Model.Ticket.TicketNumber;
+    ViewData["CurrentSection"] = "support";
     Layout = "~/Views/Shared/_Layout.cshtml";
     
     var statusBadgeClass = Model.Ticket.Status switch
@@ -33,11 +34,29 @@
     };
 }
 
-<div class="container my-5">
+<div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-lg-4 mb-4">
-            <div class="card border-0 shadow-sm mb-3">
+        <!-- User Sidebar -->
+        @await Html.PartialAsync("_UserSidebar")
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-ticket-alt text-primary me-2"></i>
+                    Chi tiết yêu cầu - @Model.Ticket.TicketNumber
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Ticket Info Sidebar -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow mb-3">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-info-circle me-2"></i>Thông tin yêu cầu
@@ -324,7 +343,8 @@
                     <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
                 </a>
             </div>
-        </div>
+            </div>
+        </main>
     </div>
 </div>
 

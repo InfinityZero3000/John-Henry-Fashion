@@ -1,20 +1,27 @@
 @model List<JohnHenryFashionWeb.Models.SupportTicket>
 @{
-    ViewData["Title"] = "Yêu cầu hỗ trợ của tôi";
+    ViewData["Title"] = "Hỗ trợ";
+    ViewData["CurrentSection"] = "support";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container my-5">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3">
+        <!-- User Sidebar -->
+        @await Html.PartialAsync("_UserSidebar")
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
                     <i class="fas fa-life-ring text-primary me-2"></i>
                     Yêu cầu hỗ trợ của tôi
                 </h1>
-                <a href="@Url.Action("Create")" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Tạo yêu cầu mới
-                </a>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="@Url.Action("Create")" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Tạo yêu cầu mới
+                    </a>
+                </div>
             </div>
 
             @if (TempData["SuccessMessage"] != null)
@@ -36,43 +43,82 @@
             }
 
             <!-- Statistics Cards -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <div class="display-6 text-primary mb-2">@ViewBag.TotalTickets</div>
-                            <h6 class="text-muted mb-0">Tổng số</h6>
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Tổng số
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalTickets</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <div class="display-6 text-warning mb-2">@ViewBag.OpenTickets</div>
-                            <h6 class="text-muted mb-0">Đang chờ</h6>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Đang chờ
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.OpenTickets</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <div class="display-6 text-info mb-2">@ViewBag.InProgressTickets</div>
-                            <h6 class="text-muted mb-0">Đang xử lý</h6>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Đang xử lý
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.InProgressTickets</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-spinner fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <div class="display-6 text-success mb-2">@ViewBag.ResolvedTickets</div>
-                            <h6 class="text-muted mb-0">Đã giải quyết</h6>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Đã giải quyết
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.ResolvedTickets</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Filters -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Bộ lọc</h6>
+                </div>
                 <div class="card-body">
                     <form method="get" class="row g-3">
                         <div class="col-md-4">
@@ -111,11 +157,14 @@
             <!-- Tickets List -->
             @if (Model.Any())
             {
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-0">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách yêu cầu hỗ trợ</h6>
+                    </div>
+                    <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
+                            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
                                     <tr>
                                         <th>Mã</th>
                                         <th>Tiêu đề</th>
@@ -125,7 +174,7 @@
                                         <th>Phản hồi</th>
                                         <th>Ngày tạo</th>
                                         <th>Cập nhật</th>
-                                        <th></th>
+                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -241,7 +290,7 @@
             }
             else
             {
-                <div class="card border-0 shadow-sm">
+                <div class="card shadow mb-4">
                     <div class="card-body text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                         <h5 class="text-muted">Chưa có yêu cầu hỗ trợ nào</h5>
@@ -252,7 +301,7 @@
                     </div>
                 </div>
             }
-        </div>
+        </main>
     </div>
 </div>
 
@@ -264,3 +313,29 @@
         }, 5000);
     </script>
 }
+
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df!important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a!important;
+}
+
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc!important;
+}
+
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e!important;
+}
+
+.text-xs {
+    font-size: 0.7rem;
+}
+
+.shadow {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15)!important;
+}
+</style>
