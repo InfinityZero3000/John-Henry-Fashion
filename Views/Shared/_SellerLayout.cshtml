@@ -458,6 +458,75 @@
             document.body.style.paddingRight = '';
         }, 500);
 
+        // Aggressive overlay watchdog: remove or disable any suspicious full-screen fixed overlays
+        (function() {
+            function isSuspicious(el) {
+                if (!el || el.nodeType !== 1) return false;
+                const style = window.getComputedStyle(el);
+                const pos = style.position;
+                const z = parseInt(style.zIndex) || 0;
+                const w = el.offsetWidth;
+                const h = el.offsetHeight;
+
+                // Heuristics: full-screen-ish & fixed & high z-index OR class name suggests overlay/backdrop
+                if (pos === 'fixed' && (w > window.innerWidth * 0.8 || h > window.innerHeight * 0.8) && z > 500) return true;
+                if (pos === 'fixed' && /(overlay|backdrop|modal-backdrop|admin-sidebar-overlay|mobile-nav-overlay|site-overlay|notification)/i.test(el.className || '')) return true;
+                return false;
+            }
+
+            function removeSuspicious(el) {
+                try {
+                    console.log('🗑️ Removing suspicious overlay element', el);
+                    el.remove();
+                } catch (ex) {
+                    console.warn('Failed to remove overlay', ex);
+                    // fallback: disable pointer events so page is clickable
+                    try { el.style.pointerEvents = 'none'; } catch (e) {}
+                }
+            }
+
+            // Observe added nodes and remove suspicious overlays immediately
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(m => {
+                    m.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            if (isSuspicious(node)) removeSuspicious(node);
+                            // also check children
+                            node.querySelectorAll && node.querySelectorAll('*').forEach(child => {
+                                if (isSuspicious(child)) removeSuspicious(child);
+                            });
+                        }
+                    });
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            // Allow user to click anywhere to dismiss overlays immediately
+            document.addEventListener('click', function() {
+                const overlays = Array.from(document.querySelectorAll('div')).filter(isSuspicious);
+                if (overlays.length) {
+                    overlays.forEach(removeSuspicious);
+                }
+            }, true);
+
+            // Escape key removes overlays too
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const overlays = Array.from(document.querySelectorAll('div')).filter(isSuspicious);
+                    overlays.forEach(removeSuspicious);
+                }
+            });
+
+            // Final safety: periodic cleanup for a short time after load
+            let cleanupRuns = 0;
+            const cleanupInterval = setInterval(function() {
+                const overlays = Array.from(document.querySelectorAll('div')).filter(isSuspicious);
+                if (overlays.length) overlays.forEach(removeSuspicious);
+                cleanupRuns++;
+                if (cleanupRuns > 10) clearInterval(cleanupInterval);
+            }, 300);
+        })();
+
         // Load notification count
         async function updateNotificationBadge() {
             try {
