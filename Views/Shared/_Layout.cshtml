@@ -2492,6 +2492,13 @@
             const searchIcon = document.getElementById('header-search-icon');
             const suggestionsDropdown = document.getElementById('search-suggestions');
             const suggestionsList = document.getElementById('suggestions-list');
+
+            // Move suggestions dropdown to document.body so that position:fixed is always relative to viewport
+            if (suggestionsDropdown && suggestionsDropdown.parentElement !== document.body) {
+                document.body.appendChild(suggestionsDropdown);
+                // ensure it uses fixed positioning and won't be trapped by transformed ancestors
+                suggestionsDropdown.style.position = 'fixed';
+            }
             
             let searchTimeout = null;
             let currentQuery = '';
@@ -2628,11 +2635,25 @@
                 // Get search box position and size
                 const searchBoxRect = searchInput.getBoundingClientRect();
                 const searchSectionRect = searchForm.getBoundingClientRect();
-                
-                // Set position to align with search box
-                suggestionsDropdown.style.left = searchSectionRect.left + 'px';
-                suggestionsDropdown.style.width = searchSectionRect.width + 'px';
-                suggestionsDropdown.style.top = (searchBoxRect.bottom + 5) + 'px';
+
+                // Make width responsive and clamp inside viewport with a small gutter
+                const gutter = 8;
+                let width = Math.min(searchSectionRect.width, window.innerWidth - gutter * 2);
+                let left = searchSectionRect.left;
+
+                if (left + width + gutter > window.innerWidth) {
+                    left = window.innerWidth - width - gutter;
+                }
+                if (left < gutter) {
+                    left = gutter;
+                }
+
+                // Top should be just under the input, but not off-screen
+                const top = Math.max(gutter, Math.floor(searchBoxRect.bottom + 5));
+
+                suggestionsDropdown.style.left = left + 'px';
+                suggestionsDropdown.style.width = width + 'px';
+                suggestionsDropdown.style.top = top + 'px';
             }
             
             // Update position on window resize and scroll

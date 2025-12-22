@@ -16,9 +16,9 @@
                     <i data-lucide="ticket"></i>
                     Ticket #@Model.TicketNumber
                 </h1>
-                <p class="admin-page-description" style="margin-top: 0.5rem;">@Model.Subject</p>
+                <p class="admin-page-description">@Model.Subject</p>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="admin-header-actions">
                 @{
                     var normalizedStatus = (Model.Status ?? string.Empty).ToLower();
                     var statusClass = normalizedStatus switch
@@ -49,10 +49,10 @@
                     };
                 }
                 <span class="admin-badge admin-badge-@priorityClass">
-                    <i data-lucide="flag" style="width:12px;height:12px"></i> @Model.Priority
+                    <i data-lucide="flag" class="icon-xs"></i> @Model.Priority
                 </span>
                 <span class="admin-badge admin-badge-@statusClass">
-                    <i data-lucide="circle" style="width:12px;height:12px"></i> @statusText
+                    <i data-lucide="circle" class="icon-xs"></i> @statusText
                 </span>
                 <a href="@Url.Action("Index", "SupportManagement")" class="admin-btn admin-btn-secondary">
                     <i data-lucide="arrow-left"></i>
@@ -80,14 +80,14 @@
     }
 
     <!-- Main Content Grid -->
-    <div style="display: grid; grid-template-columns: 1fr 380px; gap: var(--spacing-lg); margin-top: var(--spacing-lg);">
+    <div class="ticket-grid">
         <!-- Left Column - Ticket Details & Description -->
         <div>
             <!-- Ticket Description -->
-            <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
-                <div class="admin-card-header" style="display: flex; align-items: center; justify-content: space-between;">
-                    <h3 class="admin-card-title" style="margin: 0;">
-                        <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
+            <div class="admin-card admin-mb-lg">
+                <div class="admin-card-header admin-flex-between">
+                    <h3 class="admin-card-title">
+                        <i data-lucide="file-text" class="icon-sm"></i>
                         Chi tiết yêu cầu
                     </h3>
                     <button type="button" class="admin-btn admin-btn-sm admin-btn-secondary" onclick="editTicket()">
@@ -96,18 +96,18 @@
                     </button>
                 </div>
                 <div class="admin-card-body">
-                    <div style="white-space: pre-wrap; line-height: 1.6; color: var(--admin-text); font-size: 0.9375rem;">
+                    <div class="ticket-description">
                         @Model.Description
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.AttachmentUrls))
                     {
-                        <div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--admin-border);">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: var(--spacing-md); color: var(--admin-text); font-size: 0.875rem; font-weight: 600;">
-                                <i data-lucide="paperclip" style="width:16px;height:16px"></i>
+                        <div class="ticket-attachments">
+                            <div class="ticket-attachments-title">
+                                <i data-lucide="paperclip" class="icon-sm"></i>
                                 Tệp đính kèm
                             </div>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <div class="ticket-attachments-list">
                                 @foreach (var url in Model.AttachmentUrls.Split(','))
                                 {
                                     var fileName = url.Split('/').LastOrDefault() ?? "Attachment";
@@ -124,83 +124,69 @@
 
             <!-- Conversation / Replies -->
             <div class="admin-card">
-                <div class="admin-card-header">
-                    <h3 class="admin-card-title" style="margin: 0;">
-                        <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
+                <div class="admin-card-header admin-flex-between">
+                    <h3 class="admin-card-title">
+                        <i data-lucide="message-circle" class="icon-sm"></i>
                         Lịch sử phản hồi
                         @if (Model.Replies != null && Model.Replies.Any())
                         {
-                            <span class="admin-badge admin-badge-info" style="margin-left: 0.5rem;">@Model.Replies.Count</span>
+                            <span class="admin-badge admin-badge-info admin-badge-count">@Model.Replies.Count</span>
                         }
                     </h3>
                 </div>
                 <div class="admin-card-body">
                     @if (Model.Replies != null && Model.Replies.Any())
                     {
-                        <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <div class="ticket-replies">
                             @foreach (var reply in Model.Replies.OrderBy(r => r.CreatedAt))
                             {
-                                <div style="background: @(reply.IsInternal ? "var(--status-warning-bg)" : "var(--admin-bg-secondary)"); 
-                                            padding: var(--spacing-lg); 
-                                            border-radius: var(--radius-md); 
-                                            border-left: 3px solid @(reply.IsInternal ? "var(--status-warning)" : "var(--admin-primary)");">
-                                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-                                        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                            <div style="width: 36px; height: 36px; border-radius: 50%; background: @(reply.IsInternal ? "var(--status-warning)" : "var(--admin-primary)"); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
-                                                @(reply.User?.FullName?.Substring(0, 1).ToUpper() ?? "?")
-                                            </div>
-                                            <div>
-                                                <div style="color: var(--admin-text); font-weight: 500; font-size: 0.875rem;">
-                                                    @(reply.User?.FullName ?? reply.User?.Email ?? "Unknown")
-                                                </div>
+                                <div class="ticket-reply @(reply.IsInternal ? "internal" : "external")">
+                                    <div class="reply-header">
+                                        <div class="reply-author">
+                                            <div class="reply-avatar">@(reply.User?.FullName?.Substring(0, 1).ToUpper() ?? "?")</div>
+                                            <div class="reply-author-info">
+                                                <div class="reply-author-name">@(reply.User?.FullName ?? reply.User?.Email ?? "Unknown")</div>
                                                 @if (reply.IsInternal)
                                                 {
-                                                    <span class="admin-badge admin-badge-warning" style="font-size: 0.75rem; margin-top: 0.25rem;">
-                                                        <i data-lucide="lock" style="width:10px;height:10px"></i> Internal
-                                                    </span>
+                                                    <span class="admin-badge admin-badge-warning reply-internal-badge"><i data-lucide="lock" class="icon-xs"></i> Internal</span>
                                                 }
                                             </div>
                                         </div>
-                                        <div style="text-align: right;">
-                                            <div style="color: var(--admin-text-light); font-size: 0.75rem;">@reply.CreatedAt.ToString("dd/MM/yyyy")</div>
-                                            <div style="color: var(--admin-text-muted); font-size: 0.75rem;">@reply.CreatedAt.ToString("HH:mm")</div>
+                                        <div class="reply-timestamp">
+                                            <div class="reply-date">@reply.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                            <div class="reply-time">@reply.CreatedAt.ToString("HH:mm")</div>
                                         </div>
                                     </div>
-                                    <div style="color: var(--admin-text); white-space: pre-wrap; line-height: 1.6; font-size: 0.875rem; margin-left: 44px;">@reply.Message</div>
+                                    <div class="reply-body">@reply.Message</div>
                                 </div>
                             }
                         </div>
                     }
                     else
                     {
-                        <div style="text-align: center; padding: 3rem 1rem; color: var(--admin-text-muted);">
-                            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: var(--spacing-md); opacity: 0.3;"></i>
-                            <p style="margin: 0; font-size: 0.875rem;">Chưa có phản hồi nào</p>
+                        <div class="admin-empty admin-empty-md">
+                            <i data-lucide="inbox" class="icon-lg muted"></i>
+                            <p class="admin-empty-text">Chưa có phản hồi nào</p>
                         </div>
                     }
 
                     <!-- Reply Form -->
-                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--admin-border); background: var(--admin-bg); padding: 1.5rem; border-radius: 8px; margin-left: -1rem; margin-right: -1rem; margin-bottom: -1rem;">
-                        <h4 style="margin-bovar(--spacing-xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--admin-border);">
-                        <h4 style="margin-bottom: var(--spacing-md); font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem; color: var(--admin-text); font-weight: 600;">
-                            <i data-lucide="send" style="width:16px;height:16px"></i>
-                            Trả lời ticket
-                        </h4>
+                    <div class="reply-form-card admin-mt-lg">
+                        <h4 class="admin-form-title"><i data-lucide="send" class="icon-sm"></i> Trả lời ticket</h4>
                         <form method="post" asp-action="ReplyTicket" asp-route-id="@Model.Id">
                             @Html.AntiForgeryToken()
                             <div class="admin-form-group">
                                 <label class="admin-form-label">Nội dung phản hồi</label>
-                                <textarea name="message" class="admin-form-control" rows="5" 
-                                          placeholder="Nhập nội dung trả lời cho khách hàng..." required></textarea>
+                                <textarea name="message" class="admin-form-control" rows="5" placeholder="Nhập nội dung trả lời cho khách hàng..." required></textarea>
                             </div>
-                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--status-warning-bg); border-radius: var(--radius-sm); border: 1px solid var(--status-warning);">
-                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin: 0;">
-                                    <input type="checkbox" name="isInternal" style="width: 16px; height: 16px; cursor: pointer;">
-                                    <span style="color: var(--admin-text); font-size: 0.875rem; display: flex; align-items: center; gap: 0.375rem
-                                        Internal Note (chỉ admin xem được)
-                                    </span>
+
+                            <div class="admin-form-group">
+                                <label class="admin-checkbox">
+                                    <input type="checkbox" name="isInternal">
+                                    <span>Ghi chú nội bộ (chỉ admin xem được)</span>
                                 </label>
                             </div>
+
                             <button type="submit" class="admin-btn admin-btn-primary">
                                 <i data-lucide="send"></i>
                                 Gửi phản hồi
@@ -213,27 +199,27 @@
 
         <!-- Right Column - Info & Actions -->
         <div>
-            <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+            <div class="admin-card admin-mb-lg">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title" style="margin: 0;">
-                        <i data-lucide="info" style="width: 16px; height: 16px;"></i>
+                    <h3 class="admin-card-title">
+                        <i data-lucide="info" class="icon-sm"></i>
                         Thông tin ticket
                     </h3>
                 </div>
-                <div class="admin-card-body" style="padding: 0;">
+                <div class="admin-card-body admin-body-nopad">
                     <table class="admin-info-table">
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                    <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+                                <div class="info-cell">
+                                    <i data-lucide="user" class="icon-sm"></i>
                                     <span>Khách hàng</span>
                                 </div>
                             </td>
                             <td>
                                 @if (Model.User != null)
                                 {
-                                    <div style="font-weight: 500;">@Model.User.FullName</div>
-                                    <div style="color: var(--admin-text-muted); font-size: 0.8125rem; margin-top: 0.125rem;">@Model.User.Email</div>
+                                    <div class="info-value">@Model.User.FullName</div>
+                                    <div class="info-meta">@Model.User.Email</div>
                                 }
                                 else
                                 {
@@ -243,8 +229,8 @@
                         </tr>
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                    <i data-lucide="tag" style="width: 14px; height: 14px;"></i>
+                                <div class="info-cell">
+                                    <i data-lucide="tag" class="icon-sm"></i>
                                     <span>Danh mục</span>
                                 </div>
                             </td>
@@ -264,16 +250,16 @@
                         </tr>
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                    <i data-lucide="user-check" style="width: 14px; height: 14px;"></i>
+                                <div class="info-cell">
+                                    <i data-lucide="user-check" class="icon-sm"></i>
                                     <span>Người phụ trách</span>
                                 </div>
                             </td>
                             <td>
                                 @if (Model.AssignedAdmin != null)
                                 {
-                                    <div style="font-weight: 500;">@Model.AssignedAdmin.FullName</div>
-                                    <div style="color: var(--admin-text-muted); font-size: 0.8125rem; margin-top: 0.125rem;">@Model.AssignedAdmin.Email</div>
+                                    <div class="info-value">@Model.AssignedAdmin.FullName</div>
+                                    <div class="info-meta">@Model.AssignedAdmin.Email</div>
                                 }
                                 else
                                 {
@@ -283,8 +269,8 @@
                         </tr>
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                    <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                                <div class="info-cell">
+                                    <i data-lucide="clock" class="icon-sm"></i>
                                     <span>Ngày tạo</span>
                                 </div>
                             </td>
@@ -294,39 +280,39 @@
                         {
                             <tr>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                        <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                                    <div class="info-cell">
+                                        <i data-lucide="check-circle" class="icon-sm"></i>
                                         <span>Đã giải quyết</span>
                                     </div>
                                 </td>
-                                <td style="color: var(--status-success);">@Model.ResolvedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="resolved-date">@Model.ResolvedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
                             </tr>
                         }
                         @if (Model.ClosedAt.HasValue)
                         {
                             <tr>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                        <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+                                    <div class="info-cell">
+                                        <i data-lucide="x-circle" class="icon-sm"></i>
                                         <span>Đã đóng</span>
                                     </div>
                                 </td>
-                                <td style="color: var(--admin-text-muted);">@Model.ClosedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="closed-date">@Model.ClosedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
                             </tr>
                         }
                         @if (Model.RelatedOrderId.HasValue && Model.RelatedOrder != null)
                         {
                             <tr>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                        <i data-lucide="shopping-bag" style="width: 14px; height: 14px;"></i>
+                                    <div class="info-cell">
+                                        <i data-lucide="shopping-bag" class="icon-sm"></i>
                                         <span>Đơn hàng</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="@Url.Action("OrderDetails", "Admin", new { id = Model.RelatedOrderId })" style="color: var(--admin-primary); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                    <a href="@Url.Action("OrderDetails", "Admin", new { id = Model.RelatedOrderId })" class="admin-info-link">
                                         #@Model.RelatedOrder.OrderNumber
-                                        <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
+                                        <i data-lucide="external-link" class="icon-xs"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -335,15 +321,15 @@
                         {
                             <tr>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
-                                        <i data-lucide="box" style="width: 14px; height: 14px;"></i>
+                                    <div class="info-cell">
+                                        <i data-lucide="box" class="icon-sm"></i>
                                         <span>Sản phẩm</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="@Url.Action("Edit", "Products", new { id = Model.RelatedProductId })" style="color: var(--admin-primary); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                    <a href="@Url.Action("Edit", "Products", new { id = Model.RelatedProductId })" class="admin-info-link">
                                         @Model.RelatedProduct.Name
-                                        <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
+                                        <i data-lucide="external-link" class="icon-xs"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -354,10 +340,10 @@
 
             @if (Model.AssignedTo == null)
             {
-                <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+                <div class="admin-card admin-mb-lg">
                     <div class="admin-card-header">
-                        <h3 class="admin-card-title" style="margin: 0;">
-                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                        <h3 class="admin-card-title">
+                            <i data-lucide="user-plus" class="icon-sm"></i>
                             Phân công ticket
                         </h3>
                     </div>
@@ -377,7 +363,7 @@
                                     }
                                 </select>
                             </div>
-                            <button type="submit" class="admin-btn admin-btn-primary" style="width: 100%; justify-content: center;">
+                            <button type="submit" class="admin-btn admin-btn-primary admin-btn-block">
                                 <i data-lucide="check"></i>
                                 Gán cho Admin
                             </button>
@@ -386,10 +372,10 @@
                 </div>
             }
 
-            <div class="admin-card" style="margin-bottom: var(--spacing-lg);">
+            <div class="admin-card admin-mb-lg">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title" style="margin: 0;">
-                        <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                    <h3 class="admin-card-title">
+                        <i data-lucide="refresh-cw" class="icon-sm"></i>
                         Cập nhật trạng thái
                     </h3>
                 </div>
@@ -405,7 +391,7 @@
                                 <option value="Closed" selected="@(Model.Status == "Closed")">Đã đóng</option>
                             </select>
                         </div>
-                        <button type="submit" class="admin-btn admin-btn-success" style="width: 100%; justify-content: center;">
+                        <button type="submit" class="admin-btn admin-btn-success admin-btn-block">
                             <i data-lucide="save"></i>
                             Cập nhật
                         </button>
@@ -415,8 +401,8 @@
 
             <div class="admin-card">
                 <div class="admin-card-header">
-                    <h3 class="admin-card-title" style="margin: 0;">
-                        <i data-lucide="flag" style="width: 16px; height: 16px;"></i>
+                    <h3 class="admin-card-title">
+                        <i data-lucide="flag" class="icon-sm"></i>
                         Cập nhật độ ưu tiên
                     </h3>
                 </div>
@@ -432,7 +418,7 @@
                                 <option value="Urgent" selected="@(Model.Priority == "Urgent")">Khẩn cấp</option>
                             </select>
                         </div>
-                        <button type="submit" class="admin-btn admin-btn-warning" style="width: 100%; justify-content: center;">
+                        <button type="submit" class="admin-btn admin-btn-warning admin-btn-block">
                             <i data-lucide="save"></i>
                             Cập nhật
                         </button>
@@ -459,7 +445,7 @@
                 <div class="modal-body">
                     <div class="admin-form-group">
                         <label>
-                            <i data-lucide="type" style="width:16px;height:16px"></i>
+                            <i data-lucide="type" class="icon-sm"></i>
                             Tiêu đề
                         </label>
                         <input type="text" class="admin-form-control" name="subject" 
@@ -468,7 +454,7 @@
                     
                     <div class="admin-form-group">
                         <label>
-                            <i data-lucide="tag" style="width:16px;height:16px"></i>
+                            <i data-lucide="tag" class="icon-sm"></i>
                             Danh mục
                         </label>
                         <select class="admin-form-control" name="category" required>
@@ -484,7 +470,7 @@
                     
                     <div class="admin-form-group">
                         <label>
-                            <i data-lucide="align-left" style="width:16px;height:16px"></i>
+                            <i data-lucide="align-left" class="icon-sm"></i>
                             Mô tả chi tiết
                         </label>
                         <textarea class="admin-form-control" name="description" rows="8" required>@Model.Description</textarea>

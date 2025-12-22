@@ -244,6 +244,13 @@
     font-size: 1rem;
 }
 
+.admin-btn-block {
+    width: 100%;
+    justify-content: center;
+    display: inline-flex;
+}
+
+
 /* ==========================================
    CARDS
    ========================================== */
@@ -255,6 +262,8 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
+
+.admin-mb-lg { margin-bottom: var(--spacing-lg); }
 
 .admin-card-header {
     padding: var(--spacing-lg);
@@ -271,6 +280,10 @@
 
 .admin-card-body {
     padding: var(--spacing-lg);
+}
+
+.admin-body-nopad {
+    padding: 0;
 }
 
 .admin-card-footer {
@@ -329,6 +342,27 @@
     color: var(--admin-text);
     font-size: 0.875rem;
 }
+
+/* Info table used in sidebars (ticket info) */
+.admin-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.admin-info-table td { padding: 0.75rem 1rem; vertical-align: top; }
+.admin-info-table td > div { display: flex; align-items: center; gap: 0.375rem; }
+.admin-info-table td:first-child { width: 40%; color: var(--admin-text-light); font-weight: 500; font-size: 0.875rem; }
+.admin-info-table td:last-child { text-align: right; }
+
+/* Small helpers for ticket info layout */
+.admin-badge-count { margin-left: var(--spacing-sm); }
+.admin-info-link { color: var(--admin-primary); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; }
+.info-cell { display: flex; align-items: center; gap: 0.375rem; }
+.admin-header-actions { display: flex; align-items: center; gap: var(--spacing-md); }
+.info-value { font-weight: 500; }
+.info-meta { color: var(--admin-text-muted); font-size: 0.8125rem; margin-top: 0.125rem; }
+
+.resolved-date { color: var(--status-success); }
+.closed-date { color: var(--admin-text-muted); }
 
 .admin-table tbody td.actions {
     white-space: nowrap;
@@ -535,6 +569,145 @@
     color: white;
     border-color: var(--admin-primary);
 }
+
+/* Pagination layout: keep prev/numbers/next on one row */
+.admin-pagination .admin-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: nowrap;
+}
+
+.admin-pagination .admin-pagination-controls .admin-btn,
+.admin-pagination .admin-pagination-controls button,
+.admin-pagination .admin-pagination-controls a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pagination numeric controls (compact) */
+.admin-pagination-numbers {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.admin-pagination-number {
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-bg);
+    color: var(--admin-text);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    min-width: 36px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.admin-pagination-number:hover {
+    background: var(--admin-bg-hover);
+    border-color: var(--admin-text-light);
+}
+
+.admin-pagination-number.active,
+.admin-pagination-number.active:hover {
+    background: var(--admin-primary);
+    color: white;
+    border-color: var(--admin-primary);
+    font-weight: 600;
+}
+
+.admin-pagination-ellipsis {
+    padding: 0 0.5rem;
+    color: var(--admin-text-light);
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 576px) {
+    .admin-pagination {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .admin-pagination .admin-pagination-controls {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .admin-pagination-info { order: -1; }
+}
+
+/* ==========================================
+   SUPPORT TICKET DETAILS
+   ==========================================
+
+.ticket-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+@media (max-width: 768px) {
+    .ticket-grid { grid-template-columns: 1fr; }
+}
+
+.ticket-description {
+    white-space: pre-wrap;
+    line-height: 1.6;
+    color: var(--admin-text);
+    font-size: 0.9375rem;
+}
+
+.ticket-attachments {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--admin-border);
+}
+.ticket-attachments-title {
+    color: var(--admin-text);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.ticket-attachments-list a { margin-right: 0.5rem; margin-bottom: 0.5rem; }
+
+.ticket-replies { display: flex; flex-direction: column; gap: var(--spacing-md); }
+.ticket-reply {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    background: var(--admin-bg-secondary);
+    border-left: 3px solid var(--admin-primary);
+}
+.ticket-reply.internal { background: var(--status-warning-bg); border-left-color: var(--status-warning); }
+
+.reply-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--spacing-sm); }
+.reply-author { display: flex; align-items: center; gap: var(--spacing-sm); }
+.reply-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; background: var(--admin-primary); }
+.ticket-reply.internal .reply-avatar { background: var(--status-warning); color: #ffffff; }
+.reply-author-info { display: flex; flex-direction: column; }
+.reply-author-name { font-weight: 500; color: var(--admin-text); font-size: 0.9375rem; }
+.reply-timestamp { text-align: right; color: var(--admin-text-muted); font-size: 0.8125rem; }
+.reply-body { white-space: pre-wrap; line-height: 1.6; color: var(--admin-text); font-size: 0.875rem; margin-top: var(--spacing-sm); }
+
+.reply-internal-badge .icon-xs { width: 12px; height: 12px; }
+
+.reply-form-card { margin-top: var(--spacing-lg); padding: var(--spacing-lg); background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: var(--radius-md); }
+.admin-checkbox { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.admin-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem; color: var(--admin-text-muted); gap: var(--spacing-md); }
+
+.icon-sm { width: 18px; height: 18px; }
+.icon-xs { width: 12px; height: 12px; }
+.icon-lg { width: 48px; height: 48px; }
+.icon-lg.muted { opacity: 0.35; color: var(--admin-text-muted); }
+
+.admin-empty .admin-empty-text { margin: 0; font-size: 0.9375rem; color: var(--admin-text-muted); }
 
 /* ==========================================
    ALERTS & MESSAGES

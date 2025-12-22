@@ -576,6 +576,68 @@
     border-color: var(--admin-primary);
 }
 
+/* Pagination numeric controls (compact) - seller */
+.admin-pagination .admin-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: nowrap;
+}
+
+.admin-pagination .admin-pagination-controls .admin-btn,
+.admin-pagination .admin-pagination-controls button,
+.admin-pagination .admin-pagination-controls a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-pagination-numbers {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.admin-pagination-number {
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-bg);
+    color: var(--admin-text);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    min-width: 36px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.admin-pagination-number:hover {
+    background: var(--admin-bg-hover);
+    border-color: var(--admin-text-light);
+}
+
+.admin-pagination-number.active,
+.admin-pagination-number.active:hover {
+    background: var(--admin-primary);
+    color: white;
+    border-color: var(--admin-primary);
+    font-weight: 600;
+}
+
+.admin-pagination-ellipsis {
+    padding: 0 0.5rem;
+    color: var(--admin-text-light);
+}
+
+@media (max-width: 576px) {
+    .admin-pagination { flex-direction: column; gap: 0.5rem; align-items: center; }
+    .admin-pagination .admin-pagination-controls { width: 100%; justify-content: center; flex-wrap: wrap; }
+    .admin-pagination-info { order: -1; }
+}
+
 /* ==========================================
    ALERTS & MESSAGES
    ========================================== */
