@@ -755,25 +755,25 @@
             
             // Check if Chart.js is loaded
             if (typeof Chart === 'undefined') {
-                console.error('❌ Chart.js is not loaded!');
+                console.error('Chart.js is not loaded!');
                 return;
             }
-            console.log('✅ Chart.js loaded');
+            console.log('Chart.js loaded');
             
             // Sales Chart - Using real data from Model
             const ctx = document.getElementById('salesChart');
             if (!ctx) {
-                console.error('❌ Canvas element #salesChart not found!');
+                console.error('Canvas element #salesChart not found!');
                 return;
             }
-            console.log('✅ Canvas element found');
+            console.log('Canvas element found');
             
             // Get data from Model
             const chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesChartData ?? new List<ChartData>(), new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
             const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueTimeSeriesData ?? new List<TimeSeriesData>(), new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
         
         // Debug logging
-        console.log('📊 Dashboard Chart Data Debug:');
+        console.log('Dashboard Chart Data Debug:');
         console.log('Chart Data:', chartData);
         console.log('Revenue Data:', revenueData);
         console.log('Chart Data Length:', chartData ? chartData.length : 0);
@@ -784,7 +784,7 @@
         let dataValues = [];
         
         if (revenueData && revenueData.length > 0) {
-            console.log('✅ Using revenue time series data');
+            console.log('Using revenue time series data');
             // Use revenue time series data if available
             labels = revenueData.map(d => {
                 // Try both timestamp and date properties
@@ -800,7 +800,7 @@
             console.log('Labels:', labels);
             console.log('Values:', dataValues);
         } else if (chartData && chartData.length > 0) {
-            console.log('✅ Using chart data as fallback');
+            console.log('Using chart data as fallback');
             // Fallback to chart data
             labels = chartData.map(d => d.label || d.Label || 'N/A');
             dataValues = chartData.map(d => d.value || d.Value || 0);

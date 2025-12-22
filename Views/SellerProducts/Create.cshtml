@@ -104,12 +104,14 @@
                         </label>
                             <select name="CategoryId" class="admin-form-select" required>
                                 <option value="">-- Chọn danh mục --</option>
-                                @if (ViewBag.Categories != null)
+                                @{
+                                    var categoriesList = (ViewBag.Categories as List<JohnHenryFashionWeb.Models.Category>)
+                                        ?? (ViewBag.Categories as SelectList)?.Items.Cast<JohnHenryFashionWeb.Models.Category>().ToList()
+                                        ?? new List<JohnHenryFashionWeb.Models.Category>();
+                                }
+                                @foreach (var category in categoriesList)
                                 {
-                                    @foreach (var category in (ViewBag.Categories as List<JohnHenryFashionWeb.Models.Category>) ?? new List<JohnHenryFashionWeb.Models.Category>())
-                                    {
-                                        <option value="@category.Id">@category.Name</option>
-                                    }
+                                    <option value="@category.Id">@category.Name</option>
                                 }
                             </select>
                     </div>
@@ -118,12 +120,14 @@
                         <label class="admin-form-label">Thương hiệu</label>
                             <select name="BrandId" class="admin-form-select">
                                 <option value="">-- Chọn thương hiệu --</option>
-                                @if (ViewBag.Brands != null)
+                                @{
+                                    var brandsList = (ViewBag.Brands as List<JohnHenryFashionWeb.Models.Brand>)
+                                        ?? (ViewBag.Brands as SelectList)?.Items.Cast<JohnHenryFashionWeb.Models.Brand>().ToList()
+                                        ?? new List<JohnHenryFashionWeb.Models.Brand>();
+                                }
+                                @foreach (var brand in brandsList)
                                 {
-                                    @foreach (var brand in (ViewBag.Brands as List<JohnHenryFashionWeb.Models.Brand>) ?? new List<JohnHenryFashionWeb.Models.Brand>())
-                                    {
-                                        <option value="@brand.Id">@brand.Name</option>
-                                    }
+                                    <option value="@brand.Id">@brand.Name</option>
                                 }
                             </select>
                     </div>

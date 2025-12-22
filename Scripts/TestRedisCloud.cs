@@ -37,7 +37,7 @@ namespace JohnHenryFashionWeb.Scripts
                 
                 if (muxer.IsConnected)
                 {
-                    Console.WriteLine("✅ Connected successfully!\n");
+                    Console.WriteLine("Connected successfully!\n");
                     
                     var db = muxer.GetDatabase();
                     
@@ -105,7 +105,7 @@ namespace JohnHenryFashionWeb.Scripts
                     db.KeyDelete("visit_count");
                     db.KeyDelete("user:1001");
                     
-                    Console.WriteLine("✅ All tests passed!");
+                    Console.WriteLine("All tests passed!");
                     
                     muxer.Close();
                 }

@@ -144,7 +144,7 @@ namespace JohnHenryFashionWeb.Scripts
             // Save remaining products
             await context.SaveChangesAsync();
 
-            Console.WriteLine($"\n✅ Import completed!");
+            Console.WriteLine($"\nImport completed!");
             Console.WriteLine($"   ✓ Imported: {imported}");
             Console.WriteLine($"   ✓ Updated:  {updated}");
             Console.WriteLine($"   ✗ Skipped:  {skipped}");

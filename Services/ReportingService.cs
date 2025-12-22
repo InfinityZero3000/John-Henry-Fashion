@@ -358,7 +358,7 @@ namespace JohnHenryFashionWeb.Services
 
                     if (salesReports.Any())
                     {
-                        _logger.LogInformation($"✅ Using {salesReports.Count} SalesReports records for chart data");
+                        _logger.LogInformation($"Using {salesReports.Count} SalesReports records for chart data");
                         
                         var chartData = salesReports
                             .Select(r => new ChartData
@@ -380,7 +380,7 @@ namespace JohnHenryFashionWeb.Services
                     return new List<ChartData>();
                 }
 
-                _logger.LogInformation($"✅ Using {orders.Count} Orders for live chart data");
+                _logger.LogInformation($"Using {orders.Count} Orders for live chart data");
 
                 switch (period.ToLower())
                 {
@@ -500,7 +500,7 @@ namespace JohnHenryFashionWeb.Services
 
                     if (salesReports.Any())
                     {
-                        _logger.LogInformation($"✅ Using {salesReports.Count} SalesReports records for time series data");
+                        _logger.LogInformation($"Using {salesReports.Count} SalesReports records for time series data");
                         
                         var timeSeriesData = salesReports
                             .Select(r => new TimeSeriesData
@@ -524,7 +524,7 @@ namespace JohnHenryFashionWeb.Services
                     return new List<TimeSeriesData>();
                 }
 
-                _logger.LogInformation($"✅ Using {orders.Count} Orders for live time series data");
+                _logger.LogInformation($"Using {orders.Count} Orders for live time series data");
 
                 switch (granularity.ToLower())
                 {

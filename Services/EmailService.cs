@@ -441,7 +441,7 @@ namespace JohnHenryFashionWeb.Services
 
         public async Task<bool> SendRefundApprovedEmailAsync(string email, string customerName, string orderNumber, decimal amount)
         {
-            var subject = $"✅ Yêu Cầu Hoàn Trả Được Chấp Nhận - #{orderNumber}";
+            var subject = $"Yêu Cầu Hoàn Trả Được Chấp Nhận - #{orderNumber}";
             var body = $@"
                 <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
                     <div style='background-color: #4CAF50; color: white; padding: 20px; border-radius: 5px;'>

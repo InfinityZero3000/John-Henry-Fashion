@@ -110,8 +110,9 @@ public class SellerProductsController : Controller
     [HttpGet("create")]
     public async Task<IActionResult> Create()
     {
-        ViewBag.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name");
-        ViewBag.Brands = new SelectList(await _context.Brands.ToListAsync(), "Id", "Name");
+        // Provide raw lists to the view so it can enumerate them directly
+        ViewBag.Categories = await _context.Categories.ToListAsync();
+        ViewBag.Brands = await _context.Brands.ToListAsync();
         return View();
     }
 
@@ -120,25 +121,25 @@ public class SellerProductsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Product product, IFormFile? imageFile)
     {
-        // ✅ FIX 1: Validate SalePrice < Price
+        // FIX 1: Validate SalePrice < Price
         if (product.SalePrice.HasValue && product.SalePrice >= product.Price)
         {
             ModelState.AddModelError("SalePrice", "Giá khuyến mãi phải nhỏ hơn giá gốc!");
         }
         
-        // ✅ FIX 2: Validate SKU unique
+        // FIX 2: Validate SKU unique
         if (await _context.Products.AnyAsync(p => p.SKU == product.SKU))
         {
             ModelState.AddModelError("SKU", "Mã SKU đã tồn tại trong hệ thống!");
         }
         
-        // ✅ FIX 3: Validate CategoryId exists
+        // FIX 3: Validate CategoryId exists
         if (!await _context.Categories.AnyAsync(c => c.Id == product.CategoryId))
         {
             ModelState.AddModelError("CategoryId", "Danh mục không tồn tại!");
         }
         
-        // ✅ FIX 4: Validate BrandId if provided
+        // FIX 4: Validate BrandId if provided
         if (product.BrandId.HasValue && !await _context.Brands.AnyAsync(b => b.Id == product.BrandId))
         {
             ModelState.AddModelError("BrandId", "Thương hiệu không tồn tại!");
@@ -152,7 +153,7 @@ public class SellerProductsController : Controller
                 return RedirectToAction("Login", "Account");
             }
             
-            // ✅ FIX 5: Start transaction for atomicity
+            // FIX 5: Start transaction for atomicity
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -173,7 +174,7 @@ public class SellerProductsController : Controller
                     product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
                 }
 
-                // ✅ FIX 6: Generate unique slug
+                // FIX 6: Generate unique slug
                 product.Slug = await GenerateUniqueSlug(product.Name);
                 product.CreatedAt = DateTime.UtcNow;
                 product.UpdatedAt = DateTime.UtcNow;
@@ -185,7 +186,7 @@ public class SellerProductsController : Controller
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 
-                // ✅ Commit transaction
+                // Commit transaction
                 await transaction.CommitAsync();
 
                 TempData["Success"] = "Tạo sản phẩm thành công!";
@@ -193,7 +194,7 @@ public class SellerProductsController : Controller
             }
             catch (Exception ex)
             {
-                // ✅ Rollback transaction on error
+                // Rollback transaction on error
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error creating product: {Message}", ex.Message);
                 
@@ -473,7 +474,7 @@ public class SellerProductsController : Controller
         return slug.Trim('-');
     }
     
-    // ✅ NEW: Generate unique slug by appending counter if needed
+    // NEW: Generate unique slug by appending counter if needed
     private async Task<string> GenerateUniqueSlug(string name)
     {
         var baseSlug = GenerateSlug(name);
