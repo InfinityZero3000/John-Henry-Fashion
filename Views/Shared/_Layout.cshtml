@@ -1752,7 +1752,7 @@
                     }
                     
                     // Load wishlist count
-                    const wishlistResponse = await fetch('/Wishlist/GetCount');
+                    const wishlistResponse = await fetch('/userdashboard/wishlist/count');
                     if (wishlistResponse.ok) {
                         const data = await wishlistResponse.json();
                         updateWishlistCount(data.wishlistCount || data);

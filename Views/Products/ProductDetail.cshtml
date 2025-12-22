@@ -508,7 +508,7 @@
 
         // Check if product is in wishlist
         function checkWishlistStatus() {
-            fetch(`/Wishlist/IsInWishlist?productId=${productId}`)
+            fetch(`/userdashboard/wishlist/check/${productId}`)
                 .then(response => response.json())
                 .then(data => {
                     updateWishlistIcon(data.isInWishlist);
@@ -884,7 +884,7 @@
             
             // Check if product is in wishlist
             if (productId) {
-                fetch(`/Wishlist/IsInWishlist?productId=${productId}`)
+                fetch(`/userdashboard/wishlist/check/${productId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.isInWishlist) {

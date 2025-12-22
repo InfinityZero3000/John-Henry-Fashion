@@ -22,8 +22,8 @@ namespace JohnHenryFashionWeb.Controllers
                 // General Settings
                 SiteName = await systemConfig.GetSettingAsync("site_name") ?? "John Henry",
                 SiteDescription = await systemConfig.GetSettingAsync("site_description") ?? "Fashion Store",
-                AdminEmail = "admin@johnhenry.com",
-                SupportEmail = "support@johnhenry.com",
+                AdminEmail = "thefirestar312@gmail.com",
+                SupportEmail = "thefirestar312@gmail.com",
                 
                 // E-commerce Settings
                 Currency = await systemConfig.GetSettingAsync("currency") ?? "VND",

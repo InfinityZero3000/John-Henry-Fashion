@@ -1,77 +1,14 @@
 @model JohnHenryFashionWeb.ViewModels.UserProfileViewModel
 @{
     ViewData["Title"] = "Hồ sơ cá nhân";
+    ViewData["CurrentSection"] = "profile";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar Navigation -->
-        <nav class="col-md-3 col-lg-2 d-md-block user-sidebar">
-            <div class="sidebar-content">
-                <div class="text-center mb-3">
-                    <div class="user-avatar">
-                        <img src="@(Model.Avatar ?? "/images/default-avatar.svg")" alt="Avatar" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;"
-                             onerror="this.onerror=null; this.src='/images/default-avatar.svg';">
-                    </div>
-                    <h5 class="mt-2">@Model.FullName</h5>
-                    <p class="text-muted">@Model.Email</p>
-                </div>
-                
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("Profile", "UserDashboard")">
-                            <i data-lucide="user" class="me-2"></i>
-                            Hồ sơ 
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Orders", "UserDashboard")">
-                            <i data-lucide="shopping-bag" class="me-2"></i>
-                            Đơn hàng 
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Wishlist">
-                            <i data-lucide="heart" class="me-2"></i>
-                            Yêu thích
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Addresses", "Account")">
-                            <i data-lucide="map-pin" class="me-2"></i>
-                            Địa chỉ
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("ChangePassword", "Account")">
-                            <i data-lucide="lock" class="me-2"></i>
-                            Đổi mật khẩu
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Notifications", "UserDashboard")">
-                            <i data-lucide="bell" class="me-2"></i>
-                            Thông báo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/user/support">
-                            <i data-lucide="life-buoy" class="me-2"></i>
-                            Hỗ trợ
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <form asp-action="Logout" asp-controller="Account" method="post" style="display: inline; width: 100%;">
-                            <button type="submit" class="nav-link w-100 text-start" style="background: none; border: none; color: #000000;">
-                                <i data-lucide="log-out" class="me-2"></i>
-                                Đăng xuất
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <!-- User Sidebar -->
+        @await Html.PartialAsync("_UserSidebar")
 
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">

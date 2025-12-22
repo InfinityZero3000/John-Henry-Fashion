@@ -502,18 +502,9 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         /// <summary>
-        /// Redirect to Wishlist controller
-        /// </summary>
-        [HttpGet]
-        public IActionResult Wishlist()
-        {
-            return RedirectToAction("Index", "Wishlist");
-        }
-
-        /// <summary>
         /// Redirect to Account Addresses
         /// </summary>
-        [HttpGet]
+        [HttpGet("userdashboard/addresses")]
         public IActionResult Addresses()
         {
             return RedirectToAction("Addresses", "Account");
@@ -522,7 +513,7 @@ namespace JohnHenryFashionWeb.Controllers
         /// <summary>
         /// Redirect to Account ChangePassword
         /// </summary>
-        [HttpGet]
+        [HttpGet("userdashboard/changepassword")]
         public IActionResult ChangePassword()
         {
             return RedirectToAction("ChangePassword", "Account");

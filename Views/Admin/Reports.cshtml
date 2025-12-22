@@ -328,7 +328,6 @@
                 <i data-lucide="file-text"></i>
                 Báo cáo kinh doanh
             </h1>
-            <p class="admin-page-description">Tổng hợp và xuất báo cáo chi tiết theo kỳ</p>
         </div>
         <div class="admin-page-header-actions">
             <select class="admin-form-select" style="width: auto;" id="dateRangeSelect">
@@ -347,65 +346,6 @@
                 <i data-lucide="clock"></i>
                 Lập lịch
             </button>
-        </div>
-    </div>
-
-    <!-- KPI Cards -->
-    <div class="admin-stats-grid">
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-                <i data-lucide="dollar-sign"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.KPIData.TotalRevenue.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
-                <div class="admin-stat-label">Tổng doanh thu</div>
-                <div class="admin-stat-change @(Model.KPIData.RevenueGrowth >= 0 ? "positive" : "negative")">
-                    <i data-lucide="@(Model.KPIData.RevenueGrowth >= 0 ? "trending-up" : "trending-down")"></i>
-                    @(Model.KPIData.RevenueGrowth >= 0 ? "+" : "")@Model.KPIData.RevenueGrowth.ToString("F1")%
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">
-                <i data-lucide="shopping-cart"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.KPIData.CompletedOrders</div>
-                <div class="admin-stat-label">Tổng đơn hàng</div>
-                <div class="admin-stat-change @(Model.KPIData.OrdersGrowth >= 0 ? "positive" : "negative")">
-                    <i data-lucide="@(Model.KPIData.OrdersGrowth >= 0 ? "trending-up" : "trending-down")"></i>
-                    @(Model.KPIData.OrdersGrowth >= 0 ? "+" : "")@Model.KPIData.OrdersGrowth.ToString("F1")%
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
-                <i data-lucide="users"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.KPIData.NewCustomers</div>
-                <div class="admin-stat-label">Khách hàng mới</div>
-                <div class="admin-stat-change @(Model.KPIData.CustomersGrowth >= 0 ? "positive" : "negative")">
-                    <i data-lucide="@(Model.KPIData.CustomersGrowth >= 0 ? "trending-up" : "trending-down")"></i>
-                    @(Model.KPIData.CustomersGrowth >= 0 ? "+" : "")@Model.KPIData.CustomersGrowth.ToString("F1")%
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon" style="background: var(--jh-red-10); color: var(--jh-red);">
-                <i data-lucide="trending-up"></i>
-            </div>
-            <div class="admin-stat-content">
-                <div class="admin-stat-value">@Model.KPIData.ConversionRate.ToString("F1")%</div>
-                <div class="admin-stat-label">Tỷ lệ chuyển đổi</div>
-                <div class="admin-stat-change neutral">
-                    <i data-lucide="minus"></i>
-                    0%
-                </div>
-            </div>
         </div>
     </div>
 
@@ -530,7 +470,7 @@
                                     </div>
                                 </td>
                                 <td style="font-weight: 600; text-align: right;">@Model.SalesAnalytics.TotalOrders.ToString("N0")</td>
-                                <td style="text-align: right; color: #6b7280;">@((int)(Model.SalesAnalytics.TotalOrders * 0.85)).ToString("N0")</td>
+                                <td style="text-align: right; color: #6b7280;">@(((int)(Model.SalesAnalytics.TotalOrders * 0.85)).ToString("N0"))</td>
                                 <td style="text-align: right;">
                                     <span class="admin-badge admin-badge-@(Model.SalesAnalytics.GrowthRate >= 0 ? "success" : "danger")">
                                         <i data-lucide="@(Model.SalesAnalytics.GrowthRate >= 0 ? "trending-up" : "trending-down")" style="width: 12px; height: 12px;"></i>
@@ -577,8 +517,8 @@
                                         <span style="font-weight: 500;">Đơn hủy</span>
                                     </div>
                                 </td>
-                                <td style="font-weight: 600; text-align: right;">@((int)(Model.SalesAnalytics.TotalOrders * 0.05m)).ToString("N0")</td>
-                                <td style="text-align: right; color: #6b7280;">@((int)(Model.SalesAnalytics.TotalOrders * 0.08m)).ToString("N0")</td>
+                                <td style="font-weight: 600; text-align: right;">@(((int)(Model.SalesAnalytics.TotalOrders * 0.05m)).ToString("N0"))</td>
+                                <td style="text-align: right; color: #6b7280;">@(((int)(Model.SalesAnalytics.TotalOrders * 0.08m)).ToString("N0"))</td>
                                 <td style="text-align: right;">
                                     <span class="admin-badge admin-badge-success">
                                         <i data-lucide="trending-down" style="width: 12px; height: 12px;"></i>

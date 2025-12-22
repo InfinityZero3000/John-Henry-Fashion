@@ -5,15 +5,16 @@
     var currentUser = await UserManager.GetUserAsync(User);
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
+    var currentSection = ViewData["CurrentSection"]?.ToString()?.ToLower();
     
     // Determine active menu item
     var isProfile = currentController == "userdashboard" && currentAction == "profile";
     var isOrders = currentController == "userdashboard" && currentAction == "orders";
-    var isWishlist = currentController == "wishlist";
-    var isAddresses = currentController == "account" && currentAction == "addresses";
-    var isChangePassword = currentController == "account" && currentAction == "changepassword";
+    var isWishlist = currentController == "wishlist" || currentSection == "wishlist";
+    var isAddresses = (currentController == "account" && currentAction == "addresses") || currentSection == "addresses";
+    var isChangePassword = (currentController == "account" && currentAction == "changepassword") || currentSection == "changepassword";
     var isNotifications = currentController == "userdashboard" && currentAction == "notifications";
-    var isSupport = currentController == "userdashboard" && currentAction == "supports";
+    var isSupport = (currentController == "usersupport") || currentSection == "support";
 }
 
 <nav class="col-md-3 col-lg-2 d-md-block user-sidebar">

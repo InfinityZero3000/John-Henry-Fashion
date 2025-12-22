@@ -31,32 +31,55 @@ namespace JohnHenryFashionWeb.Controllers
             ViewData["CurrentSection"] = "Payments";
             ViewData["Title"] = "Quản lý thanh toán";
 
-            // Thống kê tổng quan
-            var totalTransactions = await _context.PaymentTransactions.CountAsync();
-            var totalAmount = await _context.PaymentTransactions
-                .Where(t => t.Status == "completed")
-                .SumAsync(t => (decimal?)t.Amount) ?? 0;
+            try
+            {
+                _logger.LogInformation("Loading payment management dashboard");
 
-            var pendingCount = await _context.PaymentTransactions.CountAsync(t => t.Status == "pending");
-            var completedCount = await _context.PaymentTransactions.CountAsync(t => t.Status == "completed");
-            var failedCount = await _context.PaymentTransactions.CountAsync(t => t.Status == "failed");
+                // Thống kê tổng quan
+                var totalTransactions = await _context.PaymentTransactions.CountAsync();
+                _logger.LogInformation("Total transactions: {Count}", totalTransactions);
 
-            // Giao dịch gần đây
-            var recentTransactions = await _context.PaymentTransactions
-                .Include(t => t.Customer)
-                .Include(t => t.Order)
-                .OrderByDescending(t => t.CreatedAt)
-                .Take(10)
-                .ToListAsync();
+                var totalAmount = await _context.PaymentTransactions
+                    .Where(t => t.Status == "completed")
+                    .SumAsync(t => (decimal?)t.Amount) ?? 0;
 
-            ViewBag.TotalTransactions = totalTransactions;
-            ViewBag.TotalAmount = totalAmount;
-            ViewBag.PendingCount = pendingCount;
-            ViewBag.CompletedCount = completedCount;
-            ViewBag.FailedCount = failedCount;
-            ViewBag.RecentTransactions = recentTransactions;
+                var pendingCount = await _context.PaymentTransactions.CountAsync(t => t.Status == "pending");
+                var completedCount = await _context.PaymentTransactions.CountAsync(t => t.Status == "completed");
+                var failedCount = await _context.PaymentTransactions.CountAsync(t => t.Status == "failed");
 
-            return View("~/Views/Admin/Payments.cshtml");
+                _logger.LogInformation("Transaction stats - Pending: {Pending}, Completed: {Completed}, Failed: {Failed}", 
+                    pendingCount, completedCount, failedCount);
+
+                // Giao dịch gần đây
+                var recentTransactions = await _context.PaymentTransactions
+                    .Include(t => t.Customer)
+                    .Include(t => t.Order)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .Take(10)
+                    .ToListAsync();
+
+                _logger.LogInformation("Loaded {Count} recent transactions", recentTransactions.Count);
+
+                ViewBag.TotalTransactions = totalTransactions;
+                ViewBag.TotalAmount = totalAmount;
+                ViewBag.PendingCount = pendingCount;
+                ViewBag.CompletedCount = completedCount;
+                ViewBag.FailedCount = failedCount;
+                ViewBag.RecentTransactions = recentTransactions;
+
+                return View("~/Views/Admin/Payments.cshtml");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading payment management dashboard");
+                ViewBag.TotalTransactions = 0;
+                ViewBag.TotalAmount = 0m;
+                ViewBag.PendingCount = 0;
+                ViewBag.CompletedCount = 0;
+                ViewBag.FailedCount = 0;
+                ViewBag.RecentTransactions = new List<PaymentTransaction>();
+                return View("~/Views/Admin/Payments.cshtml");
+            }
         }
 
         #region Payment Transactions

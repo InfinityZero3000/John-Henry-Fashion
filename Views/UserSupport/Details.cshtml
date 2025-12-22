@@ -43,12 +43,12 @@
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">
-                    <i class="fas fa-ticket-alt text-primary me-2"></i>
+                    <i data-lucide="ticket" class="text-primary me-2" style="width: 24px; height: 24px;"></i>
                     Chi tiết yêu cầu - @Model.Ticket.TicketNumber
                 </h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                        <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Quay lại
                     </a>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                     <div class="card shadow mb-3">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>Thông tin yêu cầu
+                        <i data-lucide="info" style="width: 18px; height: 18px;"></i> Thông tin yêu cầu
                     </h5>
                 </div>
                 <div class="card-body">
@@ -116,14 +116,14 @@
 
                     <div class="mb-3">
                         <small class="text-muted d-block mb-1">
-                            <i class="far fa-calendar-alt me-1"></i>Ngày tạo
+                            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Ngày tạo
                         </small>
                         <span>@Model.Ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted d-block mb-1">
-                            <i class="far fa-clock me-1"></i>Cập nhật lần cuối
+                            <i data-lucide="clock" style="width: 14px; height: 14px;"></i> Cập nhật lần cuối
                         </small>
                         <span>@Model.Ticket.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
@@ -132,7 +132,7 @@
                     {
                         <div class="mb-3">
                             <small class="text-muted d-block mb-1">
-                                <i class="far fa-comments me-1"></i>Số phản hồi
+                                <i data-lucide="message-circle" style="width: 14px; height: 14px;"></i> Số phản hồi
                             </small>
                             <span>@Model.Ticket.ReplyCount tin nhắn</span>
                         </div>
@@ -142,7 +142,7 @@
                     {
                         <div class="mb-3">
                             <small class="text-muted d-block mb-1">
-                                <i class="fas fa-user-tie me-1"></i>Người phụ trách
+                                <i data-lucide="user-check" style="width: 14px; height: 14px;"></i> Người phụ trách
                             </small>
                             <div class="d-flex align-items-center">
                                 <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -161,7 +161,7 @@
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-light">
                         <h6 class="mb-0">
-                            <i class="fas fa-shopping-cart me-2"></i>Đơn hàng liên quan
+                            <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i> Đơn hàng liên quan
                         </h6>
                     </div>
                     <div class="card-body">
@@ -182,7 +182,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-light">
                         <h6 class="mb-0">
-                            <i class="fas fa-box me-2"></i>Sản phẩm liên quan
+                            <i data-lucide="package" style="width: 16px; height: 16px;"></i> Sản phẩm liên quan
                         </h6>
                     </div>
                     <div class="card-body">
@@ -203,11 +203,11 @@
                         <form asp-action="CloseTicket" asp-route-id="@Model.Ticket.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn đóng yêu cầu này? Yêu cầu đã đóng không thể mở lại.');">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-outline-secondary w-100">
-                                <i class="fas fa-times-circle me-2"></i>Đóng yêu cầu
+                                <i data-lucide="x-circle" class="me-2" style="width: 16px; height: 16px;"></i>Đóng yêu cầu
                             </button>
                         </form>
                         <small class="text-muted d-block mt-2">
-                            <i class="fas fa-info-circle me-1"></i>
+                            <i data-lucide="info" style="width: 14px; height: 14px;"></i>
                             Đóng yêu cầu khi vấn đề đã được giải quyết xong
                         </small>
                     </div>
@@ -220,7 +220,7 @@
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>
+                    <i data-lucide="check-circle" class="me-2" style="width: 16px; height: 16px;"></i>
                     @TempData["SuccessMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -229,7 +229,7 @@
             @if (TempData["ErrorMessage"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <i data-lucide="alert-circle" class="me-2" style="width: 16px; height: 16px;"></i>
                     @TempData["ErrorMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -242,7 +242,7 @@
                 </div>
                 <div class="card-body">
                     <div class="text-muted mb-3">
-                        <i class="far fa-calendar-alt me-2"></i>
+                        <i data-lucide="calendar" class="me-2" style="width: 14px; height: 14px;"></i>
                         @Model.Ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                     </div>
                     <div style="white-space: pre-wrap; line-height: 1.6;">@Model.Ticket.Description</div>
@@ -253,7 +253,7 @@
             @if (Model.Replies.Any())
             {
                 <h5 class="mb-3">
-                    <i class="fas fa-comments me-2"></i>Lịch sử trao đổi (@Model.Replies.Count)
+                    <i data-lucide="message-square" style="width: 20px; height: 20px;"></i> Lịch sử trao đổi (@Model.Replies.Count)
                 </h5>
 
                 @foreach (var reply in Model.Replies)
@@ -264,11 +264,11 @@
                                 <div class="avatar @(reply.IsAdminReply ? "bg-primary" : "bg-secondary") text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">
                                     @if (reply.IsAdminReply)
                                     {
-                                        <i class="fas fa-user-tie"></i>
+                                        <i data-lucide="user-check" style="width: 20px; height: 20px;"></i>
                                     }
                                     else
                                     {
-                                        <i class="fas fa-user"></i>
+                                        <i data-lucide="user" style="width: 20px; height: 20px;"></i>
                                     }
                                 </div>
                                 <div class="flex-grow-1">
@@ -289,7 +289,7 @@
                                             </strong>
                                             <br />
                                             <small class="text-muted">
-                                                <i class="far fa-clock me-1"></i>
+                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
                                                 @reply.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                                             </small>
                                         </div>
@@ -308,7 +308,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-light">
                         <h6 class="mb-0">
-                            <i class="fas fa-reply me-2"></i>Gửi phản hồi
+                            <i data-lucide="reply" style="width: 16px; height: 16px;"></i> Gửi phản hồi
                         </h6>
                     </div>
                     <div class="card-body">
@@ -319,11 +319,11 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
+                                    <i data-lucide="info" style="width: 14px; height: 14px;"></i>
                                     Phản hồi sẽ được gửi đến nhân viên hỗ trợ
                                 </small>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>Gửi phản hồi
+                                    <i data-lucide="send" class="me-2" style="width: 16px; height: 16px;"></i>Gửi phản hồi
                                 </button>
                             </div>
                         </form>
@@ -333,14 +333,14 @@
             else
             {
                 <div class="alert alert-secondary">
-                    <i class="fas fa-lock me-2"></i>
+                    <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
                     Yêu cầu này đã đóng. Không thể thêm phản hồi mới.
                 </div>
             }
 
             <div class="mt-4">
                 <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                    <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Quay lại danh sách
                 </a>
             </div>
             </div>

@@ -37,6 +37,9 @@ namespace JohnHenryFashionWeb.Controllers
         public async Task<IActionResult> Index(string? status = null, string? category = null)
         {
             var userId = _userManager.GetUserId(User);
+            var userEmail = User.Identity?.Name;
+            
+            _logger.LogInformation("User {UserId} ({Email}) accessing support tickets", userId, userEmail);
             
             var query = _context.SupportTickets
                 .Where(t => t.UserId == userId)
@@ -61,6 +64,8 @@ namespace JohnHenryFashionWeb.Controllers
             var tickets = await query
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+
+            _logger.LogInformation("Found {TicketCount} tickets for user {UserId}", tickets.Count, userId);
 
             // Statistics
             var allTickets = await _context.SupportTickets

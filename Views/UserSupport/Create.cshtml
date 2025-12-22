@@ -14,19 +14,19 @@
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">
-                    <i class="fas fa-life-ring text-primary me-2"></i>
+                    <i data-lucide="life-buoy" class="text-primary me-2" style="width: 24px; height: 24px;"></i>
                     Tạo yêu cầu hỗ trợ mới
                 </h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                        <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Quay lại
                     </a>
                 </div>
             </div>
 
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Thông tin yêu cầu hỗ trợ</h6>
+                <div class="card-header bg-light">
+                    <h6 class="m-0 fw-bold">Thông tin yêu cầu hỗ trợ</h6>
                 </div>
                 <div class="card-body">
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
@@ -35,7 +35,7 @@
                         <!-- Category Selection -->
                         <div class="mb-4">
                             <label asp-for="Category" class="form-label fw-bold">
-                                <i class="fas fa-tags me-2"></i>Danh mục
+                                <i data-lucide="tag" style="width: 16px; height: 16px;"></i> Danh mục
                             </label>
                             <select asp-for="Category" class="form-select form-select-lg" id="categorySelect">
                                 <option value="general">Chung - Câu hỏi hoặc yêu cầu chung</option>
@@ -53,7 +53,7 @@
                         <!-- Related Order (conditional) -->
                         <div class="mb-4" id="orderSection" style="display: none;">
                             <label asp-for="RelatedOrderId" class="form-label fw-bold">
-                                <i class="fas fa-shopping-cart me-2"></i>Đơn hàng liên quan (tùy chọn)
+                                <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i> Đơn hàng liên quan (tùy chọn)
                             </label>
                             <select asp-for="RelatedOrderId" class="form-select">
                                 <option value="">-- Chọn đơn hàng --</option>
@@ -70,7 +70,7 @@
                         <!-- Related Product (conditional) -->
                         <div class="mb-4" id="productSection" style="display: none;">
                             <label asp-for="RelatedProductId" class="form-label fw-bold">
-                                <i class="fas fa-box me-2"></i>Sản phẩm liên quan (tùy chọn)
+                                <i data-lucide="package" style="width: 16px; height: 16px;"></i> Sản phẩm liên quan (tùy chọn)
                             </label>
                             <select asp-for="RelatedProductId" class="form-select">
                                 <option value="">-- Chọn sản phẩm --</option>
@@ -85,7 +85,7 @@
                         <!-- Priority -->
                         <div class="mb-4">
                             <label asp-for="Priority" class="form-label fw-bold">
-                                <i class="fas fa-exclamation-circle me-2"></i>Mức độ ưu tiên
+                                <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i> Mức độ ưu tiên
                             </label>
                             <select asp-for="Priority" class="form-select">
                                 <option value="low">Thấp - Câu hỏi chung, không gấp</option>
@@ -99,7 +99,7 @@
                         <!-- Subject -->
                         <div class="mb-4">
                             <label asp-for="Subject" class="form-label fw-bold">
-                                <i class="fas fa-heading me-2"></i>Tiêu đề
+                                <i data-lucide="type" style="width: 16px; height: 16px;"></i> Tiêu đề
                             </label>
                             <input asp-for="Subject" class="form-control form-control-lg" placeholder="Ví dụ: Đơn hàng chưa nhận được sau 5 ngày" maxlength="500" />
                             <span asp-validation-for="Subject" class="text-danger"></span>
@@ -108,12 +108,12 @@
                         <!-- Description -->
                         <div class="mb-4">
                             <label asp-for="Description" class="form-label fw-bold">
-                                <i class="fas fa-align-left me-2"></i>Mô tả chi tiết
+                                <i data-lucide="align-left" style="width: 16px; height: 16px;"></i> Mô tả chi tiết
                             </label>
                             <textarea asp-for="Description" class="form-control" rows="8" placeholder="Vui lòng mô tả chi tiết vấn đề của bạn. Cung cấp càng nhiều thông tin càng tốt để chúng tôi có thể hỗ trợ hiệu quả.&#10;&#10;Ví dụ:&#10;- Tôi đặt hàng ngày 10/12/2025&#10;- Mã đơn hàng: ORD-20251210-ABC123&#10;- Trạng thái hiện tại: Đang giao hàng&#10;- Vấn đề: Đơn hàng chưa được giao sau 5 ngày làm việc"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                             <small class="form-text text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
+                                <i data-lucide="info" style="width: 14px; height: 14px;"></i>
                                 Cung cấp thông tin chi tiết giúp chúng tôi hỗ trợ bạn nhanh hơn
                             </small>
                         </div>
@@ -121,11 +121,11 @@
                         <!-- Attachments -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">
-                                <i class="fas fa-paperclip me-2"></i>Đính kèm tài liệu (tùy chọn)
+                                <i data-lucide="paperclip" style="width: 16px; height: 16px;"></i> Đính kèm tài liệu (tùy chọn)
                             </label>
                             <input type="file" name="Attachments" class="form-control" multiple accept="image/*,.pdf,.doc,.docx" />
                             <small class="form-text text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
+                                <i data-lucide="info" style="width: 14px; height: 14px;"></i>
                                 Hỗ trợ: hình ảnh, PDF, Word. Tối đa 5MB mỗi file.
                             </small>
                         </div>
@@ -133,10 +133,10 @@
                         <!-- Action Buttons -->
                         <div class="d-flex justify-content-between mt-4">
                             <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-lg">
-                                <i class="fas fa-times me-2"></i>Hủy
+                                <i data-lucide="x" class="me-2" style="width: 16px; height: 16px;"></i>Hủy
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg px-5">
-                                <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu
+                                <i data-lucide="send" class="me-2" style="width: 16px; height: 16px;"></i>Gửi yêu cầu
                             </button>
                         </div>
                     </form>
@@ -146,7 +146,7 @@
             <!-- Help Text -->
             <div class="alert alert-info mt-4">
                 <h6 class="alert-heading">
-                    <i class="fas fa-lightbulb me-2"></i>Mẹo để được hỗ trợ nhanh:
+                    <i data-lucide="lightbulb" style="width: 16px; height: 16px;"></i> Mẹo để được hỗ trợ nhanh:
                 </h6>
                 <ul class="mb-0">
                     <li>Cung cấp mã đơn hàng hoặc mã sản phẩm nếu có</li>

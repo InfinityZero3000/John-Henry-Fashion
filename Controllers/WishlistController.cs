@@ -9,6 +9,7 @@ using System.Security.Claims;
 namespace JohnHenryFashionWeb.Controllers
 {
     [Authorize]
+    [Route("userdashboard/wishlist")]
     public class WishlistController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,7 +23,8 @@ namespace JohnHenryFashionWeb.Controllers
             _logger = logger;
         }
 
-        // GET: Wishlist
+        // GET: userdashboard/wishlist
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -306,7 +308,7 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         // GET: Wishlist/GetCount
-        [HttpGet]
+        [HttpGet("count")]
         public async Task<IActionResult> GetCount()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -322,7 +324,7 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         // GET: Wishlist/IsInWishlist
-        [HttpGet]
+        [HttpGet("check/{productId}")]
         [AllowAnonymous]
         public async Task<IActionResult> IsInWishlist(string productId)
         {
