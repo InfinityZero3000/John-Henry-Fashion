@@ -30,7 +30,7 @@ public class SellerProductsController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index(string? search, Guid? categoryId, string? status, int page = 1, int pageSize = 20)
     {
-        var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var currentUserId = User?.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(currentUserId))
         {
             return RedirectToAction("Login", "Account");
@@ -41,9 +41,9 @@ public class SellerProductsController : Controller
             .Include(p => p.Brand)
             .AsQueryable();
 
-        // TODO: Filter by seller when seller-product relationship is fully implemented
-        // For now, show all products
-        // .Where(p => p.SellerId == currentUserId);
+        // Sellers are allowed to manage all products — do not filter by SellerId here.
+        // (Previously we filtered to avoid exposing admin-created products; sellers
+        // now have permission to view and manage all products.)
 
         // Filter by search
         if (!string.IsNullOrEmpty(search))
@@ -119,8 +119,15 @@ public class SellerProductsController : Controller
     // POST: seller/products/create
     [HttpPost("create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Product product, IFormFile? imageFile)
+    public async Task<IActionResult> Create([FromForm] Product product, IFormFile? imageFile)
     {
+        // Log incoming POST for debugging (helps determine whether the request reaches the server)
+        try
+        {
+            _logger.LogInformation("Incoming POST /seller/products/create invoked by {User}", User?.Identity?.Name ?? "(unauthenticated)");
+        }
+        catch { }
+
         // FIX 1: Validate SalePrice < Price
         if (product.SalePrice.HasValue && product.SalePrice >= product.Price)
         {
@@ -147,63 +154,93 @@ public class SellerProductsController : Controller
         
         if (ModelState.IsValid)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(currentUserId))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
-            // FIX 5: Start transaction for atomicity
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+
+            // Handle image upload
+            if (imageFile != null && imageFile.Length > 0)
             {
-                // Handle image upload
-                if (imageFile != null && imageFile.Length > 0)
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                Directory.CreateDirectory(uploadsFolder);
+                var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await imageFile.CopyToAsync(fileStream);
-                    }
-
-                    product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                    await imageFile.CopyToAsync(fileStream);
                 }
-
-                // FIX 6: Generate unique slug
-                product.Slug = await GenerateUniqueSlug(product.Name);
-                product.CreatedAt = DateTime.UtcNow;
-                product.UpdatedAt = DateTime.UtcNow;
-                product.IsActive = true;
-                
-                // Set SellerId to current user
-                product.SellerId = currentUserId;
-
-                _context.Add(product);
-                await _context.SaveChangesAsync();
-                
-                // Commit transaction
-                await transaction.CommitAsync();
-
-                TempData["Success"] = "Tạo sản phẩm thành công!";
-                return RedirectToAction(nameof(Index));
+                product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
             }
-            catch (Exception ex)
+
+            // Ensure product has an Id (DB may generate, but set client-side to be safe)
+            if (product.Id == Guid.Empty)
             {
-                // Rollback transaction on error
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error creating product: {Message}", ex.Message);
-                
-                ModelState.AddModelError("", "Có lỗi xảy ra khi tạo sản phẩm. Vui lòng thử lại!");
+                product.Id = Guid.NewGuid();
+            }
+
+            // Generate unique slug if not provided
+            if (string.IsNullOrWhiteSpace(product.Slug))
+            {
+                var seedName = !string.IsNullOrWhiteSpace(product.Name) ? product.Name : (string.IsNullOrWhiteSpace(product.SKU) ? "product" : product.SKU);
+                product.Slug = await GenerateUniqueSlug(seedName);
+            }
+
+            product.CreatedAt = DateTime.UtcNow;
+            product.UpdatedAt = DateTime.UtcNow;
+            product.IsActive = true;
+            product.Status = "active";
+            product.SellerId = currentUserId;
+
+            // ADMIN APPROVAL FLOW (temporarily disabled)
+            // If you want sellers to submit product creation requests for admin approval,
+            // replace the direct save below with a request submission flow. The code
+            // snippet is provided as a reference and is intentionally commented out
+            // so the current behavior (direct creation) remains active.
+            /*
+            // Example: create a ProductCreationRequest entity and notify admins
+            var creationRequest = new ProductCreationRequest
+            {
+                Id = Guid.NewGuid(),
+                SellerId = currentUserId,
+                ProductJson = JsonSerializer.Serialize(product), // store payload for review
+                CreatedAt = DateTime.UtcNow,
+                Status = "pending"
+            };
+
+            _context.Set<ProductCreationRequest>().Add(creationRequest);
+            await _context.SaveChangesAsync();
+
+            // Notify admins (pseudo-code)
+            // await _notificationService.NotifyAdminsAsync($"New product creation request from seller {currentUserId}");
+
+            TempData["Success"] = "Yêu cầu tạo sản phẩm đã gửi đến quản trị viên!";
+            return RedirectToAction(nameof(Index));
+            */
+
+            // Default: create product directly for now
+            _context.Add(product);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Tạo sản phẩm thành công!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Log ModelState errors for debugging
+        if (!ModelState.IsValid)
+        {
+            foreach (var error in ModelState)
+            {
+                if (error.Value.Errors.Any())
+                {
+                    _logger.LogWarning("ModelState error for {Key}: {Errors}", error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
+                }
             }
         }
 
-        ViewBag.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name", product.CategoryId);
-        ViewBag.Brands = new SelectList(await _context.Brands.ToListAsync(), "Id", "Name", product.BrandId);
+        ViewBag.Categories = await _context.Categories.ToListAsync();
+        ViewBag.Brands = await _context.Brands.ToListAsync();
         return View(product);
     }
 
@@ -211,27 +248,25 @@ public class SellerProductsController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> Edit(Guid id)
     {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(currentUserId))
         {
             return RedirectToAction("Login", "Account");
         }
         
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .FirstOrDefaultAsync(p => p.Id == id);
         if (product == null)
         {
             return NotFound();
         }
 
-        // Check if product belongs to current seller
-        if (product.SellerId != currentUserId)
-        {
-            TempData["Error"] = "Bạn không có quyền chỉnh sửa sản phẩm này!";
-            return RedirectToAction(nameof(Index));
-        }
+        // Sellers are permitted to edit any product; no owner check enforced here.
 
-        ViewBag.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name", product.CategoryId);
-        ViewBag.Brands = new SelectList(await _context.Brands.ToListAsync(), "Id", "Name", product.BrandId);
+        ViewBag.Categories = await _context.Categories.ToListAsync();
+        ViewBag.Brands = await _context.Brands.ToListAsync();
         return View(product);
     }
 
@@ -245,28 +280,59 @@ public class SellerProductsController : Controller
             return NotFound();
         }
 
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(currentUserId))
         {
             return RedirectToAction("Login", "Account");
+        }
+
+        // Server-side validations (mirror create checks)
+        if (product.SalePrice.HasValue && product.SalePrice >= product.Price)
+        {
+            ModelState.AddModelError("SalePrice", "Giá khuyến mãi phải nhỏ hơn giá gốc!");
+        }
+
+        if (await _context.Products.AnyAsync(p => p.SKU == product.SKU && p.Id != product.Id))
+        {
+            ModelState.AddModelError("SKU", "Mã SKU đã tồn tại trong hệ thống!");
+        }
+
+        if (!await _context.Categories.AnyAsync(c => c.Id == product.CategoryId))
+        {
+            ModelState.AddModelError("CategoryId", "Danh mục không tồn tại!");
+        }
+
+        if (product.BrandId.HasValue && !await _context.Brands.AnyAsync(b => b.Id == product.BrandId))
+        {
+            ModelState.AddModelError("BrandId", "Thương hiệu không tồn tại!");
         }
 
         if (ModelState.IsValid)
         {
             try
             {
-                var existingProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+                var existingProduct = await _context.Products.FindAsync(id);
                 if (existingProduct == null)
                 {
                     return NotFound();
                 }
 
-                // Check if product belongs to current seller
-                if (existingProduct.SellerId != currentUserId)
-                {
-                    TempData["Error"] = "Bạn không có quyền chỉnh sửa sản phẩm này!";
-                    return RedirectToAction(nameof(Index));
-                }
+                // Sellers are permitted to edit any product; no owner check enforced here.
+
+                // Update only the fields that can be edited from the form
+                existingProduct.Name = product.Name;
+                existingProduct.SKU = product.SKU;
+                existingProduct.Slug = product.Slug;
+                existingProduct.Price = product.Price;
+                existingProduct.SalePrice = product.SalePrice;
+                existingProduct.StockQuantity = product.StockQuantity;
+                existingProduct.CategoryId = product.CategoryId;
+                existingProduct.BrandId = product.BrandId;
+                existingProduct.Material = product.Material;
+                existingProduct.Size = product.Size;
+                existingProduct.Color = product.Color;
+                existingProduct.IsActive = product.IsActive;
+                existingProduct.IsFeatured = product.IsFeatured;
 
                 // Handle image upload
                 if (imageFile != null && imageFile.Length > 0)
@@ -293,28 +359,23 @@ public class SellerProductsController : Controller
                         await imageFile.CopyToAsync(fileStream);
                     }
 
-                    product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                    existingProduct.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
                 }
-                else
-                {
-                    // Keep existing image
-                    product.FeaturedImageUrl = existingProduct.FeaturedImageUrl;
-                }
+                // If no new image, keep existing image
 
                 // Update slug if name changed
                 if (product.Name != existingProduct.Name)
                 {
-                    product.Slug = GenerateSlug(product.Name);
+                    existingProduct.Slug = GenerateSlug(product.Name);
                 }
-                else
-                {
-                    product.Slug = existingProduct.Slug;
-                }
+                // If name didn't change, keep the slug as edited in the form
 
-                product.CreatedAt = existingProduct.CreatedAt;
-                product.UpdatedAt = DateTime.UtcNow;
+                existingProduct.UpdatedAt = DateTime.UtcNow;
 
-                _context.Update(product);
+                // Preserve SellerId, CreatedAt, Description, and other fields not editable from this form
+                // existingProduct.SellerId = existingProduct.SellerId; // already set
+                // existingProduct.CreatedAt = existingProduct.CreatedAt; // already set
+
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Cập nhật sản phẩm thành công!";
@@ -333,8 +394,20 @@ public class SellerProductsController : Controller
             }
         }
 
-        ViewBag.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name", product.CategoryId);
-        ViewBag.Brands = new SelectList(await _context.Brands.ToListAsync(), "Id", "Name", product.BrandId);
+        // Log ModelState errors for debugging (mirror Create behavior)
+        if (!ModelState.IsValid)
+        {
+            foreach (var error in ModelState)
+            {
+                if (error.Value.Errors.Any())
+                {
+                    _logger.LogWarning("ModelState error for {Key}: {Errors}", error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
+                }
+            }
+        }
+
+        ViewBag.Categories = await _context.Categories.ToListAsync();
+        ViewBag.Brands = await _context.Brands.ToListAsync();
         return View(product);
     }
 
@@ -343,7 +416,7 @@ public class SellerProductsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(currentUserId))
         {
             return RedirectToAction("Login", "Account");
@@ -355,12 +428,7 @@ public class SellerProductsController : Controller
             return NotFound();
         }
 
-        // Check if product belongs to current seller
-        if (product.SellerId != currentUserId)
-        {
-            TempData["Error"] = "Bạn không có quyền xóa sản phẩm này!";
-            return RedirectToAction(nameof(Index));
-        }
+        // Sellers are permitted to delete any product; no owner check enforced here.
 
         // Delete image file if exists
         if (!string.IsNullOrEmpty(product.FeaturedImageUrl))
@@ -386,12 +454,17 @@ public class SellerProductsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProductStatus(Guid productId, string status)
     {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         var product = await _context.Products.FindAsync(productId);
         
-        if (product == null || product.SellerId != currentUserId)
+        if (product == null)
         {
-            TempData["Error"] = "Không tìm thấy sản phẩm hoặc bạn không có quyền!";
+            TempData["Error"] = "Không tìm thấy sản phẩm!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -409,12 +482,17 @@ public class SellerProductsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProductFeatured(Guid productId, bool isFeatured)
     {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         var product = await _context.Products.FindAsync(productId);
         
-        if (product == null || product.SellerId != currentUserId)
+        if (product == null)
         {
-            TempData["Error"] = "Không tìm thấy sản phẩm hoặc bạn không có quyền!";
+            TempData["Error"] = "Không tìm thấy sản phẩm!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -433,11 +511,16 @@ public class SellerProductsController : Controller
     public async Task<IActionResult> DeleteProduct(Guid productId)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         var product = await _context.Products.FindAsync(productId);
         
-        if (product == null || product.SellerId != currentUserId)
+        if (product == null)
         {
-            TempData["Error"] = "Không tìm thấy sản phẩm hoặc bạn không có quyền!";
+            TempData["Error"] = "Không tìm thấy sản phẩm!";
             return RedirectToAction(nameof(Index));
         }
 

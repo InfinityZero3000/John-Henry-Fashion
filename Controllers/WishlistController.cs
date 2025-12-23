@@ -27,7 +27,7 @@ namespace JohnHenryFashionWeb.Controllers
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Login", "Account");
@@ -42,8 +42,12 @@ namespace JohnHenryFashionWeb.Controllers
 
             ViewBag.WishlistCount = wishlistItems.Count;
 
-            // Get user info for sidebar
-            var user = await _userManager.GetUserAsync(User);
+            // Get user info for sidebar (use userId to avoid passing possibly-null ClaimsPrincipal)
+            ApplicationUser? user = null;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                user = await _userManager.FindByIdAsync(userId);
+            }
             if (user != null)
             {
                 ViewBag.UserFullName = $"{user.FirstName} {user.LastName}".Trim();
@@ -146,7 +150,7 @@ namespace JohnHenryFashionWeb.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Json(new { success = false, message = "Vui lòng đăng nhập" });

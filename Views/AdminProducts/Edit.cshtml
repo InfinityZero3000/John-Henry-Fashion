@@ -1,4 +1,5 @@
 @model JohnHenryFashionWeb.Models.Product
+@using System.Globalization
 @{
     ViewData["Title"] = "Chỉnh sửa sản phẩm";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -23,7 +24,6 @@
     <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" id="productForm">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="CreatedAt" />
         <input type="hidden" asp-for="Slug" />
         <input type="hidden" asp-for="FeaturedImageUrl" />
         
@@ -155,7 +155,7 @@
                                     <label asp-for="Price" class="admin-form-label">
                                         Giá gốc (₫) <span style="color: var(--admin-danger);">*</span>
                                     </label>
-                                    <input asp-for="Price" type="number" class="admin-form-input" min="0" step="1000" placeholder="0">
+                                    <input asp-for="Price" type="number" class="admin-form-input" min="0" step="1000" placeholder="0" value="@Model.Price.ToString(CultureInfo.InvariantCulture)">
                                     <span asp-validation-for="Price" class="admin-form-error"></span>
                                 </div>
                             </div>
@@ -164,7 +164,7 @@
                                     <label asp-for="SalePrice" class="admin-form-label">
                                         Giá khuyến mại (₫)
                                     </label>
-                                    <input asp-for="SalePrice" type="number" class="admin-form-input" min="0" step="1000" placeholder="0">
+                                    <input asp-for="SalePrice" type="number" class="admin-form-input" min="0" step="1000" placeholder="0" value="@(Model.SalePrice.HasValue ? Model.SalePrice.Value.ToString(CultureInfo.InvariantCulture) : String.Empty)">
                                     <small class="admin-form-help">Để trống nếu không có khuyến mại</small>
                                     <span asp-validation-for="SalePrice" class="admin-form-error"></span>
                                 </div>

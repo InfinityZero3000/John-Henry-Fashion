@@ -27,8 +27,9 @@
 
             <div class="card">
                 <div class="card-body p-4">
-                    <form method="post" action="/seller/products/@Model.Id" enctype="multipart/form-data">
+                    <form method="post" action="/seller/products/@Model.Id" enctype="multipart/form-data" class="admin-form">
                         @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
                         <input type="hidden" name="Id" value="@Model.Id" />
                         
                         <!-- Basic Information -->
@@ -42,7 +43,8 @@
                                     <label class="form-label">
                                         Tên sản phẩm <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text" name="Name" class="form-control" required value="@Model.Name">
+                                    <input asp-for="Name" class="form-control" required />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.Name)</span>
                                     <small class="form-text text-muted">Tên sản phẩm sẽ hiển thị trên trang chủ</small>
                                 </div>
 
@@ -50,13 +52,15 @@
                                     <label class="form-label">
                                         SKU <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text" name="SKU" class="form-control" required value="@Model.SKU">
+                                    <input asp-for="SKU" class="form-control" required />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.SKU)</span>
                                     <small class="form-text text-muted">Mã sản phẩm duy nhất</small>
                                 </div>
 
                                 <div class="col-12">
                                     <label class="form-label">Slug (URL thân thiện)</label>
-                                    <input type="text" name="Slug" class="form-control" value="@Model.Slug">
+                                    <input asp-for="Slug" class="form-control" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.Slug)</span>
                                     <small class="form-text text-muted">URL hiển thị trên trình duyệt</small>
                                 </div>
                             </div>
@@ -73,12 +77,14 @@
                                     <label class="form-label">
                                         Giá gốc (₫) <span class="text-danger">*</span>
                                     </label>
-                                    <input type="number" name="Price" class="form-control" required min="0" step="1000" value="@Model.Price">
+                                    <input asp-for="Price" class="form-control" type="number" required min="0" step="1000" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.Price)</span>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label">Giá khuyến mãi (₫)</label>
-                                    <input type="number" name="SalePrice" class="form-control" min="0" step="1000" value="@Model.SalePrice">
+                                    <input asp-for="SalePrice" class="form-control" type="number" min="0" step="1000" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.SalePrice)</span>
                                     <small class="form-text text-muted">Để trống nếu không giảm giá</small>
                                 </div>
 
@@ -86,7 +92,8 @@
                                     <label class="form-label">
                                         Số lượng tồn kho <span class="text-danger">*</span>
                                     </label>
-                                    <input type="number" name="StockQuantity" class="form-control" required min="0" value="@Model.StockQuantity">
+                                    <input asp-for="StockQuantity" class="form-control" type="number" required min="0" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.StockQuantity)</span>
                                 </div>
                             </div>
                         </div>
@@ -102,45 +109,44 @@
                                     <label class="form-label">
                                         Danh mục <span class="text-danger">*</span>
                                     </label>
-                                    <select name="CategoryId" class="form-select" required>
+                                    @{
+                                        var categoryList = (ViewBag.Categories as List<JohnHenryFashionWeb.Models.Category>) ?? new List<JohnHenryFashionWeb.Models.Category>();
+                                        var categorySelectList = new SelectList(categoryList, "Id", "Name", Model.CategoryId);
+                                    }
+                                    <select asp-for="CategoryId" asp-items="@categorySelectList" class="form-select" required>
                                         <option value="">-- Chọn danh mục --</option>
-                                        @if (ViewBag.Categories != null)
-                                        {
-                                            @foreach (var category in (ViewBag.Categories as List<JohnHenryFashionWeb.Models.Category>) ?? new List<JohnHenryFashionWeb.Models.Category>())
-                                            {
-                                                <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
-                                            }
-                                        }
                                     </select>
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.CategoryId)</span>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label">Thương hiệu</label>
-                                    <select name="BrandId" class="form-select">
+                                    @{
+                                        var brandList = (ViewBag.Brands as List<JohnHenryFashionWeb.Models.Brand>) ?? new List<JohnHenryFashionWeb.Models.Brand>();
+                                        var brandSelectList = new SelectList(brandList, "Id", "Name", Model.BrandId);
+                                    }
+                                    <select asp-for="BrandId" asp-items="@brandSelectList" class="form-select">
                                         <option value="">-- Chọn thương hiệu --</option>
-                                        @if (ViewBag.Brands != null)
-                                        {
-                                            @foreach (var brand in (ViewBag.Brands as List<JohnHenryFashionWeb.Models.Brand>) ?? new List<JohnHenryFashionWeb.Models.Brand>())
-                                            {
-                                                <option value="@brand.Id" selected="@(Model.BrandId == brand.Id)">@brand.Name</option>
-                                            }
-                                        }
                                     </select>
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.BrandId)</span>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label">Chất liệu</label>
-                                    <input type="text" name="Material" class="form-control" value="@Model.Material">
+                                    <input asp-for="Material" class="form-control" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.Material)</span>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Kích thước</label>
-                                    <input type="text" name="Size" class="form-control" value="@Model.Size">
+                                    <input asp-for="Size" class="form-control" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.Size)</span>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Màu sắc</label>
-                                    <input type="text" name="Color" class="form-control" value="@Model.Color">
+                                    <input asp-for="Color" class="form-control" />
+                                    <span class="text-danger">@Html.ValidationMessageFor(m => m.Color)</span>
                                 </div>
                             </div>
                         </div>
@@ -192,7 +198,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="IsActive" id="isActive" checked="@Model.IsActive">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActive" />
                                         <label class="form-check-label" for="isActive">
                                             <strong>Hiển thị sản phẩm</strong>
                                             <br><small class="text-muted">Sản phẩm sẽ hiển thị trên trang chủ</small>
@@ -201,7 +207,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="IsFeatured" id="isFeatured" checked="@Model.IsFeatured">
+                                        <input asp-for="IsFeatured" class="form-check-input" type="checkbox" id="isFeatured" />
                                         <label class="form-check-label" for="isFeatured">
                                             <strong>Sản phẩm nổi bật</strong>
                                             <br><small class="text-muted">Hiển thị ở vị trí ưu tiên</small>

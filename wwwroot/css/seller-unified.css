@@ -1443,7 +1443,7 @@ html, body {
 }
 
 .admin-form-check-input:checked {
-    background-color: var(--admin-success);
+    background-color: #3b82f6;
 }
 
 .admin-form-check-input::before {

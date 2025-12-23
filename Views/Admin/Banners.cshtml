@@ -178,7 +178,8 @@
                                  data-position="main-@(i + 1)"
                                  data-sort="@(i + 1)"
                                  data-banner-position="home_main"
-                                 onclick="addBanner('home_main')">
+                                 onclick="addBanner('home_main')"
+                                 ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
                                 <div class="banner-placeholder">
                                     <i data-lucide="plus" style="width: 48px; height: 48px;"></i>
                                     <p class="mt-2">Thêm banner</p>
@@ -243,7 +244,8 @@
                                          data-position="secondary-@(i + 1)"
                                          data-sort="@(i + 1)"
                                          data-banner-position="home_side"
-                                         onclick="addBanner('home_side')">
+                                         onclick="addBanner('home_side')"
+                                         ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
                                         <div class="banner-placeholder">
                                             <i data-lucide="plus" style="width: 32px; height: 32px;"></i>
                                             <p class="mt-2">Thêm banner</p>
@@ -1104,7 +1106,7 @@
                 const modal = bootstrap.Modal.getInstance(document.getElementById('selectBannerModal'));
                 modal.hide();
                 
-                showAlert('success', '✅ ' + (result.message || 'Banner đã được gán thành công!') + ' Trang chủ sẽ cập nhật ngay lập tức khi reload.');
+                showAlert('success', '' + (result.message || 'Banner đã được gán thành công!') + ' Trang chủ sẽ cập nhật ngay lập tức khi reload.');
                 
                 // Reload banner library to remove assigned banner
                 loadBannerLibrary();
@@ -1525,46 +1527,58 @@
     }
 
     async function handleDrop(event) {
+        // Ensure we always resolve the correct drop target; event.currentTarget may be null in some browsers or when events are delegated
+        let dropTarget = event && (event.currentTarget || event.target && event.target.closest && event.target.closest('.banner-slot'));
+        console.log('handleDrop invoked', { dropTargetDataset: dropTarget ? dropTarget.dataset : null, draggedElementId: draggedBannerId });
+
         // Only handle drop if something is actually being dragged
         if (!draggedElement) {
+            console.warn('No draggedElement present on drop');
             return;
         }
-        
+
         if (event.stopPropagation) {
             event.stopPropagation();
         }
-        
-        event.preventDefault();
-        
-        const dropTarget = event.currentTarget;
+
+        if (event.preventDefault) {
+            event.preventDefault();
+        }
+
+        if (!dropTarget) {
+            console.error('Drop target not found; aborting reorder');
+            showAlert('danger', 'Không tìm thấy vị trí thả. Vui lòng thử lại.');
+            return false;
+        }
+
         dropTarget.classList.remove('drag-over');
-        
+
         // Check if dropping on same position group
-        const draggedPosition = draggedElement.dataset.bannerPosition;
-        const targetPosition = dropTarget.dataset.bannerPosition;
-        
+        const draggedPosition = draggedElement && draggedElement.dataset && draggedElement.dataset.bannerPosition;
+        const targetPosition = dropTarget.dataset && dropTarget.dataset.bannerPosition;
+
         if (draggedPosition !== targetPosition) {
             showAlert('warning', 'Chỉ có thể di chuyển banner trong cùng một nhóm vị trí');
             return false;
         }
-        
+
         // For collection banners, also check TargetPage
         const draggedTargetPage = draggedElement.dataset.targetPage;
         const targetTargetPage = dropTarget.dataset.targetPage;
-        
+
         if (draggedTargetPage && targetTargetPage && draggedTargetPage !== targetTargetPage) {
             showAlert('warning', 'Chỉ có thể di chuyển banner trong cùng một collection');
             return false;
         }
-        
+
         if (draggedElement === dropTarget) {
             return false;
         }
-        
+
         // Get new sort order from drop target
         const newSortOrder = parseInt(dropTarget.dataset.sort) || 1;
         const oldSortOrder = parseInt(draggedElement.dataset.sort) || 1;
-        
+
         // Debug info
         console.log('Drop event:', {
             draggedId: draggedBannerId,
@@ -1575,19 +1589,20 @@
             targetTargetPage: targetTargetPage,
             targetSort: newSortOrder
         });
-        
+
         // If no change, return early
         if (newSortOrder === oldSortOrder) {
             console.log('No position change, aborting');
             return false;
         }
-        
+
         // Show loading indicator
         const loadingToast = document.createElement('div');
         loadingToast.className = 'admin-alert admin-alert-info';
         loadingToast.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang cập nhật vị trí...';
-        document.querySelector('.admin-content').insertBefore(loadingToast, document.querySelector('.admin-content').firstChild);
-        
+        const adminContent = document.querySelector('.admin-content');
+        if (adminContent) adminContent.insertBefore(loadingToast, adminContent.firstChild);
+
         // Update banner sort order via API
         try {
             const response = await fetch(`/admin/api/banners/${draggedBannerId}/reorder`, {
@@ -1603,12 +1618,12 @@
                     OldSortOrder: oldSortOrder
                 })
             });
-            
+
             const result = await response.json();
-            
+
             // Remove loading toast
-            loadingToast.remove();
-            
+            if (loadingToast.parentNode) loadingToast.remove();
+
             if (result.success) {
                 // Visual swap immediately for better UX
                 if (dropTarget.classList.contains('empty')) {
@@ -1616,39 +1631,52 @@
                     showAlert('success', 'Đã cập nhật thứ tự banner');
                     setTimeout(() => location.reload(), 500);
                 } else {
-                    // Swap the two banners visually
+                    // Swap the two banners visually; guard against missing parents
                     const draggedParent = draggedElement.parentElement;
                     const targetParent = dropTarget.parentElement;
-                    
-                    // Create temporary placeholder
-                    const placeholder = document.createElement('div');
-                    draggedParent.insertBefore(placeholder, draggedElement);
-                    
-                    // Swap elements
-                    targetParent.insertBefore(draggedElement, dropTarget);
-                    draggedParent.insertBefore(dropTarget, placeholder);
-                    
-                    // Remove placeholder
-                    placeholder.remove();
-                    
-                    // Update data-sort attributes
-                    draggedElement.dataset.sort = newSortOrder;
-                    dropTarget.dataset.sort = oldSortOrder;
-                    
-                    showAlert('success', 'Đã cập nhật thứ tự banner');
-                    
-                    // Reload after delay to ensure consistency
-                    setTimeout(() => location.reload(), 1500);
+
+                    if (!draggedParent || !targetParent) {
+                        console.error('Missing parent elements for swap, reloading to ensure consistency');
+                        showAlert('success', 'Đã cập nhật thứ tự banner');
+                        setTimeout(() => location.reload(), 500);
+                        return true;
+                    }
+
+                    try {
+                        // Create temporary placeholder
+                        const placeholder = document.createElement('div');
+                        draggedParent.insertBefore(placeholder, draggedElement);
+
+                        // Swap elements
+                        targetParent.insertBefore(draggedElement, dropTarget);
+                        draggedParent.insertBefore(dropTarget, placeholder);
+
+                        // Remove placeholder
+                        placeholder.remove();
+
+                        // Update data-sort attributes
+                        draggedElement.dataset.sort = newSortOrder;
+                        dropTarget.dataset.sort = oldSortOrder;
+
+                        showAlert('success', 'Đã cập nhật thứ tự banner');
+
+                        // Reload after delay to ensure consistency
+                        setTimeout(() => location.reload(), 1500);
+                    } catch (swapError) {
+                        console.error('Swap error, reloading as fallback', swapError);
+                        showAlert('success', 'Đã cập nhật thứ tự banner');
+                        setTimeout(() => location.reload(), 500);
+                    }
                 }
             } else {
                 showAlert('danger', 'Có lỗi xảy ra: ' + result.message);
             }
         } catch (error) {
-            loadingToast.remove();
+            if (loadingToast.parentNode) loadingToast.remove();
             console.error('Error reordering banner:', error);
             showAlert('danger', 'Có lỗi xảy ra khi di chuyển banner');
         }
-        
+
         return false;
     }
     // ========== END DRAG & DROP ==========
@@ -1768,6 +1796,11 @@
 
         // Set default start date
         resetForm();
+
+        // Prevent default native drag on images inside banner slots so dragging is always handled by the slot
+        document.querySelectorAll('.banner-preview img, .banner-placeholder img').forEach(function(img) {
+            img.addEventListener('dragstart', function(e) { e.preventDefault(); });
+        });
         
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') {

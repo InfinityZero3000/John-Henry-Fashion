@@ -39,40 +39,55 @@ namespace JohnHenryFashionWeb.Services
         {
             try
             {
-                // Check user-specific permissions first
-                var userPermission = await _context.UserPermissions
-                    .FirstOrDefaultAsync(up => up.UserId == userId && up.Permission == permission);
-                
-                if (userPermission != null)
+                // First, check role-based permissions. This avoids querying UserPermissions
+                // which some DB roles may not have access to (causing permission denied errors).
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
                 {
-                    return userPermission.IsGranted;
+                    var roles = await _userManager.GetRolesAsync(user);
+                    foreach (var roleName in roles)
+                    {
+                        try
+                        {
+                            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+                            if (role == null) continue;
+
+                            var rolePermission = await _context.RolePermissions
+                                .FirstOrDefaultAsync(rp => rp.RoleId == role.Id && rp.Permission == permission);
+                            if (rolePermission != null && rolePermission.IsGranted)
+                            {
+                                return true;
+                            }
+                        }
+                        catch (Exception ex) when (ex is Npgsql.PostgresException || ex is System.Data.Common.DbException)
+                        {
+                            _logger.LogWarning(ex, "Unable to read role permissions for user {UserId}, role {RoleName} due to DB permission issue.", userId, roleName);
+                        }
+                    }
                 }
 
-                // Check role-based permissions
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user == null) return false;
-
-                var roles = await _userManager.GetRolesAsync(user);
-                
-                foreach (var roleName in roles)
+                // If role-based check didn't grant permission, try user-specific override.
+                // Wrap this in its own try/catch because some DB users may not have rights
+                // to read the UserPermissions table.
+                try
                 {
-                    var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
-                    if (role == null) continue;
-
-                    var rolePermission = await _context.RolePermissions
-                        .FirstOrDefaultAsync(rp => rp.RoleId == role.Id && rp.Permission == permission);
-                    
-                    if (rolePermission != null && rolePermission.IsGranted)
+                    var userPermission = await _context.UserPermissions
+                        .FirstOrDefaultAsync(up => up.UserId == userId && up.Permission == permission);
+                    if (userPermission != null)
                     {
-                        return true;
+                        return userPermission.IsGranted;
                     }
+                }
+                catch (Exception ex) when (ex is Npgsql.PostgresException || ex is System.Data.Common.DbException)
+                {
+                    _logger.LogWarning(ex, "Unable to read UserPermissions for user {UserId} due to DB permission issue, falling back to role-based permissions.", userId);
                 }
 
                 return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking permission {Permission} for user {UserId}", permission, userId);
+                _logger.LogError(ex, "Unexpected error in HasPermissionAsync for user {UserId}", userId);
                 return false;
             }
         }

@@ -34,7 +34,7 @@ namespace JohnHenryFashionWeb.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();
@@ -74,7 +74,7 @@ namespace JohnHenryFashionWeb.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();
@@ -103,7 +103,7 @@ namespace JohnHenryFashionWeb.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();
@@ -132,7 +132,7 @@ namespace JohnHenryFashionWeb.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();

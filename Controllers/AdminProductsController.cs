@@ -183,11 +183,20 @@ public class AdminProductsController : Controller
             return NotFound();
         }
 
+        // Log incoming POST for diagnostics
+        try
+        {
+            _logger.LogInformation("Incoming POST /admin/products/edit/{Id} invoked by {User} - ModelState.IsValid={IsValid} Errors={ErrorCount}",
+                id, User?.Identity?.Name ?? "(unauthenticated)", ModelState.IsValid, ModelState.Values.Sum(v => v.Errors.Count));
+        }
+        catch { }
+
         if (ModelState.IsValid)
         {
             try
             {
-                var existingProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+                // Load tracked entity to avoid overwriting fields not present in the form
+                var existingProduct = await _context.Products.FindAsync(id);
                 if (existingProduct == null)
                 {
                     return NotFound();
@@ -218,28 +227,36 @@ public class AdminProductsController : Controller
                         await imageFile.CopyToAsync(fileStream);
                     }
 
-                    product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                    existingProduct.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
                 }
-                else
+                // If no new image, keep existing image (nothing to do)
+
+                // Capture original name for slug comparison
+                var originalName = existingProduct.Name;
+
+                // Update only allowed fields from the form
+                existingProduct.Name = product.Name;
+                existingProduct.SKU = product.SKU;
+                existingProduct.Price = product.Price;
+                existingProduct.SalePrice = product.SalePrice;
+                existingProduct.StockQuantity = product.StockQuantity;
+                existingProduct.CategoryId = product.CategoryId;
+                existingProduct.BrandId = product.BrandId;
+                existingProduct.Description = product.Description;
+                existingProduct.Material = product.Material;
+                existingProduct.Size = product.Size;
+                existingProduct.Color = product.Color;
+                existingProduct.IsActive = product.IsActive;
+                existingProduct.IsFeatured = product.IsFeatured;
+
+                // Update slug if name changed, otherwise preserve existing slug
+                if (!string.Equals(product.Name, originalName, StringComparison.Ordinal))
                 {
-                    // Keep existing image
-                    product.FeaturedImageUrl = existingProduct.FeaturedImageUrl;
+                    existingProduct.Slug = GenerateSlug(product.Name);
                 }
 
-                // Update slug if name changed
-                if (product.Name != existingProduct.Name)
-                {
-                    product.Slug = GenerateSlug(product.Name);
-                }
-                else
-                {
-                    product.Slug = existingProduct.Slug;
-                }
+                existingProduct.UpdatedAt = DateTime.UtcNow;
 
-                product.CreatedAt = existingProduct.CreatedAt;
-                product.UpdatedAt = DateTime.UtcNow;
-
-                _context.Update(product);
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Cập nhật sản phẩm thành công!";
@@ -254,6 +271,18 @@ public class AdminProductsController : Controller
                 else
                 {
                     throw;
+                }
+            }
+        }
+
+        // Log ModelState errors for debugging
+        if (!ModelState.IsValid)
+        {
+            foreach (var error in ModelState)
+            {
+                if (error.Value.Errors.Any())
+                {
+                    _logger.LogWarning("ModelState error for {Key}: {Errors}", error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
                 }
             }
         }

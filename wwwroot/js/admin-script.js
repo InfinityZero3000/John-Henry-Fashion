@@ -823,7 +823,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.adminDashboard.restorePreferences();
 });
 
-// Export for use in other modules
+// Expose class on window for browser usage (safe no-op in non-browser envs)
+if (typeof window !== 'undefined') {
+    window.AdminDashboard = AdminDashboard;
+}
+
+// Export for CommonJS-like environments if available
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AdminDashboard;
 }

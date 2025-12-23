@@ -36,7 +36,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/Checkout
         public async Task<IActionResult> Checkout(string? couponCode = null, string? mode = null)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Login", "Account");
@@ -261,7 +261,7 @@ namespace JohnHenryFashionWeb.Controllers
             _logger.LogInformation("ProcessPayment called - PaymentMethod: {PaymentMethod}, ShippingMethod: {ShippingMethod}, AddressId: {AddressId}, Mode: {Mode}", 
                 paymentMethod, shippingMethod, addressId, mode);
             
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Json(new { success = false, message = "Vui lòng đăng nhập để tiếp tục" });
@@ -672,7 +672,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/OrderConfirmation/5
         public async Task<IActionResult> OrderConfirmation(Guid id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
@@ -690,7 +690,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/VNPay/Return
         public async Task<IActionResult> VNPayReturn()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 // Handle VNPay return
@@ -807,6 +807,9 @@ namespace JohnHenryFashionWeb.Controllers
                         order.Status = "processing";
                         order.UpdatedAt = DateTime.UtcNow;
                         await _context.SaveChangesAsync();
+
+                        // Process completed payment (idempotent): create Payment record and update inventory
+                        await ProcessSuccessfulPaymentAsync(order, "vnpay", Request.Form["vnp_TransactionNo"].ToString(), JsonSerializer.Serialize(Request.Form.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())));
                     }
                 }
 
@@ -822,7 +825,7 @@ namespace JohnHenryFashionWeb.Controllers
         // GET: Payment/MoMo/Return
         public async Task<IActionResult> MoMoReturn()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 // Handle MoMo return
@@ -852,24 +855,10 @@ namespace JohnHenryFashionWeb.Controllers
                         order.PaymentStatus = "paid";
                         order.Status = "processing";
                         order.UpdatedAt = DateTime.UtcNow;
+                        // Create payment record and process inventory (idempotent)
+                        var gatewayResponse = JsonSerializer.Serialize(Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString()));
+                        await ProcessSuccessfulPaymentAsync(order, "momo", transId, gatewayResponse);
 
-                        // Create payment record
-                        var payment = new Payment
-                        {
-                            Id = Guid.NewGuid(),
-                            OrderId = orderGuid,
-                            PaymentMethod = "momo",
-                            Status = "completed",
-                            Amount = order.TotalAmount,
-                            TransactionId = transId,
-                            GatewayResponse = JsonSerializer.Serialize(Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())),
-                            ProcessedAt = DateTime.UtcNow,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
-                        };
-
-                        _context.Payments.Add(payment);
-                        
                         // Clear cart if not already cleared
                         if (!string.IsNullOrEmpty(userId))
                         {
@@ -879,10 +868,9 @@ namespace JohnHenryFashionWeb.Controllers
                             if (cartItems.Any())
                             {
                                 _context.ShoppingCartItems.RemoveRange(cartItems);
+                                await _context.SaveChangesAsync();
                             }
                         }
-                        
-                        await _context.SaveChangesAsync();
 
                         return RedirectToAction("OrderConfirmation", new { id = orderGuid });
                     }
@@ -951,6 +939,10 @@ namespace JohnHenryFashionWeb.Controllers
                                 order.Status = "processing";
                                 order.UpdatedAt = DateTime.UtcNow;
                                 await _context.SaveChangesAsync();
+
+                                // Process completed payment (idempotent)
+                                var transId = data.TryGetValue("transId", out var tEl) ? tEl.GetString() : null;
+                                await ProcessSuccessfulPaymentAsync(order, "momo", transId, body);
                             }
                         }
                     }
@@ -962,6 +954,103 @@ namespace JohnHenryFashionWeb.Controllers
             {
                 _logger.LogError(ex, "Error processing MoMo IPN");
                 return BadRequest();
+            }
+        }
+
+        // Idempotent helper to record completed payment and update inventory
+        private async Task ProcessSuccessfulPaymentAsync(Order order, string paymentMethod, string? transactionId, string? gatewayResponseJson)
+        {
+            try
+            {
+                // Reload order to ensure fresh data
+                order = await _context.Orders
+                    .Include(o => o.OrderItems)
+                    .FirstOrDefaultAsync(o => o.Id == order.Id) ?? order;
+
+                // If a completed payment already exists for this order, skip processing
+                var existing = await _context.Payments
+                    .AnyAsync(p => p.OrderId == order.Id && p.Status == "completed");
+
+                if (existing)
+                {
+                    _logger.LogInformation("Payment already processed for order {OrderId}, skipping inventory update", order.Id);
+                    return;
+                }
+
+                // Create payment record
+                var payment = new Payment
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    PaymentMethod = paymentMethod,
+                    Status = "completed",
+                    Amount = order.TotalAmount,
+                    TransactionId = transactionId,
+                    GatewayResponse = gatewayResponseJson ?? string.Empty,
+                    ProcessedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.Payments.Add(payment);
+                await _context.SaveChangesAsync();
+
+                // Update inventory (same logic as CheckoutController.UpdateInventoryAsync)
+                var orderItems = await _context.OrderItems
+                    .Where(oi => oi.OrderId == order.Id)
+                    .ToListAsync();
+
+                foreach (var item in orderItems)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.StockQuantity -= item.Quantity;
+                        if (product.StockQuantity <= 0)
+                        {
+                            product.InStock = false;
+                            product.Status = "out_of_stock";
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Send notifications to user/admins (best-effort)
+                if (!string.IsNullOrEmpty(order.UserId))
+                {
+                    try
+                    {
+                        var user = await _userManager.FindByIdAsync(order.UserId);
+                        if (user?.Email != null)
+                        {
+                            await _notificationService.SendNotificationAsync(order.UserId,
+                                "Đơn hàng đã được xác nhận",
+                                $"Đơn hàng #{order.OrderNumber} đã được thanh toán và xử lý.",
+                                "order_confirmed");
+                        }
+
+                        var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+                        var sellerUsers = await _userManager.GetUsersInRoleAsync("Seller");
+                        var notifyUsers = adminUsers.Union(sellerUsers).Distinct();
+                        foreach (var adminUser in notifyUsers)
+                        {
+                            var customerName = user != null ? $"{user.FirstName} {user.LastName}" : "Khách hàng";
+                            await _notificationService.SendNotificationAsync(adminUser.Id,
+                                "Đơn hàng mới",
+                                $"Có đơn hàng mới #{order.OrderNumber} từ khách hàng {customerName}. Tổng: {order.TotalAmount:N0}₫",
+                                "new_order");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to send notifications for processed payment of order {OrderId}", order.Id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing successful payment for order {OrderId}", order.Id);
             }
         }
 
@@ -1222,7 +1311,7 @@ namespace JohnHenryFashionWeb.Controllers
             string postalCode,
             bool isDefault = false)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Json(new { success = false, message = "Vui lòng đăng nhập" });
