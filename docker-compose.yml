@@ -23,7 +23,7 @@ services:
     image: dpage/pgadmin4:latest
     container_name: johnhenry_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@johnhenry.com
+      PGADMIN_DEFAULT_EMAIL: thefirestar312@gmail.com
       PGADMIN_DEFAULT_PASSWORD: admin123
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'

@@ -444,7 +444,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@johnhenry.com
+      PGADMIN_DEFAULT_EMAIL: thefirestar312@gmail.com
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
       - "8080:80"

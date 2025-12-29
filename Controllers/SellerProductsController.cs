@@ -430,6 +430,20 @@ public class SellerProductsController : Controller
 
         // Sellers are permitted to delete any product; no owner check enforced here.
 
+        // Check if the product is in any shopping carts or past orders
+        var isInCart = await _context.ShoppingCartItems.AnyAsync(i => i.ProductId == id);
+        var isInOrder = await _context.OrderItems.AnyAsync(i => i.ProductId == id);
+
+        if (isInCart || isInOrder)
+        {
+            var locations = new List<string>();
+            if (isInCart) locations.Add("giỏ hàng của người dùng");
+            if (isInOrder) locations.Add("đơn hàng đã đặt");
+            
+            TempData["Warning"] = $"Không thể xóa sản phẩm này vì nó đang tồn tại trong {string.Join(" và ", locations)}. Vui lòng xem xét ẩn sản phẩm thay vì xóa.";
+            return RedirectToAction(nameof(Index));
+        }
+
         // Delete image file if exists
         if (!string.IsNullOrEmpty(product.FeaturedImageUrl))
         {
@@ -437,7 +451,14 @@ public class SellerProductsController : Controller
             var imageFullPath = Path.Combine(_webHostEnvironment.WebRootPath, imagePath);
             if (System.IO.File.Exists(imageFullPath))
             {
-                System.IO.File.Delete(imageFullPath);
+                try
+                {
+                    System.IO.File.Delete(imageFullPath);
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not delete image file {Path} for product {ProductId}", imageFullPath, id);
+                }
             }
         }
 

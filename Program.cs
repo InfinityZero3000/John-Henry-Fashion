@@ -532,7 +532,7 @@ static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
 
 static async Task SeedAdminUser(UserManager<ApplicationUser> userManager)
 {
-    var adminEmail = "admin@johnhenry.com";
+    var adminEmail = "thefirestar312@gmail.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     
     if (adminUser == null)
@@ -591,7 +591,7 @@ static async Task SeedBlogPosts(ApplicationDbContext context, UserManager<Applic
     }
 
     // Get admin user to set as author
-    var adminUser = await userManager.FindByEmailAsync("admin@johnhenry.com");
+    var adminUser = await userManager.FindByEmailAsync("thefirestar312@gmail.com");
     if (adminUser == null) return;
 
     // Remove any old categories with wrong slugs

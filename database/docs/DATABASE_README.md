@@ -39,7 +39,7 @@ docker-compose ps
 ### 2. Truy cập Database
 - **PostgreSQL**: `localhost:5432`
 - **pgAdmin**: http://localhost:8080
-  - Email: `admin@johnhenry.com`
+  - Email: `thefirestar312@gmail.com`
   - Password: `admin123`
 
 ### 3. Thông tin kết nối Database
@@ -133,7 +133,7 @@ JWT_AUDIENCE=JohnHenryUsers
 ## Dữ liệu mẫu
 
 Database bao gồm dữ liệu mẫu:
-- **Tài khoản Admin**: `admin@johnhenry.com` / `Admin123!`
+- **Tài khoản Admin**: `thefirestar312@gmail.com` / `Admin123!`
 - **Tài khoản Seller**: `seller@johnhenry.com` / `Seller123!`
 - **Sản phẩm mẫu**: Quần áo nam và nữ
 - **Danh mục**: Cấu trúc danh mục hoàn chỉnh
