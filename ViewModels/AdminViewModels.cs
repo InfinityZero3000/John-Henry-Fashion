@@ -741,41 +741,6 @@ namespace JohnHenryFashionWeb.ViewModels
         public string SortDirection { get; set; } = "desc";
     }
 
-    public class UserEditViewModel
-    {
-        public string Id { get; set; } = string.Empty;
-        
-        [Required(ErrorMessage = "Họ là bắt buộc")]
-        [StringLength(50)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Tên là bắt buộc")]
-        [StringLength(50)]
-        public string LastName { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Email là bắt buộc")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; } = string.Empty;
-
-        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
-        public string? PhoneNumber { get; set; }
-
-        public bool IsActive { get; set; } = true;
-
-        [DataType(DataType.Date)]
-        public DateTime? DateOfBirth { get; set; }
-
-        public string? Gender { get; set; }
-
-        [StringLength(500)]
-        public string? Address { get; set; }
-
-        public List<string> SelectedRoles { get; set; } = new();
-        public List<string> AvailableRoles { get; set; } = new();
-        public IFormFile? AvatarFile { get; set; }
-        public string? CurrentAvatarUrl { get; set; }
-    }
-
     public class UserDetailViewModel
     {
         public ApplicationUser User { get; set; } = new();
