@@ -1,66 +1,14 @@
 @model JohnHenryFashionWeb.ViewModels.UserDashboardViewModel
 @{
     ViewData["Title"] = "Bảng điều khiển người dùng";
+    ViewData["CurrentSection"] = "dashboard";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar Navigation -->
-        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-            <div class="position-sticky pt-3">
-                <div class="text-center mb-4">
-                    <div class="user-avatar">
-                        <i class="fas fa-user-circle fa-4x text-primary"></i>
-                    </div>
-                    <h5 class="mt-2">@Model.User.FirstName @Model.User.LastName</h5>
-                    <p class="text-muted">@Model.User.Email</p>
-                </div>
-                
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("Index", "UserDashboard")">
-                            <i class="fas fa-tachometer-alt me-2"></i>
-                            Tổng quan
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Profile", "UserDashboard")">
-                            <i class="fas fa-user me-2"></i>
-                            Hồ sơ cá nhân
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Orders", "UserDashboard")">
-                            <i class="fas fa-shopping-bag me-2"></i>
-                            Đơn hàng của tôi
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Wishlist">
-                            <i class="fas fa-heart me-2"></i>
-                            Sản phẩm yêu thích
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("ChangePassword", "Account")">
-                            <i class="fas fa-lock me-2"></i>
-                            Đổi mật khẩu
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Notifications", "UserDashboard")">
-                            <i class="fas fa-bell me-2"></i>
-                            Thông báo
-                            @if (Model.UnreadNotifications > 0)
-                            {
-                                <span class="badge bg-danger">@Model.UnreadNotifications</span>
-                            }
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <!-- User Sidebar -->
+        @await Html.PartialAsync("_UserSidebar")
 
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">

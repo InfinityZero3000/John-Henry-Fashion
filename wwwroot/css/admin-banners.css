@@ -64,6 +64,8 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    pointer-events: none; /* Prevent image from blocking drag events */
+    user-select: none;
 }
 
 .banner-slot:hover .banner-preview img {
@@ -82,10 +84,12 @@
     justify-content: center;
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none; /* Don't block drag events when hidden */
 }
 
 .banner-slot:hover .banner-overlay {
     opacity: 1;
+    pointer-events: auto; /* Enable interaction when visible */
 }
 
 .banner-actions {
@@ -113,7 +117,6 @@
 
 .banner-slot.empty * {
     pointer-events: none;
-    user-drag: none;
     -webkit-user-drag: none;
 }
 
@@ -382,6 +385,7 @@
     opacity: 0;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: none; /* Don't interfere with dragging */
 }
 
 .drag-handle:active {
@@ -393,6 +397,7 @@
     width: 20px;
     height: 20px;
     color: #6c757d;
+    pointer-events: none; /* Icons shouldn't capture events */
 }
 
 .banner-slot:hover .drag-handle {
