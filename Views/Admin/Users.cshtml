@@ -295,9 +295,6 @@
                                     <a href="/admin/users/@user.Id" class="admin-btn admin-btn-sm admin-btn-secondary" title="Xem">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    <a href="/admin/users/@user.Id/edit" class="admin-btn admin-btn-sm admin-btn-primary" title="Sửa">
-                                        <i data-lucide="edit"></i>
-                                    </a>
                                     @if (user.IsLockedOut)
                                     {
                                         <button onclick="unlockUser('@user.Id')" class="admin-btn admin-btn-sm admin-btn-warning" title="Gỡ khóa tài khoản (do nhập sai mật khẩu)">

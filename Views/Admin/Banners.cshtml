@@ -147,6 +147,7 @@
                                  draggable="true"
                                  ondragstart="handleDragStart(event)"
                                  ondragover="handleDragOver(event)"
+                                 ondragleave="handleDragLeave(event)"
                                  ondrop="handleDrop(event)"
                                  ondragend="handleDragEnd(event)">
                                 <div class="banner-preview">
@@ -179,7 +180,9 @@
                                  data-sort="@(i + 1)"
                                  data-banner-position="home_main"
                                  onclick="addBanner('home_main')"
-                                 ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                                 ondragover="handleDragOver(event)"
+                                 ondragleave="handleDragLeave(event)"
+                                 ondrop="handleDrop(event)">
                                 <div class="banner-placeholder">
                                     <i data-lucide="plus" style="width: 48px; height: 48px;"></i>
                                     <p class="mt-2">Thêm banner</p>
@@ -214,6 +217,7 @@
                                          draggable="true"
                                          ondragstart="handleDragStart(event)"
                                          ondragover="handleDragOver(event)"
+                                         ondragleave="handleDragLeave(event)"
                                          ondrop="handleDrop(event)"
                                          ondragend="handleDragEnd(event)">
                                         <div class="banner-preview">
@@ -245,7 +249,9 @@
                                          data-sort="@(i + 1)"
                                          data-banner-position="home_side"
                                          onclick="addBanner('home_side')"
-                                         ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                                         ondragover="handleDragOver(event)"
+                                         ondragleave="handleDragLeave(event)"
+                                         ondrop="handleDrop(event)">
                                         <div class="banner-placeholder">
                                             <i data-lucide="plus" style="width: 32px; height: 32px;"></i>
                                             <p class="mt-2">Thêm banner</p>
@@ -1432,8 +1438,23 @@
     let draggedBannerId = null;
 
     function handleDragStart(event) {
+        // Ensure we get the .banner-slot element
         draggedElement = event.currentTarget;
+        
+        // Verify we have a valid draggable element
+        if (!draggedElement || !draggedElement.classList.contains('banner-slot')) {
+            console.error('Invalid drag source');
+            event.preventDefault();
+            return false;
+        }
+        
         draggedBannerId = draggedElement.dataset.id;
+        
+        // Don't allow dragging empty slots
+        if (draggedElement.classList.contains('empty')) {
+            event.preventDefault();
+            return false;
+        }
         
         // Debug info
         console.log('Drag started:', {
@@ -1448,12 +1469,14 @@
         
         // Set drag data
         event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/html', draggedElement.innerHTML);
+        event.dataTransfer.setData('text/plain', draggedBannerId);
         
         // Make the drag image semi-transparent
         setTimeout(() => {
             draggedElement.style.opacity = '0.5';
         }, 0);
+        
+        return true;
     }
 
     function handleDragOver(event) {
@@ -1504,6 +1527,15 @@
         }
         
         return false;
+    }
+
+    function handleDragLeave(event) {
+        const dropTarget = event.currentTarget;
+        
+        // Only remove drag-over if actually leaving the element (not entering a child)
+        if (!dropTarget.contains(event.relatedTarget)) {
+            dropTarget.classList.remove('drag-over');
+        }
     }
 
     function handleDragEnd(event) {
