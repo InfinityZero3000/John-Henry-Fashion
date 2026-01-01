@@ -6,7 +6,7 @@ using JohnHenryFashionWeb.Models;
 
 namespace JohnHenryFashionWeb.Controllers
 {
-    [Authorize(Roles = UserRoles.Admin, AuthenticationSchemes = "Identity.Application")]
+    [Authorize(Roles = UserRoles.Admin + "," + UserRoles.Seller, AuthenticationSchemes = "Identity.Application")]
     [Route("admin/approvals")]
     public class ProductApprovalController : Controller
     {

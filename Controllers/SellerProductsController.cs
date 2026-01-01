@@ -333,6 +333,7 @@ public class SellerProductsController : Controller
                 existingProduct.Color = product.Color;
                 existingProduct.IsActive = product.IsActive;
                 existingProduct.IsFeatured = product.IsFeatured;
+                existingProduct.Description = product.Description;
 
                 // Handle image upload
                 if (imageFile != null && imageFile.Length > 0)

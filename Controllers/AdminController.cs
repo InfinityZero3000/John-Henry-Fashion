@@ -1119,39 +1119,6 @@ namespace JohnHenryFashionWeb.Controllers
             return View(userDetail);
         }
 
-        [HttpGet("users/{id}/edit")]
-        public async Task<IActionResult> EditUser(string id)
-        {
-            var userEdit = await _userManagementService.GetUserForEditAsync(id);
-            if (userEdit == null)
-            {
-                return NotFound();
-            }
-
-            return View(userEdit);
-        }
-
-        [HttpPost("users/{id}/edit")]
-        public async Task<IActionResult> EditUser(string id, UserEditViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-                model.AvailableRoles = roles.Where(n => !string.IsNullOrEmpty(n)).Select(n => n!).ToList();
-                return View(model);
-            }
-
-            var success = await _userManagementService.UpdateUserAsync(id, model);
-            if (success)
-            {
-                TempData["Success"] = "Cập nhật thông tin người dùng thành công!";
-                return RedirectToAction(nameof(UserDetail), new { id });
-            }
-
-            TempData["Error"] = "Có lỗi xảy ra khi cập nhật thông tin người dùng!";
-            return View(model);
-        }
-
         [HttpPost("users/{id}/toggle-status")]
         public async Task<IActionResult> ToggleUserStatus(string id)
         {

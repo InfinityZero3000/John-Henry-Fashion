@@ -1586,11 +1586,29 @@ namespace JohnHenryFashionWeb.Controllers
             }
 
             // Check if seller has permission to update this order
+            // Allow seller to update if:
+            // 1. At least one product in order belongs to seller (has matching SellerId)
+            // 2. OR products don't have SellerId assigned yet (legacy data compatibility)
+            var orderHasProducts = order.OrderItems.Any(oi => oi.Product != null);
+            if (!orderHasProducts)
+            {
+                return Json(new { success = false, message = "Đơn hàng không có sản phẩm." });
+            }
+
             var sellerProducts = order.OrderItems
                 .Where(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id)
                 .ToList();
 
-            if (!sellerProducts.Any())
+            var productsWithoutSeller = order.OrderItems
+                .Where(oi => oi.Product != null && string.IsNullOrEmpty(oi.Product.SellerId))
+                .ToList();
+
+            // If there are products assigned to other sellers and none to this seller
+            var productsAssignedToOthers = order.OrderItems
+                .Where(oi => oi.Product != null && !string.IsNullOrEmpty(oi.Product.SellerId) && oi.Product.SellerId != currentUser.Id)
+                .ToList();
+
+            if (!sellerProducts.Any() && !productsWithoutSeller.Any())
             {
                 return Json(new { success = false, message = "Bạn không có quyền cập nhật đơn hàng này." });
             }
