@@ -7,8 +7,6 @@ namespace JohnHenryFashionWeb.Services
     {
         Task<UserManagementViewModel> GetUsersAsync(UserFilterViewModel filter);
         Task<ApplicationUser?> GetUserByIdAsync(string userId);
-        Task<UserEditViewModel> GetUserForEditAsync(string userId);
-        Task<bool> UpdateUserAsync(string userId, UserEditViewModel model);
         Task<bool> ToggleUserStatusAsync(string userId);
         Task<bool> ResetUserPasswordAsync(string userId);
         Task<List<string>> GetUserRolesAsync(string userId);

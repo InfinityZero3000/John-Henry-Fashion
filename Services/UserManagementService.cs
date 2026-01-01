@@ -193,63 +193,6 @@ namespace JohnHenryFashionWeb.Services
             return await _userManager.FindByIdAsync(userId);
         }
 
-        public async Task<UserEditViewModel> GetUserForEditAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                return new UserEditViewModel();
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var allRoles = await _roleManager.Roles.ToListAsync();
-
-            return new UserEditViewModel
-            {
-                Id = user.Id,
-                FirstName = user.FirstName ?? string.Empty,
-                LastName = user.LastName ?? string.Empty,
-                Email = user.Email ?? string.Empty,
-                PhoneNumber = user.PhoneNumber ?? string.Empty,
-                IsActive = user.IsActive,
-                SelectedRoles = roles.ToList(),
-                AvailableRoles = allRoles.Select(r => r.Name).Where(n => n != null).Cast<string>().ToList()
-            };
-        }
-
-        public async Task<bool> UpdateUserAsync(string userId, UserEditViewModel model)
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user == null) return false;
-
-                var oldData = $"Email: {user.Email}, Name: {user.FirstName} {user.LastName}, Status: {user.IsActive}";
-
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.PhoneNumber = model.PhoneNumber;
-                user.IsActive = model.IsActive;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                var result = await _userManager.UpdateAsync(user);
-                if (result.Succeeded)
-                {
-                    var newData = $"Email: {user.Email}, Name: {user.FirstName} {user.LastName}, Status: {user.IsActive}";
-                    await _auditLogService.LogAdminActionAsync(
-                        "SYSTEM", // In real app, this would be current admin user ID
-                        "UPDATE_USER",
-                        userId,
-                        $"Updated user profile. Old: {oldData}, New: {newData}"
-                    );
-                    return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         public async Task<bool> ToggleUserStatusAsync(string userId)
         {
             try
