@@ -1,0 +1,176 @@
+services:
+  # Web Service - ASP.NET Core Application
+  - type: web
+    name: johnhenry-web
+    runtime: docker
+    plan: free # Hoặc starter, standard tùy nhu cầu
+    region: singapore # Chọn region gần nhất
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    
+    # Environment variables
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      
+      - key: ASPNETCORE_URLS
+        value: http://+:8080
+      
+      # Database Connection - Sẽ tự động lấy từ Render PostgreSQL
+      - key: DB_HOST
+        fromDatabase:
+          name: johnhenry-db
+          property: host
+      
+      - key: DB_PORT
+        fromDatabase:
+          name: johnhenry-db
+          property: port
+      
+      - key: DB_NAME
+        fromDatabase:
+          name: johnhenry-db
+          property: database
+      
+      - key: DB_USER
+        fromDatabase:
+          name: johnhenry-db
+          property: user
+      
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: johnhenry-db
+          property: password
+      
+      # JWT Configuration
+      - key: JWT_SECRET_KEY
+        generateValue: true # Auto-generate secret
+      
+      - key: JWT_ISSUER
+        value: JohnHenryFashion
+      
+      - key: JWT_AUDIENCE
+        value: JohnHenryUsers
+      
+      # Redis Connection - Lấy từ Render Redis hoặc external
+      - key: REDIS_CONNECTION
+        value: # Bạn sẽ điền sau khi tạo Redis service
+      
+      # Email Settings (Gmail example)
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      
+      - key: EMAIL_PORT
+        value: 587
+      
+      - key: EMAIL_USE_SSL
+        value: true
+      
+      - key: EMAIL_USER
+        sync: false # Bạn sẽ điền trong Render Dashboard
+      
+      - key: EMAIL_PASSWORD
+        sync: false # App Password từ Gmail
+      
+      - key: EMAIL_FROM
+        sync: false
+      
+      - key: EMAIL_FROM_NAME
+        value: John Henry Fashion
+      
+      # Google OAuth
+      - key: GOOGLE_CLIENT_ID
+        sync: false # Điền trong Dashboard
+      
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # Điền trong Dashboard
+      
+      # VNPay Configuration
+      - key: VNPAY_TMN_CODE
+        sync: false
+      
+      - key: VNPAY_HASH_SECRET
+        sync: false
+      
+      - key: VNPAY_PAYMENT_URL
+        value: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      
+      - key: VNPAY_API_URL
+        value: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+      
+      - key: VNPAY_ENABLED
+        value: true
+      
+      - key: VNPAY_SANDBOX
+        value: true
+      
+      # MoMo Configuration
+      - key: MOMO_PARTNER_CODE
+        sync: false
+      
+      - key: MOMO_ACCESS_KEY
+        sync: false
+      
+      - key: MOMO_SECRET_KEY
+        sync: false
+      
+      - key: MOMO_API_URL
+        value: https://test-payment.momo.vn/v2/gateway/api/create
+      
+      - key: MOMO_ENABLED
+        value: true
+      
+      - key: MOMO_SANDBOX
+        value: true
+      
+      # Stripe Configuration
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      
+      - key: STRIPE_API_URL
+        value: https://api.stripe.com
+      
+      - key: STRIPE_CURRENCY
+        value: vnd
+      
+      - key: STRIPE_ENABLED
+        value: true
+      
+      - key: STRIPE_SANDBOX
+        value: true
+      
+      # Google Maps API (if needed)
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+    
+    # Health check endpoint
+    healthCheckPath: /health
+    
+    # Auto-deploy from GitHub
+    autoDeploy: true
+
+# Database - PostgreSQL
+databases:
+  - name: johnhenry-db
+    databaseName: johnhenry_db
+    user: johnhenry_user
+    plan: free # hoặc starter
+    region: singapore
+    
+    # Post-creation command để chạy migrations và seed data
+    postCreateCommands:
+      - echo "Database created successfully"
+
+# Redis (Optional - Nếu cần caching)
+# Lưu ý: Render không có Redis free tier, bạn có thể dùng Redis Cloud hoặc Upstash
+# - type: redis
+#   name: johnhenry-redis
+#   plan: starter
+#   region: singapore
+#   maxmemoryPolicy: allkeys-lru

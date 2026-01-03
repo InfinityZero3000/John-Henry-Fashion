@@ -321,6 +321,15 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
     options.Level = CompressionLevel.SmallestSize;
 });
 
+// Add Health Checks for Render deployment
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("DefaultConnection")!,
+        name: "database",
+        timeout: TimeSpan.FromSeconds(3),
+        tags: new[] { "db", "sql", "postgres" })
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
+
 // Configure routing options to be case-insensitive
 builder.Services.Configure<RouteOptions>(options =>
 {
@@ -492,6 +501,28 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "api",
     pattern: "api/{controller}/{action=Index}/{id?}");
+
+// Health Check endpoint for Render
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration.ToString()
+            }),
+            totalDuration = report.TotalDuration.ToString()
+        });
+        await context.Response.WriteAsync(result);
+    }
+});
 
 // Ensure database is created and roles seeded
 using (var scope = app.Services.CreateScope())

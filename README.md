@@ -355,7 +355,28 @@ Ensure you have the following installed on your development machine:
 - ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=flat-square&logo=docker) **Docker & Docker Compose**
 - ![Git](https://img.shields.io/badge/Git-Latest-F05032?style=flat-square&logo=git) **Git**
 
-### Quick Start
+### 🚀 Deploy to Production (Render)
+
+**Quick deploy in 15 minutes!**
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com)
+
+**Step-by-step guides:**
+- 📖 [**QUICKSTART.md**](./QUICKSTART.md) - Fast deployment guide (15 mins)
+- 📚 [**DEPLOYMENT.md**](./DEPLOYMENT.md) - Complete deployment documentation
+- ✅ [**DEPLOY_CHECKLIST.md**](./DEPLOY_CHECKLIST.md) - Deployment checklist
+
+**What you'll get:**
+- ✅ Free PostgreSQL database
+- ✅ Auto SSL/HTTPS
+- ✅ Auto-deploy from GitHub
+- ✅ Docker containerized
+- ✅ Health monitoring
+- ✅ Persistent storage with Cloudinary
+
+---
+
+### Quick Start (Local Development)
 
 1. **Clone the Repository**
 ```bash
@@ -370,8 +391,8 @@ docker-compose up -d postgres redis
 
 3. **Configure Application Settings**
 ```bash
-cp appsettings.Development.json.example appsettings.Development.json
-# Edit configuration file with your settings
+cp .env.example .env
+# Edit .env with your settings
 ```
 
 4. **Apply Database Migrations**
@@ -389,6 +410,7 @@ dotnet run
 - Web Application: `https://localhost:5001`
 - API Documentation: `https://localhost:5001/swagger`
 - Admin Panel: `https://localhost:5001/admin`
+- Health Check: `https://localhost:5001/health`
 
 ### Configuration
 
