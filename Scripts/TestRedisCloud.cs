@@ -111,12 +111,12 @@ namespace JohnHenryFashionWeb.Scripts
                 }
                 else
                 {
-                    Console.WriteLine("❌ Failed to connect to Redis Cloud");
+                    Console.WriteLine("Failed to connect to Redis Cloud");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
             

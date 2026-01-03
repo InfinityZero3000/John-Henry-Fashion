@@ -75,7 +75,7 @@ namespace JohnHenryFashionWeb.Scripts
 
                 if (foundLocation == null)
                 {
-                    Console.WriteLine($"❌ MISSING: {product.SKU} - {product.Name}");
+                    Console.WriteLine($"MISSING: {product.SKU} - {product.Name}");
                     Console.WriteLine($"   Current DB path: {currentPath ?? "NULL"}");
                     Console.WriteLine();
                     missingCount++;
@@ -97,7 +97,7 @@ namespace JohnHenryFashionWeb.Scripts
             Console.WriteLine("\n=== SUMMARY ===");
             Console.WriteLine($"✅ OK: {okCount}");
             Console.WriteLine($"⚠️  Path Mismatch: {pathMismatchCount}");
-            Console.WriteLine($"❌ Missing Files: {missingCount}");
+            Console.WriteLine($"Missing Files: {missingCount}");
             Console.WriteLine($"📊 Total: {products.Count}");
         }
     }

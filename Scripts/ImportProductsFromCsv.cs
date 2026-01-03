@@ -18,7 +18,7 @@ namespace JohnHenryFashionWeb.Scripts
         {
             if (!File.Exists(csvFilePath))
             {
-                Console.WriteLine($"❌ File not found: {csvFilePath}");
+                Console.WriteLine($"File not found: {csvFilePath}");
                 return;
             }
 
