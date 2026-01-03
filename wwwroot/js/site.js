@@ -738,7 +738,7 @@ window.loadAndOpenCartSidebar = async function() {
             }
         }
     } catch (error) {
-        console.error('❌ Error loading cart sidebar:', error);
+        console.error('Error loading cart sidebar:', error);
         showToast('Lỗi', 'Không thể tải giỏ hàng', 'error');
     }
 };

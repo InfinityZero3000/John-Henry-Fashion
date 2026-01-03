@@ -169,10 +169,14 @@ main.col-md-9 {
     object-fit: cover;
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive - Scoped to user dashboard only */
 @media (max-width: 991.98px) {
-    .profile-container,
-    .container-fluid > .row {
+    .profile-container {
+        flex-direction: column;
+    }
+    
+    /* Only apply to rows that contain user-sidebar */
+    .row:has(.user-sidebar) {
         flex-direction: column;
     }
     
@@ -247,12 +251,7 @@ main.col-md-9 {
     transition: none;
 }
 
-/* Fix container padding */
-.container-fluid {
-    padding: 0;
-}
-
-.container-fluid > .row {
-    margin: 0;
-    display: flex;
+/* User Dashboard Layout - Scoped to pages with user-sidebar */
+.user-sidebar + main {
+    padding-left: 0;
 }

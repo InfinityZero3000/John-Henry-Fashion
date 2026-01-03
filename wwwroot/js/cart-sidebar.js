@@ -183,8 +183,6 @@
                             quantity: newQty 
                         })
                     });
-                        body: formData
-                    });
                     
                     const result = await response.json();
                     
