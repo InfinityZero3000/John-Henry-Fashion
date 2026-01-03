@@ -35,12 +35,19 @@ namespace JohnHenryFashionWeb.Controllers
             try
             {
                 var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                _logger.LogInformation("🔍 [API] GetNotifications called - UserId: {UserId}, UnreadOnly: {UnreadOnly}", 
+                    userId, unreadOnly);
+                
                 if (string.IsNullOrEmpty(userId))
                 {
+                    _logger.LogWarning("⚠️ [API] Unauthorized - No userId found in claims");
                     return Unauthorized();
                 }
 
                 var notifications = await _notificationService.GetUserNotificationsAsync(userId, unreadOnly);
+                
+                _logger.LogInformation("✅ [API] Returning {Count} notifications for user {UserId}", 
+                    notifications.Count, userId);
                 
                 return Ok(new
                 {
@@ -61,7 +68,7 @@ namespace JohnHenryFashionWeb.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting notifications for user");
+                _logger.LogError(ex, "💥 [API] Error getting notifications for user");
                 return StatusCode(500, new { success = false, message = "Có lỗi xảy ra khi tải thông báo" });
             }
         }

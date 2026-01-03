@@ -28,6 +28,14 @@ namespace JohnHenryFashionWeb.Services
         private readonly ILogger<NotificationService> _logger;
         private readonly ICacheService _cacheService;
 
+        private async Task ClearUserNotificationCache(string userId)
+        {
+            // Clear both unread/filter variants and the unread-count key
+            await _cacheService.RemoveAsync($"user_notifications_{userId}_True");
+            await _cacheService.RemoveAsync($"user_notifications_{userId}_False");
+            await _cacheService.RemoveAsync($"user_unread_count_{userId}");
+        }
+
         public NotificationService(
             ApplicationDbContext context,
             IEmailService emailService,
@@ -58,8 +66,7 @@ namespace JohnHenryFashionWeb.Services
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
 
-                // Clear user notifications cache
-                await _cacheService.RemoveByPatternAsync($"user_notifications_{userId}*");
+                await ClearUserNotificationCache(userId);
 
                 _logger.LogInformation("Notification created for user {UserId}: {Title}", userId, title);
             }
@@ -74,6 +81,9 @@ namespace JohnHenryFashionWeb.Services
         {
             var cacheKey = $"user_notifications_{userId}_{unreadOnly}";
             
+            _logger.LogInformation("🔍 Getting notifications for user {UserId}, unreadOnly={UnreadOnly}, cacheKey={CacheKey}", 
+                userId, unreadOnly, cacheKey);
+            
             return await _cacheService.GetOrSetAsync(cacheKey, async () =>
             {
                 var query = _context.Notifications
@@ -84,10 +94,15 @@ namespace JohnHenryFashionWeb.Services
                     query = query.Where(n => !n.IsRead);
                 }
 
-                return await query
+                var notifications = await query
                     .OrderByDescending(n => n.CreatedAt)
                     .Take(50) // Limit to recent 50 notifications
                     .ToListAsync();
+                
+                _logger.LogInformation("📊 Found {Count} notifications for user {UserId} (unreadOnly={UnreadOnly})", 
+                    notifications.Count, userId, unreadOnly);
+                
+                return notifications;
             }, TimeSpan.FromMinutes(5));
         }
 
@@ -126,9 +141,7 @@ namespace JohnHenryFashionWeb.Services
                     notification.ReadAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
 
-                    // Clear cache
-                    await _cacheService.RemoveByPatternAsync($"user_notifications_{userId}*");
-                    await _cacheService.RemoveAsync($"user_unread_count_{userId}");
+                    await ClearUserNotificationCache(userId);
                 }
             }
             catch (Exception ex)
@@ -156,9 +169,7 @@ namespace JohnHenryFashionWeb.Services
                 {
                     await _context.SaveChangesAsync();
 
-                    // Clear cache
-                    await _cacheService.RemoveByPatternAsync($"user_notifications_{userId}*");
-                    await _cacheService.RemoveAsync($"user_unread_count_{userId}");
+                    await ClearUserNotificationCache(userId);
                 }
             }
             catch (Exception ex)
@@ -180,9 +191,7 @@ namespace JohnHenryFashionWeb.Services
                     _context.Notifications.Remove(notification);
                     await _context.SaveChangesAsync();
 
-                    // Clear cache
-                    await _cacheService.RemoveByPatternAsync($"user_notifications_{userId}*");
-                    await _cacheService.RemoveAsync($"user_unread_count_{userId}");
+                    await ClearUserNotificationCache(userId);
                 }
             }
             catch (Exception ex)
@@ -202,7 +211,7 @@ namespace JohnHenryFashionWeb.Services
                     "Đơn hàng mới",
                     $"Đơn hàng #{order.OrderNumber} đã được tạo thành công với tổng giá trị {order.TotalAmount:C}",
                     "order",
-                    $"/Account/Orders/{order.Id}"
+                    $"/userdashboard/orderdetail/{order.Id}"
                 );
 
                 // Send email confirmation
@@ -369,11 +378,9 @@ namespace JohnHenryFashionWeb.Services
                 _context.Notifications.AddRange(notifications);
                 await _context.SaveChangesAsync();
 
-                // Clear cache for all affected users
                 foreach (var userId in userIds)
                 {
-                    await _cacheService.RemoveByPatternAsync($"user_notifications_{userId}*");
-                    await _cacheService.RemoveAsync($"user_unread_count_{userId}");
+                    await ClearUserNotificationCache(userId);
                 }
 
                 _logger.LogInformation("Bulk notification sent to {UserCount} users: {Title}", userIds.Count, title);

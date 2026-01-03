@@ -8,149 +8,29 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- User Sidebar -->
         @await Html.PartialAsync("_UserSidebar")
-
-        <!-- Main Content -->
+        
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
                     <h4 class="mb-0">
                         <i data-lucide="bell" class="me-2"></i>
                         Thông báo
                     </h4>
-                    @if (Model.Notifications.Any(n => !n.IsRead))
-                    {
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="markAllAsRead()">
-                            <i data-lucide="check-check" class="me-1"></i>
-                            Đánh dấu tất cả đã đọc
-                        </button>
-                    }
                 </div>
+                
                 <div class="card-body">
-                    @if (Model.Notifications.Count > 0)
-                    {
-                        @for (int i = 0; i < Model.Notifications.Count; i++)
-                        {
-                            var notification = Model.Notifications[i];
-                            <div class="notification-item @(!notification.IsRead ? "unread" : "")" data-id="@notification.Id">
-                                <div class="d-flex align-items-start">
-                                    <div class="notification-icon me-3">
-                                        @switch (notification.Type.ToLower())
-                                        {
-                                            case "order":
-                                                <i data-lucide="shopping-bag" class="text-primary"></i>
-                                                break;
-                                            case "product":
-                                                <i data-lucide="package" class="text-success"></i>
-                                                break;
-                                            case "system":
-                                                <i data-lucide="settings" class="text-warning"></i>
-                                                break;
-                                            case "welcome":
-                                                <i data-lucide="hand-wave" class="text-info"></i>
-                                                break;
-                                            case "payment":
-                                                <i data-lucide="credit-card" class="text-danger"></i>
-                                                break;
-                                            case "info":
-                                                <i data-lucide="info" class="text-info"></i>
-                                                break;
-                                            default:
-                                                <i data-lucide="bell" class="text-secondary"></i>
-                                                break;
-                                        }
-                                    </div>
-                                    <div class="notification-content flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="notification-title @(!notification.IsRead ? "fw-bold" : "")">
-                                                    @notification.Title
-                                                </h6>
-                                                <p class="notification-message mb-1">
-                                                    @notification.Message
-                                                </p>
-                                                <small class="text-muted">
-                                                    @notification.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                                                </small>
-                                            </div>
-                                            <div class="notification-actions">
-                                                @if (!notification.IsRead)
-                                                {
-                                                    <button type="button" class="btn btn-sm btn-outline-primary me-1" 
-                                                            onclick="markAsRead(@notification.Id)"
-                                                            title="Đánh dấu đã đọc">
-                                                        <i data-lucide="check"></i>
-                                                    </button>
-                                                }
-                                                <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                        onclick="deleteNotification(@notification.Id)"
-                                                        title="Xóa thông báo">
-                                                    <i data-lucide="x"></i>
-                                                </button>
-                                                @if (!string.IsNullOrEmpty(notification.ActionUrl))
-                                                {
-                                                    <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary ms-1"
-                                                       title="Xem chi tiết">
-                                                        <i data-lucide="external-link"></i>
-                                                    </a>
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                @if (!notification.IsRead)
-                                {
-                                    <div class="unread-indicator"></div>
-                                }
-                            </div>
-                            @if (i < Model.Notifications.Count - 1)
-                            {
-                                <hr>
-                            }
-                        }
-
-                        <!-- Pagination -->
-                        @if (Model.TotalPages > 1)
-                        {
-                            <nav aria-label="Page navigation" class="mt-4">
-                                <ul class="pagination justify-content-center">
-                                    @if (Model.HasPreviousPage)
-                                    {
-                                        <li class="page-item">
-                                            <a class="page-link" href="@Url.Action("Notifications", new { page = Model.CurrentPage - 1 })">
-                                                <i data-lucide="chevron-left"></i>
-                                            </a>
-                                        </li>
-                                    }
-
-                                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
-                                    {
-                                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                                            <a class="page-link" href="@Url.Action("Notifications", new { page = i })">@i</a>
-                                        </li>
-                                    }
-
-                                    @if (Model.HasNextPage)
-                                    {
-                                        <li class="page-item">
-                                            <a class="page-link" href="@Url.Action("Notifications", new { page = Model.CurrentPage + 1 })">
-                                                <i data-lucide="chevron-right"></i>
-                                            </a>
-                                        </li>
-                                    }
-                                </ul>
-                            </nav>
-                        }
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i data-lucide="bell-off" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
-                            <h4>Không có thông báo</h4>
-                            <p class="text-muted">Bạn chưa có thông báo nào.</p>
-                        </div>
-                    }
+                    <div id="notifications-loading" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Đang tải thông báo...</p>
+                    </div>
+                    
+                    <div id="notifications-empty" class="text-center py-5 d-none">
+                        <i data-lucide="bell-off" style="width: 64px; height: 64px;"></i>
+                        <h4>Không có thông báo</h4>
+                    </div>
+                    
+                    <div id="notifications-list" class="d-none"></div>
                 </div>
             </div>
         </main>
@@ -158,294 +38,182 @@
 </div>
 
 <style>
-/* Container and Layout Fixes */
-.container-fluid {
-    padding: 0;
-}
-
-.row {
-    margin: 0;
-    display: flex;
-}
-
-/* Sidebar - Optimized shorter layout */
-.user-sidebar {
-    background: #ffffff !important;
-    border-right: 1px solid #dee2e6;
-    min-height: auto;
-    max-height: 80vh;
-    position: relative !important;
-    padding: 0 !important;
-    z-index: 1;
-}
-
-.sidebar-content {
-    padding: 15px 10px;
-    height: auto;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-/* Main content area */
-main.col-md-9 {
-    margin-left: 0 !important;
-    padding: 20px;
-    flex: 1;
-    min-height: 100vh;
-    background: #ffffff;
-}
-
-/* Navigation styles */
-.user-sidebar .nav-link {
-    font-weight: 500;
-    color: #333;
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin-bottom: 3px;
+.notification-item {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.9rem;
 }
-
-.user-sidebar .nav-link:hover {
-    color: #333;
-    background-color: #f8f9fa;
-    text-decoration: none;
+.notification-item:hover {
+    background: #f8f9fa;
+    border-color: #0d6efd;
 }
-
-.user-sidebar .nav-link.active {
-    color: #951329;
-    background-color: rgba(149, 19, 41, 0.1);
-    font-weight: 600;
-    border-left: 3px solid #951329;
+.notification-item.unread {
+    background: #e7f1ff;
+    border-left: 3px solid #0d6efd;
 }
-
-.user-sidebar .nav-link i {
-    width: 18px;
-    height: 18px;
-    text-align: center;
-}
-
-/* Lucide icons styling */
-.user-sidebar i[data-lucide] {
-    width: 18px;
-    height: 18px;
-    stroke-width: 1.5;
-}
-
-/* Avatar and user info - Compact */
-.user-avatar {
-    margin-bottom: 10px;
-}
-
-.text-center h5 {
-    margin-bottom: 3px;
+.notification-title {
     font-weight: 600;
     font-size: 1rem;
+    margin-bottom: 0.375rem;
+    color: #212529;
 }
-
-.text-center .text-muted {
-    margin-bottom: 15px;
-}
-
-/* Form and button styling */
-.user-sidebar form {
-    width: 100%;
-}
-
-.user-sidebar button.nav-link {
-    width: 100%;
-    text-align: left;
-    border: none;
-    background: none;
-    color: #000000 !important;
-}
-
-.user-sidebar button.nav-link:hover {
-    background-color: rgba(220, 53, 69, 0.1) !important;
-    color: #000000 !important;
-}
-
-/* Notification specific styles */
-.notification-item {
-    position: relative;
-    padding: 1rem 0;
-    transition: background-color 0.2s;
-}
-
-.notification-item:hover {
-    background-color: #f8f9fa;
-}
-
-.notification-item.unread {
-    background-color: #f8f9fa;
-    border-left: 4px solid var(--jh-red);
-    padding-left: 1.5rem;
-}
-
-.notification-title {
-    margin-bottom: 0.25rem;
-}
-
 .notification-message {
-    color: #666;
-    line-height: 1.4;
+    font-size: 0.9375rem;
+    color: #6c757d;
+    margin-bottom: 0;
 }
-
-.notification-icon {
-    font-size: 1.25rem;
-    width: 40px;
-    text-align: center;
-}
-
-.unread-indicator {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 8px;
-    height: 8px;
-    background-color: var(--jh-red);
-    border-radius: 50%;
-}
-
-.notification-actions .btn {
-    margin-left: 0.25rem;
-}
-
-/* Mobile Responsive */
-@@media (max-width: 767.98px) {
-    .row {
-        flex-direction: column;
-    }
-    
-    .user-sidebar {
-        min-height: auto;
-        max-height: 60vh;
-        order: 2;
-    }
-    
-    main.col-md-9 {
-        order: 1;
-        min-height: auto;
-        margin-bottom: 0;
-    }
-    
-    .sidebar-content {
-        padding: 10px 8px;
-    }
-}
-
-/* Ensure footer is never covered */
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-.container-fluid {
-    flex: 1;
-}
-
-footer {
-    margin-top: auto;
-    z-index: 999 !important;
+.notification-time {
+    font-size: 0.8125rem;
+    color: #868e96;
+    white-space: nowrap;
 }
 </style>
 
 @section Scripts {
-    <script>
-        function markAsRead(notificationId) {
-            fetch('@Url.Action("MarkNotificationAsRead", "UserDashboard")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                },
-                body: JSON.stringify(notificationId)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
-                    if (notificationItem) {
-                        notificationItem.classList.remove('unread');
-                        const unreadIndicator = notificationItem.querySelector('.unread-indicator');
-                        if (unreadIndicator) {
-                            unreadIndicator.remove();
-                        }
-                        const markButton = notificationItem.querySelector('.btn-outline-primary');
-                        if (markButton) {
-                            markButton.remove();
-                        }
-                        const title = notificationItem.querySelector('.notification-title');
-                        if (title) {
-                            title.classList.remove('fw-bold');
-                        }
+<script>
+(function() {
+    'use strict';
+    
+    // Wait for DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    function init() {
+        console.log('Notifications page initialized');
+        loadNotifications();
+    }
+    
+    function loadNotifications() {
+        console.log('Loading notifications...');
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/notifications', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        
+        xhr.onload = function() {
+            console.log('Response status:', xhr.status);
+            
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log('Response data:', response);
+                    
+                    hideLoading();
+                    
+                    if (response.success && response.data && response.data.length > 0) {
+                        renderNotifications(response.data);
+                    } else {
+                        showEmpty();
                     }
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    hideLoading();
+                    showEmpty();
                 }
-            })
-            .catch(error => {
-                console.error('Error marking notification as read:', error);
-            });
-        }
-
-        function markAllAsRead() {
-            fetch('@Url.Action("MarkAllNotificationsAsRead", "UserDashboard")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error marking all notifications as read:', error);
-            });
-        }
-
-        function deleteNotification(notificationId) {
-            if (!confirm('Bạn có chắc chắn muốn xóa thông báo này?')) {
-                return;
+            } else {
+                console.error('Request failed:', xhr.status);
+                hideLoading();
+                showEmpty();
             }
-
-            fetch('@Url.Action("DeleteNotification", "UserDashboard")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                },
-                body: JSON.stringify({ notificationId: notificationId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove notification item with animation
-                    const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
-                    if (notificationItem) {
-                        notificationItem.style.transition = 'opacity 0.3s, transform 0.3s';
-                        notificationItem.style.opacity = '0';
-                        notificationItem.style.transform = 'translateX(100%)';
-                        setTimeout(() => {
-                            location.reload();
-                        }, 300);
-                    }
-                } else {
-                    alert('Không thể xóa thông báo: ' + (data.message || 'Lỗi không xác định'));
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting notification:', error);
-                alert('Có lỗi xảy ra khi xóa thông báo');
-            });
+        };
+        
+        xhr.onerror = function() {
+            console.error('Network error');
+            hideLoading();
+            showEmpty();
+        };
+        
+        xhr.send();
+    }
+    
+    function hideLoading() {
+        var el = document.getElementById('notifications-loading');
+        if (el) el.classList.add('d-none');
+    }
+    
+    function showEmpty() {
+        var el = document.getElementById('notifications-empty');
+        if (el) el.classList.remove('d-none');
+    }
+    
+    function renderNotifications(notifications) {
+        console.log('Rendering', notifications.length, 'notifications');
+        
+        var listEl = document.getElementById('notifications-list');
+        var emptyEl = document.getElementById('notifications-empty');
+        
+        if (!listEl) {
+            console.error('List element not found');
+            return;
         }
-
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
+        
+        if (emptyEl) emptyEl.classList.add('d-none');
+        listEl.classList.remove('d-none');
+        
+        var html = '';
+        for (var i = 0; i < notifications.length; i++) {
+            var n = notifications[i];
+            var unreadClass = n.isRead ? '' : 'unread';
+            var title = escapeHtml(n.title || 'Thông báo');
+            var message = escapeHtml(n.message || '');
+            var time = formatDate(n.createdAt);
+            var url = n.actionUrl || '#';
+            
+            html += '<a href="' + url + '" class="notification-item d-block text-decoration-none ' + unreadClass + '">';
+            html += '  <div class="d-flex align-items-start justify-content-between">';
+            html += '    <div class="d-flex align-items-start flex-grow-1">';
+            html += '      <div class="me-3">';
+            html += '        <i data-lucide="bell" style="width: 22px; height: 22px; color: #0d6efd;"></i>';
+            html += '      </div>';
+            html += '      <div class="flex-grow-1">';
+            html += '        <h6 class="notification-title">' + title + '</h6>';
+            html += '        <p class="notification-message">' + message + '</p>';
+            html += '      </div>';
+            html += '    </div>';
+            html += '    <div class="ms-3">';
+            html += '      <small class="notification-time">' + time + '</small>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '</a>';
+        }
+        
+        listEl.innerHTML = html;
+        console.log('Rendered', listEl.children.length, 'items');
+        
+        // Refresh Lucide icons
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
             lucide.createIcons();
         }
-    </script>
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            var d = new Date(dateStr);
+            var day = ('0' + d.getDate()).slice(-2);
+            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+            var year = d.getFullYear();
+            var hours = ('0' + d.getHours()).slice(-2);
+            var mins = ('0' + d.getMinutes()).slice(-2);
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
+        } catch (e) {
+            return dateStr;
+        }
+    }
+})();
+</script>
 }
