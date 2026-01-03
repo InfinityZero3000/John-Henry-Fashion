@@ -7,17 +7,25 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- User Sidebar -->
         @await Html.PartialAsync("_UserSidebar")
 
-        <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Yêu cầu hỗ trợ của tôi</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="@Url.Action("Create")" class="btn btn-primary">
-                        <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Tạo yêu cầu mới
-                    </a>
+            <div class="support-hero card shadow-sm border-0 overflow-hidden mb-4">
+                <div class="support-hero__bg"></div>
+                <div class="support-hero__content">
+                    <div>
+                        <div class="badge bg-light text-dark mb-2">Trung tâm hỗ trợ</div>
+                        <h2 class="mb-2">Cần trợ giúp? Chúng tôi sẵn sàng.</h2>
+                        <p class="text-light opacity-90 mb-0">Gửi yêu cầu và nhận phản hồi nhanh chóng từ đội ngũ John Henry. Ưu tiên các vấn đề đơn hàng để xử lý sớm.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("Create")" class="btn btn-light text-dark fw-semibold">
+                            <i data-lucide="plus" class="me-2"></i>Tạo yêu cầu mới
+                        </a>
+                        <a href="mailto:support@johnhenry.vn" class="btn btn-outline-light">
+                            <i data-lucide="mail" class="me-2"></i>Email hỗ trợ
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -39,140 +47,194 @@
                 </div>
             }
 
-            @if (Model.Any())
-            {
-                <div class="support-tickets">
-                    @foreach (var ticket in Model)
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-light text-primary"><i data-lucide="inbox"></i></div>
+                        <div>
+                            <p class="stat-label">Tất cả</p>
+                            <p class="stat-value">@ViewBag.TotalTickets</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning text-dark"><i data-lucide="clock-3"></i></div>
+                        <div>
+                            <p class="stat-label">Đang chờ</p>
+                            <p class="stat-value">@ViewBag.OpenTickets</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-info text-white"><i data-lucide="loader"></i></div>
+                        <div>
+                            <p class="stat-label">Đang xử lý</p>
+                            <p class="stat-value">@ViewBag.InProgressTickets</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success text-white"><i data-lucide="check"></i></div>
+                        <div>
+                            <p class="stat-label">Đã giải quyết</p>
+                            <p class="stat-value">@ViewBag.ResolvedTickets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    @if (Model.Any())
                     {
-                        var statusBadgeClass = ticket.Status switch
-                        {
-                            "Open" => "bg-warning text-dark",
-                            "InProgress" or "In_Progress" => "bg-info text-white",
-                            "Resolved" => "bg-success",
-                            "Closed" => "bg-secondary",
-                            _ => "bg-light text-dark"
-                        };
-
-                        var priorityBadgeClass = ticket.Priority?.ToLower() switch
-                        {
-                            "urgent" => "bg-danger",
-                            "high" => "bg-warning text-dark",
-                            "medium" => "bg-info",
-                            _ => "bg-secondary"
-                        };
-
-                        var statusText = ticket.Status switch
-                        {
-                            "Open" => "Đang chờ",
-                            "InProgress" or "In_Progress" => "Đang xử lý",
-                            "Resolved" => "Đã giải quyết",
-                            "Closed" => "Đã đóng",
-                            _ => ticket.Status
-                        };
-
-                        <div class="card shadow mb-3 ticket-item">
-                            <div class="card-header bg-light">
-                                <div class="row align-items-center g-2">
-                                    <div class="col-md-6 col-sm-12">
-                                        <h6 class="mb-1">@ticket.Subject</h6>
-                                        <small class="text-muted">
-                                            <strong>@ticket.TicketNumber</strong> • 
-                                            Tạo ngày: @ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                                        </small>
-                                    </div>
-                                    <div class="col-md-3 col-sm-6 text-md-center">
-                                        <span class="badge @statusBadgeClass">@statusText</span>
-                                        @if (ticket.Priority != null && ticket.Priority.ToLower() != "low")
-                                        {
-                                            <span class="badge @priorityBadgeClass ms-1">
-                                                @(ticket.Priority?.ToLower() switch
-                                                {
-                                                    "urgent" => "Khẩn cấp",
-                                                    "high" => "Cao",
-                                                    "medium" => "TB",
-                                                    _ => ""
-                                                })
-                                            </span>
-                                        }
-                                    </div>
-                                    <div class="col-md-3 col-sm-6 text-md-end">
-                                        <a href="@Url.Action("Details", new { id = ticket.Id })" class="btn btn-sm btn-outline-primary">
-                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Xem chi tiết
-                                        </a>
-                                    </div>
-                                </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="filter-chip @(string.IsNullOrEmpty(ViewBag.StatusFilter) ? "active" : "")" onclick="window.location='@Url.Action("Index")'">Tất cả</span>
+                                <span class="filter-chip @(ViewBag.StatusFilter == "Open" ? "active" : "")" onclick="window.location='@Url.Action("Index", new { status = "Open" })'">Đang chờ</span>
+                                <span class="filter-chip @(ViewBag.StatusFilter == "InProgress" || ViewBag.StatusFilter == "In_Progress" ? "active" : "")" onclick="window.location='@Url.Action("Index", new { status = "InProgress" })'">Đang xử lý</span>
+                                <span class="filter-chip @(ViewBag.StatusFilter == "Resolved" ? "active" : "")" onclick="window.location='@Url.Action("Index", new { status = "Resolved" })'">Đã giải quyết</span>
                             </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-8">
-                                        <p class="text-muted mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                            @ticket.Description
-                                        </p>
-                                        <div class="d-flex gap-2 flex-wrap">
-                                            @if (!string.IsNullOrEmpty(ticket.Category))
-                                            {
-                                                var categoryBadgeClass = ticket.Category.ToLower() switch
-                                                {
-                                                    "order" => "bg-primary",
-                                                    "product" => "bg-success",
-                                                    "payment" => "bg-danger",
-                                                    "account" => "bg-info",
-                                                    "refund" => "bg-warning text-dark",
-                                                    "technical" => "bg-dark",
-                                                    _ => "bg-secondary"
-                                                };
-                                                <span class="badge @categoryBadgeClass">
-                                                    @(ticket.Category.ToLower() switch
+                            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+                                <i data-lucide="plus" class="me-2"></i>Tạo yêu cầu
+                            </a>
+                        </div>
+
+                        <div class="support-tickets">
+                            @foreach (var ticket in Model)
+                            {
+                                var statusBadgeClass = ticket.Status switch
+                                {
+                                    "Open" => "badge-soft-warning",
+                                    "InProgress" or "In_Progress" => "badge-soft-info",
+                                    "Resolved" => "badge-soft-success",
+                                    "Closed" => "badge-soft-secondary",
+                                    _ => "badge-soft-secondary"
+                                };
+
+                                var priorityBadgeClass = ticket.Priority?.ToLower() switch
+                                {
+                                    "urgent" => "badge-soft-danger",
+                                    "high" => "badge-soft-warning",
+                                    "medium" => "badge-soft-info",
+                                    _ => "badge-soft-secondary"
+                                };
+
+                                var statusText = ticket.Status switch
+                                {
+                                    "Open" => "Đang chờ",
+                                    "InProgress" or "In_Progress" => "Đang xử lý",
+                                    "Resolved" => "Đã giải quyết",
+                                    "Closed" => "Đã đóng",
+                                    _ => ticket.Status
+                                };
+
+                                <div class="ticket-card card border-0 shadow-sm mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="ticket-number">@ticket.TicketNumber</span>
+                                                    <span class="badge @statusBadgeClass">@statusText</span>
+                                                    @if (ticket.Priority != null && ticket.Priority.ToLower() != "low")
                                                     {
-                                                        "order" => "Đơn hàng",
-                                                        "product" => "Sản phẩm",
-                                                        "payment" => "Thanh toán",
-                                                        "account" => "Tài khoản",
-                                                        "refund" => "Hoàn tiền",
-                                                        "technical" => "Kỹ thuật",
-                                                        _ => "Chung"
-                                                    })
-                                                </span>
-                                            }
-                                            @if (ticket.ReplyCount > 0)
-                                            {
-                                                <span class="badge bg-light text-dark border">
-                                                    <i data-lucide="message-circle" style="width: 12px; height: 12px;"></i>
-                                                    @ticket.ReplyCount phản hồi
-                                                </span>
-                                            }
+                                                        <span class="badge @priorityBadgeClass text-uppercase">@ticket.Priority</span>
+                                                    }
+                                                </div>
+                                                <h5 class="mb-1">@ticket.Subject</h5>
+                                                <p class="text-muted mb-2 ticket-desc">@ticket.Description</p>
+                                                <div class="d-flex gap-2 flex-wrap small text-muted">
+                                                    <span><i data-lucide="clock" class="me-1"></i>Tạo: @ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    <span><i data-lucide="refresh-ccw" class="me-1"></i>Cập nhật: @ticket.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    @if (!string.IsNullOrEmpty(ticket.Category))
+                                                    {
+                                                        <span class="badge bg-light text-dark border">
+                                                            <i data-lucide="tag" class="me-1"></i>
+                                                            @(ticket.Category.ToLower() switch
+                                                            {
+                                                                "order" => "Đơn hàng",
+                                                                "product" => "Sản phẩm",
+                                                                "payment" => "Thanh toán",
+                                                                "account" => "Tài khoản",
+                                                                "refund" => "Hoàn tiền",
+                                                                "technical" => "Kỹ thuật",
+                                                                _ => "Chung"
+                                                            })
+                                                        </span>
+                                                    }
+                                                    @if (ticket.ReplyCount > 0)
+                                                    {
+                                                        <span class="badge bg-light text-dark border">
+                                                            <i data-lucide="message-circle" class="me-1"></i>@ticket.ReplyCount phản hồi
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                @if (ticket.AssignedAdmin != null)
+                                                {
+                                                    <div class="small text-muted mb-2">
+                                                        <i data-lucide="user-check" class="me-1"></i>
+                                                        @ticket.AssignedAdmin.FirstName @ticket.AssignedAdmin.LastName
+                                                    </div>
+                                                }
+                                                <a href="@Url.Action("Details", new { id = ticket.Id })" class="btn btn-outline-primary btn-sm">
+                                                    <i data-lucide="eye" class="me-1"></i> Xem chi tiết
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <small class="text-muted d-block">
-                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
-                                            Cập nhật: @ticket.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
-                                        </small>
-                                        @if (ticket.AssignedAdmin != null)
-                                        {
-                                            <small class="text-muted d-block mt-1">
-                                                <i data-lucide="user-check" style="width: 12px; height: 12px;"></i>
-                                                Người phụ trách: @ticket.AssignedAdmin.FirstName @ticket.AssignedAdmin.LastName
-                                            </small>
-                                        }
-                                    </div>
                                 </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 card border-0 shadow-sm">
+                            <div class="card-body">
+                                <i data-lucide="inbox" style="width: 64px; height: 64px; color: #6c757d;" class="mb-3"></i>
+                                <h5 class="text-muted">Chưa có yêu cầu hỗ trợ nào</h5>
+                                <p class="text-muted mb-3">Tạo yêu cầu hỗ trợ đầu tiên của bạn!</p>
+                                <a href="@Url.Action("Create")" class="btn btn-primary">
+                                    <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Tạo yêu cầu mới
+                                </a>
                             </div>
                         </div>
                     }
                 </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <i data-lucide="inbox" style="width: 64px; height: 64px; color: #6c757d;" class="mb-3"></i>
-                    <h5 class="text-muted">Chưa có yêu cầu hỗ trợ nào</h5>
-                    <p class="text-muted mb-3">Tạo yêu cầu hỗ trợ đầu tiên của bạn!</p>
-                    <a href="@Url.Action("Create")" class="btn btn-primary">
-                        <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Tạo yêu cầu mới
-                    </a>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="contact-icon bg-light text-primary me-2"><i data-lucide="lifebuoy"></i></span>
+                                <div>
+                                    <h6 class="mb-0">Kênh hỗ trợ nhanh</h6>
+                                    <small class="text-muted">Ưu tiên đơn hàng & thanh toán</small>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled mb-0 support-contact">
+                                <li><i data-lucide="phone" class="me-2"></i><strong>+84 123 456 789</strong></li>
+                                <li><i data-lucide="mail" class="me-2"></i>support@johnhenry.vn</li>
+                                <li><i data-lucide="clock" class="me-2"></i>Thứ 2 - Thứ 6: 8h - 18h</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body bg-light rounded-3">
+                            <h6 class="mb-2">Mẹo gửi yêu cầu nhanh</h6>
+                            <ul class="mb-0 ps-3 small text-muted">
+                                <li>Chọn danh mục đúng (Đơn hàng / Thanh toán / Sản phẩm).</li>
+                                <li>Đính kèm mã đơn hoặc tên sản phẩm nếu có.</li>
+                                <li>Ưu tiên mô tả ngắn gọn, rõ vấn đề.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            }
+            </div>
         </main>
     </div>
 </div>
@@ -190,3 +252,120 @@
         }, 5000);
     </script>
 }
+
+<style>
+    .support-hero {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .support-hero__bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, #951329 0%, #7a0f21 45%, #2d0a15 100%);
+        opacity: 0.95;
+    }
+
+    .support-hero__content {
+        position: relative;
+        z-index: 1;
+        padding: 28px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .support-hero h2 {
+        color: #fff;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+    }
+
+    .opacity-90 {
+        opacity: 0.9;
+    }
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #f1f1f1;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+    }
+
+    .stat-icon i { width: 18px; height: 18px; }
+
+    .stat-label {
+        margin: 0;
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+    .stat-value {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .filter-chip {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #f5f5f5;
+        border: 1px solid #eee;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-size: 13px;
+    }
+
+    .filter-chip:hover { background: #ececec; }
+    .filter-chip.active { background: #951329; color: #fff; border-color: #951329; }
+
+    .ticket-card h5 { font-weight: 700; }
+    .ticket-desc { max-width: 100%; }
+    .ticket-number { font-size: 13px; color: #6c757d; letter-spacing: 0.2px; }
+
+    .badge-soft-warning { background: rgba(255,193,7,0.16); color: #b58100; }
+    .badge-soft-info { background: rgba(13,110,253,0.12); color: #0d6efd; }
+    .badge-soft-success { background: rgba(25,135,84,0.14); color: #198754; }
+    .badge-soft-secondary { background: rgba(108,117,125,0.16); color: #495057; }
+    .badge-soft-danger { background: rgba(220,53,69,0.14); color: #dc3545; }
+
+    .ticket-card .badge { font-weight: 600; }
+
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
+    .support-contact li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    @@media (max-width: 768px) {
+        .support-hero__content { flex-direction: column; align-items: flex-start; }
+    }
+</style>

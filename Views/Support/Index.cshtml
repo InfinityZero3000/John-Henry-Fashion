@@ -1,0 +1,336 @@
+@model JohnHenryFashionWeb.ViewModels.SupportViewModel
+@{
+    ViewData["Title"] = "Trung tâm hỗ trợ";
+}
+
+<style>
+    .support-hero {
+        background: linear-gradient(135deg, #951329 0%, #7a0f21 100%);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 50px;
+    }
+    
+    .support-card {
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .support-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .support-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #951329 0%, #7a0f21 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .faq-section {
+        background: #f8f9fa;
+        padding: 60px 0;
+        margin-top: 60px;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #951329;
+        color: white;
+    }
+    
+    .contact-info-item {
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .contact-info-item i {
+        color: #951329;
+        font-size: 24px;
+        margin-right: 15px;
+    }
+</style>
+
+<!-- Hero Section -->
+<div class="support-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i data-lucide="life-buoy" style="width: 50px; height: 50px; vertical-align: middle;"></i>
+                    Trung tâm hỗ trợ
+                </h1>
+                <p class="lead">Chúng tôi luôn sẵn sàng hỗ trợ bạn. Gửi yêu cầu và nhận phản hồi nhanh chóng.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mb-5">
+    <div class="row">
+        <!-- Support Form -->
+        <div class="col-lg-8">
+            <div class="card support-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4">
+                        <i data-lucide="message-square" class="me-2"></i>
+                        Gửi yêu cầu hỗ trợ
+                    </h3>
+                    
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i data-lucide="check-circle" class="me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    
+                    <form asp-action="Index" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label">Họ và tên</label>
+                                <input asp-for="Name" class="form-control" placeholder="Nhập họ tên của bạn">
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input asp-for="Email" class="form-control" placeholder="email@example.com">
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                <select asp-for="Category" class="form-select">
+                                    <option value="general">Câu hỏi chung</option>
+                                    <option value="order">Đơn hàng</option>
+                                    <option value="product">Sản phẩm</option>
+                                    <option value="payment">Thanh toán</option>
+                                    <option value="shipping">Vận chuyển</option>
+                                    <option value="return">Đổi trả/Hoàn tiền</option>
+                                    <option value="account">Tài khoản</option>
+                                    <option value="technical">Kỹ thuật</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Priority" class="form-label">Mức độ ưu tiên</label>
+                                <select asp-for="Priority" class="form-select">
+                                    <option value="Low">Thấp</option>
+                                    <option value="Medium" selected>Trung bình</option>
+                                    <option value="High">Cao</option>
+                                    <option value="Urgent">Khẩn cấp</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Subject" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                            <input asp-for="Subject" class="form-control" placeholder="Mô tả ngắn gọn vấn đề của bạn">
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả chi tiết <span class="text-danger">*</span></label>
+                            <textarea asp-for="Description" class="form-control" rows="6" placeholder="Mô tả chi tiết vấn đề bạn đang gặp phải..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <small class="form-text text-muted">Vui lòng cung cấp đầy đủ thông tin để chúng tôi hỗ trợ bạn tốt nhất.</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-lucide="send" class="me-2"></i>
+                                Gửi yêu cầu hỗ trợ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="col-lg-4">
+            <div class="card support-card mb-4">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">
+                        <i data-lucide="info" class="me-2"></i>
+                        Thông tin liên hệ
+                    </h4>
+                    
+                    <div class="contact-info-item">
+                        <i data-lucide="phone" style="float: left;"></i>
+                        <div>
+                            <strong>Điện thoại</strong><br>
+                            <a href="tel:+84123456789" class="text-decoration-none">+84 123 456 789</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item">
+                        <i data-lucide="mail" style="float: left;"></i>
+                        <div>
+                            <strong>Email</strong><br>
+                            <a href="mailto:support@johnhenry.vn" class="text-decoration-none">support@johnhenry.vn</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item">
+                        <i data-lucide="clock" style="float: left;"></i>
+                        <div>
+                            <strong>Giờ làm việc</strong><br>
+                            Thứ 2 - Thứ 6: 8:00 - 18:00<br>
+                            Thứ 7: 9:00 - 17:00<br>
+                            Chủ nhật: Nghỉ
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item">
+                        <i data-lucide="map-pin" style="float: left;"></i>
+                        <div>
+                            <strong>Địa chỉ</strong><br>
+                            123 Đường ABC, Quận 1<br>
+                            TP. Hồ Chí Minh, Việt Nam
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card support-card">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i data-lucide="zap" class="me-2"></i>
+                        Phản hồi nhanh
+                    </h5>
+                    <p class="text-muted mb-0">
+                        <small>Chúng tôi cam kết phản hồi trong vòng 24 giờ làm việc đối với tất cả các yêu cầu hỗ trợ.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="text-center mb-4">
+                    <i data-lucide="help-circle" class="me-2"></i>
+                    Câu hỏi thường gặp
+                </h2>
+                <p class="text-center text-muted mb-5">Tìm câu trả lời nhanh cho các câu hỏi phổ biến</p>
+                
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                Làm thế nào để theo dõi đơn hàng của tôi?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Bạn có thể theo dõi đơn hàng bằng cách đăng nhập vào tài khoản và truy cập mục "Đơn hàng của tôi". 
+                                Tại đây bạn sẽ thấy tất cả các đơn hàng và trạng thái hiện tại của chúng.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Chính sách đổi trả như thế nào?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Chúng tôi chấp nhận đổi trả trong vòng 30 ngày kể từ ngày nhận hàng. 
+                                Sản phẩm phải còn nguyên tem, mác và chưa qua sử dụng. 
+                                Vui lòng liên hệ bộ phận hỗ trợ để được hướng dẫn chi tiết.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Phí vận chuyển được tính như thế nào?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Phí vận chuyển phụ thuộc vào địa chỉ nhận hàng và tổng giá trị đơn hàng. 
+                                Miễn phí vận chuyển cho đơn hàng từ 500.000đ trở lên trong nội thành TP.HCM.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                Tôi có thể thanh toán bằng những phương thức nào?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Chúng tôi chấp nhận thanh toán qua thẻ tín dụng/ghi nợ, ví điện tử (MoMo, ZaloPay), 
+                                chuyển khoản ngân hàng và thanh toán khi nhận hàng (COD).
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                Làm thế nào để tôi biết size phù hợp với mình?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Mỗi sản phẩm đều có bảng size chi tiết. Bạn có thể tham khảo hướng dẫn đo size 
+                                hoặc liên hệ với chúng tôi để được tư vấn cụ thể về size phù hợp.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                                Thời gian giao hàng là bao lâu?
+                            </button>
+                        </h2>
+                        <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Thời gian giao hàng tiêu chuẩn là 2-5 ngày làm việc đối với nội thành và 3-7 ngày 
+                                đối với các tỉnh thành khác. Thời gian có thể thay đổi tùy theo địa chỉ cụ thể.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+}
