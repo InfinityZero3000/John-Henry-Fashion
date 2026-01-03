@@ -7,17 +7,16 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
     var currentSection = ViewData["CurrentSection"]?.ToString()?.ToLower();
     
-    // Determine active menu item
-    var isProfile = currentController == "userdashboard" && currentAction == "profile";
-    var isOrders = currentController == "userdashboard" && currentAction == "orders";
-    var isWishlist = currentController == "wishlist" || currentSection == "wishlist";
+    // Determine active menu item - only ONE should be active at a time
+    var isProfile = (currentController == "userdashboard" && currentAction == "profile") || currentSection == "profile";
+    var isOrders = (currentController == "userdashboard" && currentAction == "orders") || currentSection == "orders";
+    var isWishlist = (currentController == "wishlist") || currentSection == "wishlist";
     var isAddresses = (currentController == "account" && currentAction == "addresses") || currentSection == "addresses";
     var isChangePassword = (currentController == "account" && currentAction == "changepassword") || currentSection == "changepassword";
-    var isNotifications = currentController == "userdashboard" && currentAction == "notifications";
-    var isSupport = (currentController == "usersupport") || currentSection == "support";
+    var isNotifications = (currentController == "userdashboard" && currentAction == "notifications") || currentSection == "notifications";
 }
 
-<nav class="col-md-3 col-lg-2 d-md-block user-sidebar">
+<aside class="col-md-3 col-lg-2 d-md-block user-sidebar">
     <div class="sidebar-content">
         <div class="text-center mb-3">
             <div class="user-avatar">
@@ -66,12 +65,6 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(isSupport ? "active" : "")" href="/userdashboard/support">
-                    <i data-lucide="life-buoy" class="me-2"></i>
-                    Hỗ trợ
-                </a>
-            </li>
-            <li class="nav-item">
                 <form asp-action="Logout" asp-controller="Account" method="post" class="w-100" onsubmit="clearUserSession()">
                     <button type="submit" class="nav-link w-100 text-start logout-btn">
                         <i data-lucide="log-out" class="me-2"></i>
@@ -81,4 +74,4 @@
             </li>
         </ul>
     </div>
-</nav>
+</aside>
