@@ -162,10 +162,6 @@ databases:
     user: johnhenry_user
     plan: free # hoặc starter
     region: singapore
-    
-    # Post-creation command để chạy migrations và seed data
-    postCreateCommands:
-      - echo "Database created successfully"
 
 # Redis (Optional - Nếu cần caching)
 # Lưu ý: Render không có Redis free tier, bạn có thể dùng Redis Cloud hoặc Upstash
