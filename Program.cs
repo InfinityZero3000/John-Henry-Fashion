@@ -434,6 +434,12 @@ app.UseResponseCompression();
 // Add custom middleware
 app.UseMiddleware<JohnHenryFashionWeb.Middleware.PerformanceMiddleware>();
 
+app.UseRateLimiting();                    // Rate Limiting: 60 requests/min/IP
+app.UseLoginAttemptTracking();            // Login Protection: 10 try/15 min
+app.UseIPFilter();                        // IP Whitelist/Blacklist for Admin
+app.UseSessionSecurity();                 // Session Hijacking Protection
+app.UseSecurityHeaders();                 // Security Headers (CSP, HSTS, etc.)
+
 // Enable response caching
 app.UseResponseCaching();
 
