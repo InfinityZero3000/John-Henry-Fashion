@@ -634,18 +634,15 @@ namespace JohnHenryFashionWeb.Controllers
                     
                     await _context.SaveChangesAsync();
 
-                    // Send notifications (async, don't wait)
-                    _ = Task.Run(async () =>
+                    // Send notifications (await to avoid losing scoped services)
+                    try
                     {
-                        try
-                        {
-                            await _notificationService.SendOrderNotificationAsync(order);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Failed to send order notification for order {OrderId}", order.Id);
-                        }
-                    });
+                        await _notificationService.SendOrderNotificationAsync(order);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send order notification for order {OrderId}", order.Id);
+                    }
 
                     return Json(new { 
                         success = true, 

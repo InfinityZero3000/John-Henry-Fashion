@@ -14,10 +14,9 @@ namespace JohnHenryFashionWeb.Models
         [StringLength(50)]
         public string TicketNumber { get; set; } = string.Empty;  // e.g., TKT-2025-00001
         
-        [Required]
-        public string UserId { get; set; } = string.Empty;  // User who created the ticket
+        // Optional UserId - allows anonymous ticket submission
+        public string? UserId { get; set; }
         
-        [Required]
         [StringLength(20)]
         public string UserType { get; set; } = "customer";  // customer, seller
         
@@ -56,7 +55,7 @@ namespace JohnHenryFashionWeb.Models
         
         // Navigation properties
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; } = null!;
+        public ApplicationUser? User { get; set; }
         
         [ForeignKey("AssignedTo")]
         public ApplicationUser? AssignedAdmin { get; set; }
