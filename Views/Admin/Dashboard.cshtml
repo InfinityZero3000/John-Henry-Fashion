@@ -687,6 +687,23 @@
                     </div>
                 </div>
         </div>
+        
+        <!-- Recent Notifications -->
+        <div class="col-lg-4">
+            <div class="section-card">
+                <div class="section-card-header d-flex justify-content-between align-items-center">
+                    <h5><i data-lucide="bell" style="width: 16px; height: 16px; margin-right: 8px;"></i>Thông báo gần đây</h5>
+                    <a href="/userdashboard/notifications" class="btn btn-sm btn-link">Xem tất cả</a>
+                </div>
+                <div class="section-card-body" id="recentNotifications" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Activity -->
@@ -916,6 +933,103 @@
         });
 
         }); // End DOMContentLoaded
+
+        // Load recent notifications for admin
+        function loadRecentNotifications() {
+            fetch('/api/Notifications?unreadOnly=false')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success && result.data && result.data.length > 0) {
+                        const container = document.getElementById('recentNotifications');
+                        const notifications = result.data.slice(0, 5); // Top 5 notifications
+                        
+                        let html = '';
+                        notifications.forEach((notif, index) => {
+                            const iconClass = getNotificationIcon(notif.type);
+                            const timeAgo = notif.timeAgo || formatTimeAgo(notif.createdAt);
+                            const unreadClass = !notif.isRead ? 'fw-bold' : '';
+                            const unreadBg = !notif.isRead ? 'bg-light' : '';
+                            
+                            html += `
+                                <div class="notification-item-mini ${unreadBg}" style="padding: 0.75rem; border-bottom: 1px solid #e9ecef; cursor: pointer;" onclick="window.location.href='${notif.actionUrl || '/userdashboard/notifications'}'">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2">
+                                            <i data-lucide="${iconClass}" style="width: 20px; height: 20px;" class="text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1" style="min-width: 0;">
+                                            <div class="${unreadClass}" style="font-size: 0.875rem; margin-bottom: 0.25rem;">${notif.title}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${notif.message}</div>
+                                            <small class="text-muted" style="font-size: 0.7rem;">${timeAgo}</small>
+                                        </div>
+                                        ${!notif.isRead ? '<div class="ms-2"><span class="badge bg-danger" style="width: 8px; height: 8px; padding: 0; border-radius: 50%;"></span></div>' : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        container.innerHTML = html;
+                        
+                        // Initialize lucide icons
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    } else {
+                        document.getElementById('recentNotifications').innerHTML = `
+                            <div class="text-center py-4 text-muted">
+                                <i data-lucide="bell-off" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+                                <p class="mb-0" style="font-size: 0.875rem;">Không có thông báo</p>
+                            </div>
+                        `;
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    document.getElementById('recentNotifications').innerHTML = `
+                        <div class="text-center py-3 text-danger">
+                            <small>Không thể tải thông báo</small>
+                        </div>
+                    `;
+                });
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                'order': 'shopping-bag',
+                'product': 'package',
+                'system': 'settings',
+                'welcome': 'smile',
+                'payment': 'credit-card',
+                'info': 'info'
+            };
+            return icons[type?.toLowerCase()] || 'bell';
+        }
+
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Vừa xong';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} phút trước`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} giờ trước`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days} ngày trước`;
+            const weeks = Math.floor(days / 7);
+            if (weeks < 4) return `${weeks} tuần trước`;
+            const months = Math.floor(days / 30);
+            return `${months} tháng trước`;
+        }
+
+        // Load notifications on page load
+        loadRecentNotifications();
+        
+        // Refresh notifications every 30 seconds
+        setInterval(loadRecentNotifications, 30000);
 
         // Auto-refresh disabled - API endpoint not implemented
         // TODO: Implement /admin/api/dashboard/metrics endpoint if real-time updates needed
