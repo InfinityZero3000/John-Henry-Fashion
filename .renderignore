@@ -1,0 +1,46 @@
+# .renderignore - Files to exclude from Render deployment
+# This speeds up build by reducing upload size
+
+# Documentation
+*.md
+!README.md
+docs/
+mermaid-images/
+
+# Development files
+.env
+.env.*
+.vscode/
+.vs/
+.idea/
+
+# Build output (will be rebuilt)
+bin/
+obj/
+out/
+
+# Logs
+logs/
+*.log
+
+# Database files
+database/
+*.db
+*.sqlite
+
+# User uploads (should be in cloud storage)
+wwwroot/uploads/
+wwwroot/images/products/
+wwwroot/images/avatars/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# macOS
+.DS_Store
+
+# Testing
+TestResults/
+*.trx

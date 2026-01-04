@@ -1,38 +1,42 @@
 # ===========================
-# Multi-stage build for smaller image size
+# Multi-stage build optimized for Render
 # ===========================
 
 # Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore dependencies (cached if no changes)
+# Copy csproj and restore dependencies (layer cached)
 COPY ["JohnHenryFashionWeb.csproj", "./"]
-RUN dotnet restore "JohnHenryFashionWeb.csproj"
+RUN dotnet restore "JohnHenryFashionWeb.csproj" --runtime linux-x64
 
-# Copy everything else and build
+# Copy source code
 COPY . .
-RUN dotnet build "JohnHenryFashionWeb.csproj" -c Release -o /app/build
 
-# Stage 2: Publish
-FROM build AS publish
-RUN dotnet publish "JohnHenryFashionWeb.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Build and publish in one step (faster)
+RUN dotnet publish "JohnHenryFashionWeb.csproj" \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    --runtime linux-x64 \
+    --self-contained false \
+    /p:UseAppHost=false
 
-# Stage 3: Runtime
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# Install curl for healthcheck (optional but recommended)
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
 # Copy published app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Create directories for uploads and logs
-RUN mkdir -p /app/wwwroot/uploads /app/logs && \
+# Install curl for healthcheck
+USER root
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /app/wwwroot/uploads /app/logs && \
+    groupadd -r appuser && \
+    useradd -r -g appuser appuser && \
     chown -R appuser:appuser /app
 
 # Switch to non-root user

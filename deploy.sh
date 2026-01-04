@@ -2,19 +2,14 @@
 
 # ===========================
 # RENDER DEPLOYMENT SCRIPT
-# Auto-run database migrations on deployment
+# Simplified version - no migrations on startup
 # ===========================
 
 set -e  # Exit on error
 
-echo "🚀 Starting John Henry Fashion deployment..."
+echo "🚀 Starting John Henry Fashion..."
+echo "📦 Environment: $ASPNETCORE_ENVIRONMENT"
+echo "🌐 Listening on: $ASPNETCORE_URLS"
 
-# 1. Run database migrations
-echo "📊 Running database migrations..."
-dotnet ef database update --no-build
-
-echo "✅ Migrations completed successfully!"
-
-# 2. Start the application
-echo "🌐 Starting web application..."
+# Start the application
 exec dotnet JohnHenryFashionWeb.dll
