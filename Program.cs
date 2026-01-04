@@ -274,11 +274,17 @@ builder.Services.AddApplicationInsightsTelemetry();
 
 // Add Memory Caching and Distributed Caching
 builder.Services.AddMemoryCache();
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-    options.InstanceName = "JohnHenryFashion";
-});
+
+// Redis Configuration - Use In-Memory cache for now
+// TODO: Setup Redis properly for production caching
+// builder.Services.AddStackExchangeRedisCache(options =>
+// {
+//     options.Configuration = builder.Configuration.GetConnectionString("Redis");
+//     options.InstanceName = "JohnHenryFashion";
+// });
+
+// Use In-Memory Distributed Cache as fallback
+builder.Services.AddDistributedMemoryCache();
 
 // Add Session support
 builder.Services.AddSession(options =>
@@ -286,7 +292,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    // Allow HTTP in production for now (Render handles SSL termination)
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
 });
 
