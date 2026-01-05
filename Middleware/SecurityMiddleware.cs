@@ -11,7 +11,7 @@ public class RateLimitingMiddleware
     private readonly RequestDelegate _next;
     private readonly IMemoryCache _cache;
     private readonly ILogger<RateLimitingMiddleware> _logger;
-    private readonly int _maxRequestsPerMinute = 60;
+    private readonly int _maxRequestsPerMinute = 300;  // Tăng lên 300 requests/min
 
     public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache, ILogger<RateLimitingMiddleware> logger)
     {
@@ -22,6 +22,14 @@ public class RateLimitingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        // Skip rate limiting for health check endpoints
+        if (context.Request.Path.StartsWithSegments("/health") || 
+            context.Request.Path.StartsWithSegments("/api/health"))
+        {
+            await _next(context);
+            return;
+        }
+
         var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         var cacheKey = $"rate_limit_{clientIp}";
         
@@ -34,9 +42,11 @@ public class RateLimitingMiddleware
             
             if (requests.Count >= _maxRequestsPerMinute)
             {
-                _logger.LogWarning("Rate limit exceeded for IP: {ClientIp}", clientIp);
+                _logger.LogWarning("Rate limit exceeded for IP: {ClientIp}, Path: {Path}", 
+                    clientIp, context.Request.Path);
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                await context.Response.WriteAsync("Rate limit exceeded. Please try again later.");
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync("{\"error\":\"Rate limit exceeded. Please try again in a minute.\"}");
                 return;
             }
             
