@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using JohnHenryFashionWeb.Data;
 using JohnHenryFashionWeb.Models;
+using JohnHenryFashionWeb.Services;
 
 namespace JohnHenryFashionWeb.Controllers;
 
@@ -13,15 +14,18 @@ public class AdminProductsController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly ICloudinaryService _cloudinaryService;
     private readonly ILogger<AdminProductsController> _logger;
 
     public AdminProductsController(
         ApplicationDbContext context,
         IWebHostEnvironment webHostEnvironment,
+        ICloudinaryService cloudinaryService,
         ILogger<AdminProductsController> logger)
     {
         _context = context;
         _webHostEnvironment = webHostEnvironment;
+        _cloudinaryService = cloudinaryService;
         _logger = logger;
     }
 
@@ -142,40 +146,38 @@ public class AdminProductsController : Controller
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    // Handle image upload
+                    // Handle image upload with Cloudinary
                     if (imageFile != null && imageFile.Length > 0)
                     {
                         _logger.LogInformation("Processing image upload: {FileName}, Size: {Size}", imageFile.FileName, imageFile.Length);
                         
-                        // Validate image
-                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                        var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
-                        
-                        if (!allowedExtensions.Contains(extension))
+                        try
                         {
-                            ModelState.AddModelError("imageFile", "Chỉ chấp nhận file ảnh JPG, PNG, GIF!");
-                            throw new InvalidOperationException("Invalid image format");
+                            // Upload to Cloudinary
+                            var uploadResult = await _cloudinaryService.UploadImageAsync(imageFile, "products");
+                            
+                            if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                            {
+                                product.FeaturedImageUrl = uploadResult.SecureUrl.ToString();
+                                product.ImageUrl = uploadResult.SecureUrl.ToString(); // Also set ImageUrl for compatibility
+                                
+                                // Store PublicId for future deletion (optional: add PublicId field to Product model)
+                                // product.CloudinaryPublicId = uploadResult.PublicId;
+                                
+                                _logger.LogInformation("Image uploaded to Cloudinary: {Url}, PublicId: {PublicId}", 
+                                    product.FeaturedImageUrl, uploadResult.PublicId);
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException("Cloudinary upload failed");
+                            }
                         }
-                        
-                        if (imageFile.Length > 5 * 1024 * 1024)
+                        catch (Exception ex)
                         {
-                            ModelState.AddModelError("imageFile", "Kích thước file không được vượt quá 5MB!");
-                            throw new InvalidOperationException("File too large");
+                            _logger.LogError(ex, "Error uploading image to Cloudinary");
+                            ModelState.AddModelError("imageFile", "Không thể upload ảnh. Vui lòng thử lại!");
+                            throw;
                         }
-
-                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
-                        Directory.CreateDirectory(uploadsFolder);
-
-                        var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await imageFile.CopyToAsync(fileStream);
-                        }
-
-                        product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
-                        _logger.LogInformation("Image saved: {Path}", product.FeaturedImageUrl);
                     }
 
                     // FIX 6: Generate unique slug
@@ -322,39 +324,51 @@ public class AdminProductsController : Controller
                 existingProduct.BrandId = product.BrandId;
                 existingProduct.UpdatedAt = DateTime.UtcNow;
 
-                // Handle image upload
+                // Handle image upload with Cloudinary
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                    var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
-                    
-                    if (!allowedExtensions.Contains(extension) || imageFile.Length > 5 * 1024 * 1024)
+                    try
                     {
-                        ModelState.AddModelError("imageFile", "File ảnh không hợp lệ (chỉ .jpg, .png, .gif và < 5MB).");
-                        throw new InvalidOperationException("Invalid image file.");
-                    }
-
-                    // Delete old image
-                    if (!string.IsNullOrEmpty(existingProduct.FeaturedImageUrl))
-                    {
-                        var oldImagePath = existingProduct.FeaturedImageUrl.Replace("~/", "").Replace("/", Path.DirectorySeparatorChar.ToString());
-                        var oldImageFullPath = Path.Combine(_webHostEnvironment.WebRootPath, oldImagePath);
-                        if (System.IO.File.Exists(oldImageFullPath))
+                        // Delete old image from Cloudinary if exists
+                        if (!string.IsNullOrEmpty(existingProduct.FeaturedImageUrl) && 
+                            existingProduct.FeaturedImageUrl.Contains("cloudinary.com"))
                         {
-                            try { System.IO.File.Delete(oldImageFullPath); }
-                            catch (Exception ex) { _logger.LogWarning(ex, "Could not delete old image: {Path}", oldImageFullPath); }
+                            // Extract PublicId from URL (format: https://res.cloudinary.com/.../products/filename_abc123)
+                            var uri = new Uri(existingProduct.FeaturedImageUrl);
+                            var segments = uri.Segments;
+                            if (segments.Length >= 2)
+                            {
+                                var publicId = string.Join("", segments.Skip(segments.Length - 2)).Replace("/", "");
+                                publicId = publicId.Substring(0, publicId.LastIndexOf('.')); // Remove extension
+                                
+                                try
+                                {
+                                    await _cloudinaryService.DeleteImageAsync($"products/{publicId}");
+                                    _logger.LogInformation("Old image deleted from Cloudinary: {PublicId}", publicId);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogWarning(ex, "Could not delete old image from Cloudinary");
+                                }
+                            }
+                        }
+
+                        // Upload new image to Cloudinary
+                        var uploadResult = await _cloudinaryService.UploadImageAsync(imageFile, "products");
+                        
+                        if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                        {
+                            existingProduct.FeaturedImageUrl = uploadResult.SecureUrl.ToString();
+                            existingProduct.ImageUrl = uploadResult.SecureUrl.ToString();
+                            _logger.LogInformation("New image uploaded to Cloudinary: {Url}", existingProduct.FeaturedImageUrl);
                         }
                     }
-
-                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
-                    Directory.CreateDirectory(uploadsFolder);
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    catch (Exception ex)
                     {
-                        await imageFile.CopyToAsync(fileStream);
+                        _logger.LogError(ex, "Error uploading image to Cloudinary");
+                        ModelState.AddModelError("imageFile", "Không thể upload ảnh. Vui lòng thử lại!");
+                        throw;
                     }
-                    existingProduct.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
                 }
 
                 // Update slug if name changed

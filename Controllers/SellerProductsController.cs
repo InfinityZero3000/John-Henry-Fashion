@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using JohnHenryFashionWeb.Data;
 using JohnHenryFashionWeb.Models;
+using JohnHenryFashionWeb.Services;
 using System.Security.Claims;
 
 namespace JohnHenryFashionWeb.Controllers;
@@ -14,15 +15,18 @@ public class SellerProductsController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly ICloudinaryService _cloudinaryService;
     private readonly ILogger<SellerProductsController> _logger;
 
     public SellerProductsController(
         ApplicationDbContext context,
         IWebHostEnvironment webHostEnvironment,
+        ICloudinaryService cloudinaryService,
         ILogger<SellerProductsController> logger)
     {
         _context = context;
         _webHostEnvironment = webHostEnvironment;
+        _cloudinaryService = cloudinaryService;
         _logger = logger;
     }
 
@@ -160,18 +164,28 @@ public class SellerProductsController : Controller
                 return RedirectToAction("Login", "Account");
             }
 
-            // Handle image upload
+            // Handle image upload with Cloudinary
             if (imageFile != null && imageFile.Length > 0)
             {
-                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
-                Directory.CreateDirectory(uploadsFolder);
-                var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                try
                 {
-                    await imageFile.CopyToAsync(fileStream);
+                    var uploadResult = await _cloudinaryService.UploadImageAsync(imageFile, "products");
+                    
+                    if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                    {
+                        product.FeaturedImageUrl = uploadResult.SecureUrl.ToString();
+                        product.ImageUrl = uploadResult.SecureUrl.ToString();
+                        _logger.LogInformation("Seller uploaded product image to Cloudinary: {Url}", product.FeaturedImageUrl);
+                    }
                 }
-                product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error uploading image to Cloudinary for seller product");
+                    ModelState.AddModelError("imageFile", "Không thể upload ảnh. Vui lòng thử lại!");
+                    ViewBag.Categories = await _context.Categories.ToListAsync();
+                    ViewBag.Brands = await _context.Brands.ToListAsync();
+                    return View(product);
+                }
             }
 
             // Ensure product has an Id (DB may generate, but set client-side to be safe)

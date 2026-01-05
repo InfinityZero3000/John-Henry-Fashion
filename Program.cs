@@ -262,6 +262,7 @@ builder.Services.AddScoped<JohnHenryFashionWeb.Services.ILogService, JohnHenryFa
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.SeedDataService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IVietnameseAddressService, JohnHenryFashionWeb.Services.VietnameseAddressService>();
 builder.Services.AddScoped<JohnHenryFashionWeb.Services.IContentModerationService, JohnHenryFashionWeb.Services.ContentModerationService>();
+builder.Services.AddScoped<JohnHenryFashionWeb.Services.ICloudinaryService, JohnHenryFashionWeb.Services.CloudinaryService>();
 
 // Add Background Services
 builder.Services.AddHostedService<JohnHenryFashionWeb.Services.NotificationCleanupService>();
