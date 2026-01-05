@@ -186,6 +186,20 @@ public class SellerProductsController : Controller
                     ViewBag.Brands = await _context.Brands.ToListAsync();
                     return View(product);
                 }
+
+                /* LOCAL FILE UPLOAD - Commented out for production (using Cloudinary)
+                // Uncomment this block to use local file storage instead of Cloudinary
+                
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                Directory.CreateDirectory(uploadsFolder);
+                var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(fileStream);
+                }
+                product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                */
             }
 
             // Ensure product has an Id (DB may generate, but set client-side to be safe)

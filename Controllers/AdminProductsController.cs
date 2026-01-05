@@ -178,6 +178,40 @@ public class AdminProductsController : Controller
                             ModelState.AddModelError("imageFile", "Không thể upload ảnh. Vui lòng thử lại!");
                             throw;
                         }
+
+                        /* LOCAL FILE UPLOAD - Commented out for production (using Cloudinary)
+                        // Uncomment this block to use local file storage instead of Cloudinary
+                        
+                        // Validate image
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                        var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+                        
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            ModelState.AddModelError("imageFile", "Chỉ chấp nhận file ảnh JPG, PNG, GIF!");
+                            throw new InvalidOperationException("Invalid image format");
+                        }
+                        
+                        if (imageFile.Length > 5 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("imageFile", "Kích thước file không được vượt quá 5MB!");
+                            throw new InvalidOperationException("File too large");
+                        }
+
+                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                        Directory.CreateDirectory(uploadsFolder);
+
+                        var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(fileStream);
+                        }
+
+                        product.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                        _logger.LogInformation("Image saved: {Path}", product.FeaturedImageUrl);
+                        */
                     }
 
                     // FIX 6: Generate unique slug
@@ -369,6 +403,41 @@ public class AdminProductsController : Controller
                         ModelState.AddModelError("imageFile", "Không thể upload ảnh. Vui lòng thử lại!");
                         throw;
                     }
+
+                    /* LOCAL FILE UPLOAD - Commented out for production (using Cloudinary)
+                    // Uncomment this block to use local file storage instead of Cloudinary
+                    
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                    var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+                    
+                    if (!allowedExtensions.Contains(extension) || imageFile.Length > 5 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("imageFile", "File ảnh không hợp lệ (chỉ .jpg, .png, .gif và < 5MB).");
+                        throw new InvalidOperationException("Invalid image file.");
+                    }
+
+                    // Delete old image
+                    if (!string.IsNullOrEmpty(existingProduct.FeaturedImageUrl))
+                    {
+                        var oldImagePath = existingProduct.FeaturedImageUrl.Replace("~/", "").Replace("/", Path.DirectorySeparatorChar.ToString());
+                        var oldImageFullPath = Path.Combine(_webHostEnvironment.WebRootPath, oldImagePath);
+                        if (System.IO.File.Exists(oldImageFullPath))
+                        {
+                            try { System.IO.File.Delete(oldImageFullPath); }
+                            catch (Exception ex) { _logger.LogWarning(ex, "Could not delete old image: {Path}", oldImageFullPath); }
+                        }
+                    }
+
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+                    Directory.CreateDirectory(uploadsFolder);
+                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(fileStream);
+                    }
+                    existingProduct.FeaturedImageUrl = $"~/images/products/{uniqueFileName}";
+                    */
                 }
 
                 // Update slug if name changed
