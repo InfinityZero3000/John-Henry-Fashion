@@ -278,6 +278,10 @@ builder.Services.AddMemoryCache();
 
 // Redis Configuration - Conditional setup with graceful fallback
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+Log.Information("Redis connection string check: {IsConfigured}, Length: {Length}", 
+    !string.IsNullOrWhiteSpace(redisConnectionString), 
+    redisConnectionString?.Length ?? 0);
+
 if (!string.IsNullOrWhiteSpace(redisConnectionString))
 {
     try
@@ -354,14 +358,27 @@ var healthChecksBuilder = builder.Services.AddHealthChecks()
         tags: new[] { "db", "sql", "postgres" });
 
 // Add Redis health check if configured
-if (!string.IsNullOrWhiteSpace(redisConnectionString))
+var redisConnStr = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnStr))
 {
-    healthChecksBuilder.AddRedis(
-        redisConnectionString,
-        name: "redis",
-        timeout: TimeSpan.FromSeconds(5),
-        tags: new[] { "cache", "redis" });
-    Log.Information("Redis health check enabled");
+    try
+    {
+        healthChecksBuilder.AddRedis(
+            redisConnStr,
+            name: "redis",
+            timeout: TimeSpan.FromSeconds(5),
+            tags: new[] { "cache", "redis" });
+        Log.Information("Redis health check enabled for: {RedisHost}", 
+            redisConnStr.Substring(0, Math.Min(30, redisConnStr.Length)) + "...");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to add Redis health check, skipping");
+    }
+}
+else
+{
+    Log.Warning("Redis health check skipped - connection string not found");
 }
 
 healthChecksBuilder.AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
