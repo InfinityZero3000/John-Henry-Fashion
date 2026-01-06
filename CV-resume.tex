@@ -75,12 +75,12 @@
     \\ 
     GitHub: \href{https://github.com/InfinityZero3000}{InfinityZero3000}
     \ $|$\ 
-    Portfolio: \href{https://portfolio-infinity-zero.vercel.app/}{InfinityZero3000}
+    Portfolio: \href{https://portfolio-infinity-zero.vercel.app/}{portfolio-infinity-zero.vercel.app}
 \end{center}
 
 %-----------CAREER OBJECTIVE----------
 \section{Career Objective}
-Software Engineering student with hands-on experience from academic and personal projects using ASP.NET Core, PostgreSQL, and Docker. Built end-to-end web features (REST APIs, authentication, payments, and database integration) and improved reliability through logging and production-oriented practices. Seeking a Software Engineer Intern / Web Developer Intern role to learn real-world engineering workflows and contribute to shipped features.
+Software Engineering student with hands-on experience building web applications with ASP.NET Core, PostgreSQL, and Docker. Implemented authentication/authorization, checkout and payment flows, and production-oriented practices such as structured logging, rate limiting, and health checks. Seeking a Software Engineer Intern role to learn real-world engineering workflows and contribute to shipped features.
 
 %-----------EDUCATION-----------------
 \section{Education}
@@ -97,10 +97,10 @@ Software Engineering student with hands-on experience from academic and personal
      \textbf{Languages}{: Python, SQL, C\#, C++, HTML/CSS}
     }
     \item{
-    	extbf{Technologies/Frameworks}{: ASP.NET Core (C\#), REST APIs}
+     \textbf{Technologies/Frameworks}{: ASP.NET Core (MVC), Entity Framework Core, REST-style endpoints}
     }
     \item{
-     \textbf{Tools \& Others}{: Git/GitHub, Docker, Postman, PostgreSQL, SQL Server, Teamwork}
+     \textbf{Tools \& Others}{: Git/GitHub, Docker, Postman, PostgreSQL, SQL Server, Serilog}
     }
  \resumeSubHeadingListEnd
 
@@ -109,15 +109,25 @@ Software Engineering student with hands-on experience from academic and personal
   \resumeSubHeadingListStart
 
     \resumeSubheading
-      {John Henry - E-commerce Platform}{GitHub: \href{https://github.com/InfinityZero3000/John-Henry-Fashion}{Link} $|$ Live: \href{https://johnhenry-web.onrender.com}{Link}}
-      {Web Application | ASP.NET Core 9.0, PostgreSQL, Docker}{Web Development}
-      \resumeItemListStart
-        \resumeItem{Product \& Order Management}{Designed and implemented product catalog, inventory updates, and order lifecycle workflows. Built an admin dashboard for sales monitoring, system settings, and role-based user management (Admin/Seller/Customer).}
-        \resumeItem{Payment \& Checkout}{Integrated VNPay checkout with webhook verification for payment confirmation. Implemented shopping cart, coupon handling, shipping fee calculation using Vietnamese address data, and email notifications for order status updates.}
-        \resumeItem{Authentication \& Security}{Added Google OAuth 2.0 and email/password authentication with BCrypt. Implemented rate limiting (300 req/min), admin audit logging, session anomaly checks, and IP-based access control.}
-        \resumeItem{Production \& Observability}{Containerized with Docker and deployed on Render with PostgreSQL. Added health checks, automated deployments from GitHub, and structured logging via Serilog to troubleshoot and monitor production behavior.}
-      \resumeItemListEnd
-
+      {John Henry – E-commerce Platform}
+      {GitHub: \href{https://github.com/InfinityZero3000/John-Henry-Fashion}{Link} $|$ Live: \href{https://johnhenry-web.onrender.com}{Link}}
+      {Web Application | ASP.NET Core 9.0, PostgreSQL, Docker}
+      {Web Development}
+        \resumeItemListStart
+          \resumeItem{Backend Architecture}{
+            Built backend controllers and data access for product, cart, checkout, and order domains using ASP.NET Core and EF Core (PostgreSQL). Implemented inventory fields and order status transitions, and used EF Core transactions for multi-step admin updates.
+          }
+          \resumeItem{Authorization \& Business Logic}{
+            Implemented role-based access control (Admin/Seller/Customer) and admin workflows for sales monitoring and system configuration.
+          }
+          \resumeItem{Payment Integration}{
+            Integrated VNPay checkout by generating signed payment URLs (HMAC-SHA512) and handling return callbacks to update payment/order status. Implemented pricing rules including coupons, shipping fee calculation, and order state transitions.
+          }
+          \resumeItem{Security \& Production}{
+            Implemented Google OAuth 2.0 login with ASP.NET Core Identity and BCrypt password hashing, API rate limiting, and audit logging for admin actions/security events. Deployed the containerized application to Render with health checks and Serilog structured logging (optional Redis distributed cache).
+          }
+    \resumeItemListEnd
+    
     \resumeSubheading
       {Hybrid CNN-CBAM-ViT for Skin Cancer Classification}{GitHub: \href{https://github.com/InfinityZero3000/Skincancer_classification}{Link}}
       {Research Project | Python, TensorFlow, Computer Vision}{Deep Learning / Computer Vision}
@@ -125,7 +135,7 @@ Software Engineering student with hands-on experience from academic and personal
         \resumeItem{Novel Architecture}{Developed a hybrid model combining CNN (local features), CBAM (spatial/channel attention), and Vision Transformer (ViT) for global context.}
         \resumeItem{Performance}{Achieved \textbf{92.49\% F1-score} and \textbf{92.65\% accuracy} on ISIC validation datasets.}
         \resumeItem{Generalization}{Tested on clinical image datasets with sustained \textbf{70\%+} average accuracy, outperforming baseline CNN models.}
-        \resumeItem{Contribution}{Iterated on the attention-enhanced pipeline and evaluation workflow to reduce false negatives and improve early-stage diagnosis support.}
+            \resumeItem{Contribution}{Iterated on the attention-enhanced pipeline and evaluation workflow to reduce false negatives and improve early-stage diagnosis support.}
       \resumeItemListEnd
 
   \resumeSubHeadingListEnd
@@ -133,7 +143,8 @@ Software Engineering student with hands-on experience from academic and personal
 %-----------ACTIVITIES-----------------
 \section{Activities}
   \resumeSubHeadingListStart
-    \resumeSubItem{Data Science Challenge Finalist}{Reached the final round of a competitive Data Science contest, demonstrating expertise in feature engineering, model tuning, and data-driven problem solving. Certificate: \href{https://raw.githubusercontent.com/InfinityZero3000/Portfolio_zero/refs/heads/main/public/Data-Science-Certificate.png}{Link}}
+    \resumeSubItem{Data Science Challenge Finalist}{
+  Participated in a Data Science competition project that reached the final round. Contributed to data preprocessing, feature analysis, and model evaluation, and presented the project approach and results to the judges. Certificate: \href{https://raw.githubusercontent.com/InfinityZero3000/Portfolio_zero/refs/heads/main/public/Data-Science-Certificate.png}{Link}}
     \resumeSubItem{Research Member}{Aspect-Based Sentiment Analysis using Knowledge Graphs. University-Level Project (Jul 2025 – Jun 2026)}
   \resumeSubHeadingListEnd
 
