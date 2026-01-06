@@ -276,16 +276,32 @@ builder.Services.AddApplicationInsightsTelemetry();
 // Add Memory Caching and Distributed Caching
 builder.Services.AddMemoryCache();
 
-// Redis Configuration - Use In-Memory cache for now
-// TODO: Setup Redis properly for production caching
-// builder.Services.AddStackExchangeRedisCache(options =>
-// {
-//     options.Configuration = builder.Configuration.GetConnectionString("Redis");
-//     options.InstanceName = "JohnHenryFashion";
-// });
-
-// Use In-Memory Distributed Cache as fallback
-builder.Services.AddDistributedMemoryCache();
+// Redis Configuration - Conditional setup with graceful fallback
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    try
+    {
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "JohnHenryFashion_";
+        });
+        Log.Information("Redis distributed cache enabled with connection: {RedisConnection}", 
+            redisConnectionString.Substring(0, Math.Min(20, redisConnectionString.Length)) + "...");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to configure Redis, falling back to in-memory cache");
+        builder.Services.AddDistributedMemoryCache();
+    }
+}
+else
+{
+    // Fallback to in-memory distributed cache
+    builder.Services.AddDistributedMemoryCache();
+    Log.Warning("Redis connection string not configured, using in-memory distributed cache");
+}
 
 // Add Session support
 builder.Services.AddSession(options =>
@@ -330,13 +346,24 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 });
 
 // Add Health Checks for Render deployment
-builder.Services.AddHealthChecks()
+var healthChecksBuilder = builder.Services.AddHealthChecks()
     .AddNpgSql(
         builder.Configuration.GetConnectionString("DefaultConnection")!,
         name: "database",
         timeout: TimeSpan.FromSeconds(3),
-        tags: new[] { "db", "sql", "postgres" })
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
+        tags: new[] { "db", "sql", "postgres" });
+
+// Add Redis health check if configured
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    healthChecksBuilder.AddRedis(
+        redisConnectionString,
+        name: "redis",
+        timeout: TimeSpan.FromSeconds(3),
+        tags: new[] { "cache", "redis" });
+}
+
+healthChecksBuilder.AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
 
 // Configure routing options to be case-insensitive
 builder.Services.Configure<RouteOptions>(options =>

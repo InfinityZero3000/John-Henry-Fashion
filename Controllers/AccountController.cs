@@ -1802,11 +1802,16 @@ namespace JohnHenryFashionWeb.Controllers
 
             var key = await _authService.GetAuthenticatorKeyAsync(user);
             var authenticatorUri = await _authService.GenerateAuthenticatorUriAsync(user, key);
+            
+            // Generate QR code on backend
+            var qrCodeBytes = await _authService.GenerateQrCodeAsync(authenticatorUri);
+            var qrCodeBase64 = Convert.ToBase64String(qrCodeBytes);
 
             var model = new EnableAuthenticatorViewModel
             {
                 SharedKey = FormatKey(key),
-                AuthenticatorUri = authenticatorUri
+                AuthenticatorUri = authenticatorUri,
+                QrCodeDataUrl = $"data:image/png;base64,{qrCodeBase64}"
             };
 
             return View(model);

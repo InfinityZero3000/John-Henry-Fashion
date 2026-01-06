@@ -6,7 +6,7 @@ namespace JohnHenryFashionWeb.Controllers.Api
 {
     [ApiController]
     [Route("api/admin/logs")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = "Identity.Application,Bearer", Roles = "Admin")]
     public class LogsApiController : ControllerBase
     {
         private readonly ILogService _logService;

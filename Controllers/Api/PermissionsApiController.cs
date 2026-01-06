@@ -9,7 +9,7 @@ namespace JohnHenryFashionWeb.Controllers.Api
 {
     [ApiController]
     [Route("api/admin/permissions")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = "Identity.Application,Bearer", Roles = "Admin")]
     public class PermissionsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

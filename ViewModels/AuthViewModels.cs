@@ -106,6 +106,8 @@ public class EnableAuthenticatorViewModel
     public string SharedKey { get; set; } = string.Empty;
 
     public string AuthenticatorUri { get; set; } = string.Empty;
+    
+    public string QrCodeDataUrl { get; set; } = string.Empty; // Backend-generated QR code
 }
 
 public class ExternalLoginConfirmationViewModel

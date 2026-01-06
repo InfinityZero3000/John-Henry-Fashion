@@ -174,7 +174,6 @@ public class SellerProductsController : Controller
                     if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
                     {
                         product.FeaturedImageUrl = uploadResult.SecureUrl.ToString();
-                        product.ImageUrl = uploadResult.SecureUrl.ToString();
                         _logger.LogInformation("Seller uploaded product image to Cloudinary: {Url}", product.FeaturedImageUrl);
                     }
                 }

@@ -159,7 +159,6 @@ public class AdminProductsController : Controller
                             if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
                             {
                                 product.FeaturedImageUrl = uploadResult.SecureUrl.ToString();
-                                product.ImageUrl = uploadResult.SecureUrl.ToString(); // Also set ImageUrl for compatibility
                                 
                                 // Store PublicId for future deletion (optional: add PublicId field to Product model)
                                 // product.CloudinaryPublicId = uploadResult.PublicId;
@@ -393,7 +392,6 @@ public class AdminProductsController : Controller
                         if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
                         {
                             existingProduct.FeaturedImageUrl = uploadResult.SecureUrl.ToString();
-                            existingProduct.ImageUrl = uploadResult.SecureUrl.ToString();
                             _logger.LogInformation("New image uploaded to Cloudinary: {Url}", existingProduct.FeaturedImageUrl);
                         }
                     }

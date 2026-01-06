@@ -19,7 +19,7 @@
                             <p class="text-muted">Sử dụng ứng dụng như Google Authenticator, Microsoft Authenticator để quét mã QR này:</p>
                             
                             <div class="text-center p-3 bg-light rounded">
-                                <div id="qrCode"></div>
+                                <img src="@Model.QrCodeDataUrl" alt="QR Code for 2FA" style="width: 200px; height: 200px;" />
                             </div>
                         </div>
                         
@@ -71,18 +71,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
-        // Generate QR Code
-        QRCode.toCanvas(document.getElementById('qrCode'), '@Model.AuthenticatorUri', {
-            width: 200,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        });
-
         // Copy to clipboard function
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
