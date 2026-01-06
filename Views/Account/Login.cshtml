@@ -12,6 +12,10 @@
         height: calc(100vh - 80px);
         z-index: -1;
         overflow: hidden;
+        /* Fallback background image khi video không load */
+        background-image: url('https://res.cloudinary.com/demo/image/upload/v1/sample.jpg');
+        background-size: cover;
+        background-position: center;
     }
     
     .video-background video {
@@ -21,9 +25,19 @@
         object-position: center center;
     }
     
+    .video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+    
     .auth-container {
         position: relative;
-        z-index: 1;
+        z-index: 2;
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -61,11 +75,12 @@
         }
         
         .video-background {
-            display: none;
+            /* Giữ background image trên mobile */
+            background-image: url('https://res.cloudinary.com/demo/image/upload/v1/sample.jpg');
         }
         
-        body {
-            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+        .video-background video {
+            display: none; /* Ẩn video trên mobile để tiết kiệm bandwidth */
         }
         
         .auth-card {
@@ -74,14 +89,13 @@
     }
 </style>
 
-<!-- Video Background -->
+<!-- Video Background with Fallback -->
 <div class="video-background">
-    <video autoplay muted loop playsinline>
+    <video autoplay muted loop playsinline poster="https://res.cloudinary.com/demo/image/upload/v1/sample.jpg">
         <source src="~/videos/0_Woman_Shopping_3840x2160.mov" type="video/mp4">
         <source src="~/videos/0_Woman_Shopping_3840x2160.mov" type="video/quicktime">
-        <!-- Fallback image for browsers that don't support video -->
-        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); width: 100%; height: 100%;"></div>
     </video>
+    <div class="video-overlay"></div>
 </div>
 
 <div class="auth-container">
