@@ -346,15 +346,25 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 });
 
 // Add Health Checks for Render deployment
-builder.Services.AddHealthChecks()
+var healthChecksBuilder = builder.Services.AddHealthChecks()
     .AddNpgSql(
         builder.Configuration.GetConnectionString("DefaultConnection")!,
         name: "database",
-        timeout: TimeSpan.FromSeconds(3),
-        tags: new[] { "db", "sql", "postgres" })
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
+        timeout: TimeSpan.FromSeconds(5),
+        tags: new[] { "db", "sql", "postgres" });
 
-// Redis health check removed - using in-memory cache instead
+// Add Redis health check if configured
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    healthChecksBuilder.AddRedis(
+        redisConnectionString,
+        name: "redis",
+        timeout: TimeSpan.FromSeconds(5),
+        tags: new[] { "cache", "redis" });
+    Log.Information("Redis health check enabled");
+}
+
+healthChecksBuilder.AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
 
 // Configure routing options to be case-insensitive
 builder.Services.Configure<RouteOptions>(options =>
