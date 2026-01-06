@@ -91,11 +91,11 @@ namespace JohnHenryFashionWeb.Middleware
             
             // Add Content Security Policy for enhanced security
             var csp = "default-src 'self'; " +
-                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; " +
-                     "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
+                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.datatables.net; " +
+                     "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.datatables.net; " +
                      "img-src 'self' data: https:; " +
-                     "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; " +
-                     "connect-src 'self' https://unpkg.com https://lottiefiles.com;";
+                     "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com https://cdn.jsdelivr.net; " +
+                     "connect-src 'self' https://unpkg.com https://lottiefiles.com https://cdn.jsdelivr.net;";
             
             context.Response.Headers["Content-Security-Policy"] = csp;
 
