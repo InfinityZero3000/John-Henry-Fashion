@@ -357,28 +357,18 @@ var healthChecksBuilder = builder.Services.AddHealthChecks()
         timeout: TimeSpan.FromSeconds(5),
         tags: new[] { "db", "sql", "postgres" });
 
-// Add Redis health check if configured
+// Redis health check temporarily disabled to allow faster startup
+// External Redis (Upstash) can cause slow health checks
+// TODO: Re-enable after verifying Redis connection works properly
 var redisConnStr = builder.Configuration.GetConnectionString("Redis");
 if (!string.IsNullOrWhiteSpace(redisConnStr))
 {
-    try
-    {
-        healthChecksBuilder.AddRedis(
-            redisConnStr,
-            name: "redis",
-            timeout: TimeSpan.FromSeconds(5),
-            tags: new[] { "cache", "redis" });
-        Log.Information("Redis health check enabled for: {RedisHost}", 
-            redisConnStr.Substring(0, Math.Min(30, redisConnStr.Length)) + "...");
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "Failed to add Redis health check, skipping");
-    }
+    Log.Information("Redis configured but health check disabled for faster startup: {RedisHost}", 
+        redisConnStr.Substring(0, Math.Min(30, redisConnStr.Length)) + "...");
 }
 else
 {
-    Log.Warning("Redis health check skipped - connection string not found");
+    Log.Warning("Redis connection string not found, using in-memory cache");
 }
 
 healthChecksBuilder.AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
