@@ -275,37 +275,8 @@ builder.Services.AddApplicationInsightsTelemetry();
 
 // Add Memory Caching and Distributed Caching
 builder.Services.AddMemoryCache();
-
-// Redis Configuration - Conditional setup with graceful fallback
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-Log.Information("Redis connection string check: {IsConfigured}, Length: {Length}", 
-    !string.IsNullOrWhiteSpace(redisConnectionString), 
-    redisConnectionString?.Length ?? 0);
-
-if (!string.IsNullOrWhiteSpace(redisConnectionString))
-{
-    try
-    {
-        builder.Services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = redisConnectionString;
-            options.InstanceName = "JohnHenryFashion_";
-        });
-        Log.Information("Redis distributed cache enabled with connection: {RedisConnection}", 
-            redisConnectionString.Substring(0, Math.Min(20, redisConnectionString.Length)) + "...");
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "Failed to configure Redis, falling back to in-memory cache");
-        builder.Services.AddDistributedMemoryCache();
-    }
-}
-else
-{
-    // Fallback to in-memory distributed cache
-    builder.Services.AddDistributedMemoryCache();
-    Log.Warning("Redis connection string not configured, using in-memory distributed cache");
-}
+builder.Services.AddDistributedMemoryCache();
+Log.Information("Using in-memory distributed cache for sessions");
 
 // Add Session support
 builder.Services.AddSession(options =>
