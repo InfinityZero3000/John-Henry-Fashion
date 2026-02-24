@@ -82,6 +82,11 @@ namespace JohnHenryFashionWeb.Controllers
                 return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
             }
 
+            if (!IsValidStatusTransition(order.Status, status))
+            {
+                return Json(new { success = false, message = $"Không thể chuyển trạng thái từ '{order.Status}' sang '{status}'" });
+            }
+
             order.Status = status;
             order.UpdatedAt = DateTime.UtcNow;
 
@@ -94,7 +99,14 @@ namespace JohnHenryFashionWeb.Controllers
                 order.DeliveredAt = DateTime.UtcNow;
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Json(new { success = false, message = "Đơn hàng đã được cập nhật bởi người khác. Vui lòng tải lại trang." });
+            }
 
             return Json(new { success = true, message = "Cập nhật trạng thái đơn hàng thành công" });
         }
@@ -168,6 +180,11 @@ namespace JohnHenryFashionWeb.Controllers
                     return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
                 }
 
+                if (!IsValidStatusTransition(order.Status, request.Status))
+                {
+                    return Json(new { success = false, message = $"Không thể chuyển trạng thái từ '{order.Status}' sang '{request.Status}'" });
+                }
+
                 var oldStatus = order.Status;
                 order.Status = request.Status;
                 order.UpdatedAt = DateTime.UtcNow;
@@ -191,9 +208,16 @@ namespace JohnHenryFashionWeb.Controllers
                         : $"{order.Notes}\n[{DateTime.UtcNow:dd/MM/yyyy HH:mm}] {request.Note}";
                 }
 
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    return Json(new { success = false, message = "Đơn hàng đã được cập nhật bởi người khác. Vui lòng tải lại trang." });
+                }
 
-                _logger.LogInformation($"Order {order.OrderNumber} status changed from {oldStatus} to {request.Status}");
+                _logger.LogInformation("Order {OrderNumber} status changed from {OldStatus} to {NewStatus}", order.OrderNumber, oldStatus, request.Status);
 
                 // Send email notification to customer
                 if (order.User != null && !string.IsNullOrEmpty(order.User.Email))
@@ -269,8 +293,27 @@ namespace JohnHenryFashionWeb.Controllers
 
                 _logger.LogInformation($"Order {order.OrderNumber} cancelled. Reason: {request.Reason}");
 
+                // Create refund request if customer already paid
+                if (order.PaymentStatus == "paid" || order.PaymentStatus == "completed")
+                {
+                    var refundRequest = new Models.RefundRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = order.Id,
+                        PaymentId = string.Empty,
+                        Amount = order.TotalAmount,
+                        Reason = $"Hủy đơn hàng bởi admin. Lý do: {request.Reason ?? "Không có lý do"}",
+                        Status = "pending",
+                        CreatedAt = DateTime.UtcNow,
+                        RequestedBy = User.Identity?.Name ?? "admin"
+                    };
+                    _context.RefundRequests.Add(refundRequest);
+                    await _context.SaveChangesAsync();
+                    _logger.LogWarning("Refund request {RefundId} created for cancelled order {OrderNumber}. Amount: {Amount} VND. Review at /admin/payments.",
+                        refundRequest.Id, order.OrderNumber, order.TotalAmount);
+                }
+
                 // TODO: Send cancellation email to customer
-                // TODO: Process refund if payment was made
 
                 return Json(new { success = true, message = "Đơn hàng đã được hủy thành công" });
             }
@@ -314,6 +357,27 @@ namespace JohnHenryFashionWeb.Controllers
         {
             public Guid OrderId { get; set; }
             public string? Reason { get; set; }
+        }
+
+        private static readonly Dictionary<string, string[]> AllowedOrderStatusTransitions = new()
+        {
+            { "pending",    new[] { "confirmed", "cancelled" } },
+            { "confirmed",  new[] { "processing", "cancelled" } },
+            { "processing", new[] { "shipped", "cancelled" } },
+            { "shipped",    new[] { "delivered", "cancelled" } },
+            { "delivered",  new[] { "completed" } },
+            { "completed",  System.Array.Empty<string>() },
+            { "cancelled",  System.Array.Empty<string>() }
+        };
+
+        private static bool IsValidStatusTransition(string? currentStatus, string? newStatus)
+        {
+            if (string.IsNullOrEmpty(newStatus)) return false;
+            var current = currentStatus?.ToLower() ?? "";
+            var next = newStatus.ToLower();
+            if (!AllowedOrderStatusTransitions.TryGetValue(current, out var allowed))
+                return true; // Unknown current status - allow for backward compat
+            return allowed.Contains(next);
         }
         #endregion
     }

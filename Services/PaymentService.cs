@@ -486,6 +486,9 @@ namespace JohnHenryFashionWeb.Services
 
         public async Task<bool> VerifyPaymentAsync(string paymentId, string signature)
         {
+            // NOTE: This method performs a DB-level existence check only.
+            // For VNPay/MoMo, full HMAC signature verification is done in HandlePaymentCallbackAsync
+            // which requires the full callback parameters (RawParams).
             try
             {
                 var payment = await _context.PaymentAttempts
@@ -493,13 +496,12 @@ namespace JohnHenryFashionWeb.Services
 
                 if (payment == null) return false;
 
-                // Verify signature based on payment method
+                // Stripe verification handled elsewhere; COD has no signature
                 return payment.PaymentMethod.ToLower() switch
                 {
-                    "vnpay" => VerifyVNPaySignature(paymentId, signature),
-                    "momo" => VerifyMoMoSignature(paymentId, signature),
-                    "stripe" => true, // Stripe verification handled elsewhere
-                    _ => false
+                    "stripe" => true,
+                    "cod" => true,
+                    _ => false // VNPay/MoMo require full param set - use HandlePaymentCallbackAsync
                 };
             }
             catch (Exception ex)
@@ -574,7 +576,7 @@ namespace JohnHenryFashionWeb.Services
 
         public async Task<bool> ValidatePaymentDataAsync(PaymentRequest request)
         {
-            if (string.IsNullOrEmpty(request.OrderId) || 
+            if (string.IsNullOrEmpty(request.OrderId) ||
                 string.IsNullOrEmpty(request.UserId) ||
                 request.Amount <= 0)
             {
@@ -586,16 +588,25 @@ namespace JohnHenryFashionWeb.Services
             // Check if order exists and belongs to user
             // OrderId can be either Guid (Id) or OrderNumber (string)
             var order = await _context.Orders
-                .FirstOrDefaultAsync(o => (o.Id.ToString() == request.OrderId || o.OrderNumber == request.OrderId) && 
+                .FirstOrDefaultAsync(o => (o.Id.ToString() == request.OrderId || o.OrderNumber == request.OrderId) &&
                                         o.UserId == request.UserId);
 
             if (order == null)
             {
                 _logger.LogWarning("ValidatePaymentDataAsync - Order not found. OrderId: {OrderId}, UserId: {UserId}",
                     request.OrderId, request.UserId);
+                return false;
             }
 
-            return order != null;
+            // Validate payment amount matches order total (tolerance 1 VND for rounding)
+            if (Math.Abs(request.Amount - order.TotalAmount) > 1m)
+            {
+                _logger.LogWarning("Payment amount mismatch for order {OrderId}. Expected: {Expected}, Received: {Received}",
+                    request.OrderId, order.TotalAmount, request.Amount);
+                return false;
+            }
+
+            return true;
         }
 
         public async Task LogPaymentAttemptAsync(PaymentAttempt attempt)
@@ -614,14 +625,30 @@ namespace JohnHenryFashionWeb.Services
         {
             try
             {
-                // Verify callback signature
-                if (!await VerifyPaymentAsync(callbackData.PaymentId, callbackData.Signature))
+                // Perform HMAC signature verification for VNPay and MoMo
+                var paymentMethod = callbackData.PaymentMethod?.ToLower() ?? "";
+                if (paymentMethod == "vnpay" || paymentMethod == "momo")
                 {
-                    return new PaymentResult
+                    if (callbackData.RawParams == null || callbackData.RawParams.Count == 0)
                     {
-                        IsSuccess = false,
-                        ErrorMessage = "Chữ ký không hợp lệ"
+                        _logger.LogWarning("Callback for {Method} received without RawParams - signature cannot be verified. PaymentId: {PaymentId}", paymentMethod, callbackData.PaymentId);
+                        return new PaymentResult { IsSuccess = false, ErrorMessage = "Thiếu dữ liệu để xác thực chữ ký" };
+                    }
+
+                    bool signatureValid = paymentMethod switch
+                    {
+                        "vnpay" => VerifyVNPaySignature(callbackData.RawParams, callbackData.Signature),
+                        "momo" => VerifyMoMoSignature(callbackData.RawParams, callbackData.Signature),
+                        _ => false
                     };
+
+                    if (!signatureValid)
+                    {
+                        _logger.LogWarning("Callback signature verification FAILED for {Method} payment {PaymentId}", paymentMethod, callbackData.PaymentId);
+                        return new PaymentResult { IsSuccess = false, ErrorMessage = "Chữ ký không hợp lệ" };
+                    }
+
+                    _logger.LogInformation("Callback signature verified successfully for {Method} payment {PaymentId}", paymentMethod, callbackData.PaymentId);
                 }
 
                 // Update payment status
@@ -633,15 +660,15 @@ namespace JohnHenryFashionWeb.Services
                     payment.Status = callbackData.Status;
                     payment.TransactionId = callbackData.TransactionId;
                     payment.CompletedAt = DateTime.UtcNow;
-                    
+
                     await _context.SaveChangesAsync();
 
                     // Send notifications
                     if (callbackData.Status == "completed")
                     {
-                        await _notificationService.SendNotificationAsync(payment.UserId, 
-                            "Thanh toán thành công", 
-                            "Đơn hàng của bạn đã được thanh toán thành công", 
+                        await _notificationService.SendNotificationAsync(payment.UserId,
+                            "Thanh toán thành công",
+                            "Đơn hàng của bạn đã được thanh toán thành công",
                             "payment_success");
                     }
                 }
@@ -718,16 +745,66 @@ namespace JohnHenryFashionWeb.Services
             return Convert.ToHexString(hashBytes).ToLower();
         }
 
-        private bool VerifyVNPaySignature(string paymentId, string signature)
+        private bool VerifyVNPaySignature(Dictionary<string, string> callbackParams, string receivedHash)
         {
-            // Implementation for VNPay signature verification
-            return true; // Simplified for demo
+            var hashSecret = _configuration["PaymentGateways:VNPay:HashSecret"];
+            if (string.IsNullOrWhiteSpace(hashSecret))
+            {
+                _logger.LogError("VNPay HashSecret not configured - cannot verify signature");
+                return false;
+            }
+
+            // Build signed string: all params except vnp_SecureHash and vnp_SecureHashType, sorted alphabetically
+            var paramsToSign = callbackParams
+                .Where(p => p.Key != "vnp_SecureHash" && p.Key != "vnp_SecureHashType" && !string.IsNullOrEmpty(p.Value))
+                .OrderBy(p => p.Key)
+                .ToList();
+
+            var queryString = string.Join("&", paramsToSign.Select(p => $"{p.Key}={p.Value}"));
+            var expectedHash = CreateVNPaySignature(queryString, hashSecret);
+
+            var isValid = string.Equals(expectedHash, receivedHash, StringComparison.OrdinalIgnoreCase);
+            if (!isValid)
+            {
+                _logger.LogWarning("VNPay signature mismatch. Expected: {Expected}, Received: {Received}", expectedHash, receivedHash);
+            }
+            return isValid;
         }
 
-        private bool VerifyMoMoSignature(string paymentId, string signature)
+        private bool VerifyMoMoSignature(Dictionary<string, string> callbackParams, string receivedSignature)
         {
-            // Implementation for MoMo signature verification
-            return true; // Simplified for demo
+            var momoConfig = _configuration.GetSection("PaymentGateways:MoMo");
+            var secretKey = momoConfig["SecretKey"];
+            var accessKey = momoConfig["AccessKey"];
+            if (string.IsNullOrWhiteSpace(secretKey) || string.IsNullOrWhiteSpace(accessKey))
+            {
+                _logger.LogError("MoMo credentials not configured - cannot verify signature");
+                return false;
+            }
+
+            // MoMo IPN raw hash order (must match MoMo's specification exactly)
+            var rawHash = $"accessKey={accessKey}" +
+                          $"&amount={callbackParams.GetValueOrDefault("amount", "")}" +
+                          $"&extraData={callbackParams.GetValueOrDefault("extraData", "")}" +
+                          $"&message={callbackParams.GetValueOrDefault("message", "")}" +
+                          $"&orderId={callbackParams.GetValueOrDefault("orderId", "")}" +
+                          $"&orderInfo={callbackParams.GetValueOrDefault("orderInfo", "")}" +
+                          $"&orderType={callbackParams.GetValueOrDefault("orderType", "")}" +
+                          $"&partnerCode={callbackParams.GetValueOrDefault("partnerCode", "")}" +
+                          $"&payType={callbackParams.GetValueOrDefault("payType", "")}" +
+                          $"&requestId={callbackParams.GetValueOrDefault("requestId", "")}" +
+                          $"&responseTime={callbackParams.GetValueOrDefault("responseTime", "")}" +
+                          $"&resultCode={callbackParams.GetValueOrDefault("resultCode", "")}" +
+                          $"&transId={callbackParams.GetValueOrDefault("transId", "")}";
+
+            var expectedSignature = CreateMoMoSignature(rawHash, secretKey);
+
+            var isValid = string.Equals(expectedSignature, receivedSignature, StringComparison.OrdinalIgnoreCase);
+            if (!isValid)
+            {
+                _logger.LogWarning("MoMo signature mismatch. RawHash: {RawHash}", rawHash);
+            }
+            return isValid;
         }
 
         // ===================================
@@ -856,7 +933,7 @@ namespace JohnHenryFashionWeb.Services
 
                 var requestId = Guid.NewGuid().ToString();
                 var orderId = $"{request.OrderId}_{DateTime.Now:yyyyMMddHHmmss}";
-                var amount = request.Amount.ToString("F0");
+                var amount = ((long)request.Amount).ToString(); // MoMo requires integer string, consistent with ProcessMoMoPaymentAsync
                 var orderInfo = string.IsNullOrEmpty(request.OrderInfo) 
                     ? $"Thanh toan don hang {request.OrderId}" 
                     : request.OrderInfo;
@@ -1076,6 +1153,10 @@ namespace JohnHenryFashionWeb.Services
         public string TransactionId { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string Signature { get; set; } = string.Empty;
+        /// <summary>Payment method (vnpay/momo/stripe/cod)</summary>
+        public string? PaymentMethod { get; set; }
+        /// <summary>Full raw callback parameters for HMAC signature verification</summary>
+        public Dictionary<string, string>? RawParams { get; set; }
     }
 
     public class MoMoResponse

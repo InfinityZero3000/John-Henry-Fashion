@@ -181,10 +181,10 @@ namespace JohnHenryFashionWeb.Helpers
 
             var paymentMethod = order.PaymentMethod?.ToLower() ?? "";
 
-            // COD: Có thể complete khi delivered (sẽ tự động mark as paid khi complete)
+            // COD: Có thể complete chỉ khi delivered (đã giao tận tay), không phải khi shipped
             if (paymentMethod == "cod")
             {
-                return order.Status == "delivered" || order.Status == "shipped";
+                return order.Status == "delivered";
             }
 
             // Các phương thức khác: Phải đã thanh toán

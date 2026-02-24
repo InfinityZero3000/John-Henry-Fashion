@@ -143,9 +143,9 @@ namespace JohnHenryFashionWeb.Controllers
                 TotalAmount = await query.SumAsync(t => t.Amount),
                 TotalPlatformFee = await query.SumAsync(t => t.PlatformFee),
                 TotalSellerAmount = await query.SumAsync(t => t.SellerAmount),
-                CompletedCount = await query.CountAsync(t => t.Status == "Completed"),
-                PendingCount = await query.CountAsync(t => t.Status == "Pending"),
-                FailedCount = await query.CountAsync(t => t.Status == "Failed")
+                CompletedCount = await query.CountAsync(t => t.Status == "completed"),
+                PendingCount = await query.CountAsync(t => t.Status == "pending"),
+                FailedCount = await query.CountAsync(t => t.Status == "failed")
             };
 
             ViewBag.Statistics = stats;
@@ -246,7 +246,7 @@ namespace JohnHenryFashionWeb.Controllers
                 .Where(t => t.SellerId == settlement.SellerId &&
                            t.CreatedAt >= settlement.PeriodStart &&
                            t.CreatedAt <= settlement.PeriodEnd &&
-                           t.Status == "Completed")
+                           t.Status == "completed")
                 .OrderBy(t => t.CreatedAt)
                 .ToListAsync();
 
@@ -265,20 +265,20 @@ namespace JohnHenryFashionWeb.Controllers
                 return Json(new { success = false, message = "Không tìm thấy settlement" });
             }
 
-            if (settlement.Status != "Pending")
+            if (settlement.Status != "pending")
             {
                 return Json(new { success = false, message = "Settlement này đã được xử lý" });
             }
 
             try
             {
-                settlement.Status = "Completed";
+                settlement.Status = "completed";
                 settlement.SettledAt = DateTime.UtcNow;
                 settlement.SettledBy = User.Identity!.Name;
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Settlement {id} processed by {User.Identity.Name}");
+                _logger.LogInformation("Settlement {SettlementId} processed by {Admin}", id, User.Identity.Name);
 
                 return Json(new { success = true, message = "Settlement đã được xử lý thành công!" });
             }
@@ -332,9 +332,9 @@ namespace JohnHenryFashionWeb.Controllers
             // Stats
             var stats = new
             {
-                PendingAmount = await query.Where(w => w.Status == "Pending").SumAsync(w => w.Amount),
-                ApprovedAmount = await query.Where(w => w.Status == "Approved").SumAsync(w => w.Amount),
-                RejectedCount = await query.CountAsync(w => w.Status == "Rejected")
+                PendingAmount = await query.Where(w => w.Status == "pending").SumAsync(w => w.Amount),
+                ApprovedAmount = await query.Where(w => w.Status == "approved").SumAsync(w => w.Amount),
+                RejectedCount = await query.CountAsync(w => w.Status == "rejected")
             };
 
             ViewBag.Statistics = stats;
@@ -376,23 +376,22 @@ namespace JohnHenryFashionWeb.Controllers
                 return Json(new { success = false, message = "Không tìm thấy yêu cầu rút tiền" });
             }
 
-            if (withdrawal.Status != "Pending")
+            if (withdrawal.Status != "pending")
             {
                 return Json(new { success = false, message = "Yêu cầu này đã được xử lý" });
             }
 
             try
             {
-                withdrawal.Status = "Approved";
+                withdrawal.Status = "approved";
                 withdrawal.ProcessedAt = DateTime.UtcNow;
                 withdrawal.ProcessedBy = User.Identity!.Name;
                 withdrawal.AdminNotes = notes;
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Withdrawal {id} approved by {User.Identity.Name}");
-
-                // TODO: Trigger actual payment transfer to seller
+                _logger.LogWarning("Withdrawal {WithdrawalId} approved by {Admin} - MANUAL BANK TRANSFER REQUIRED. Amount: {Amount} VND, Bank: {Bank}, Account: {Account}, AccountName: {AccountName}",
+                    id, User.Identity.Name, withdrawal.Amount, withdrawal.BankName, withdrawal.AccountNumber, withdrawal.AccountName);
 
                 return Json(new { success = true, message = "Yêu cầu rút tiền đã được phê duyệt!" });
             }
@@ -418,21 +417,21 @@ namespace JohnHenryFashionWeb.Controllers
                 return Json(new { success = false, message = "Không tìm thấy yêu cầu rút tiền" });
             }
 
-            if (withdrawal.Status != "Pending")
+            if (withdrawal.Status != "pending")
             {
                 return Json(new { success = false, message = "Yêu cầu này đã được xử lý" });
             }
 
             try
             {
-                withdrawal.Status = "Rejected";
+                withdrawal.Status = "rejected";
                 withdrawal.ProcessedAt = DateTime.UtcNow;
                 withdrawal.ProcessedBy = User.Identity!.Name;
                 withdrawal.AdminNotes = reason;
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Withdrawal {id} rejected by {User.Identity.Name}");
+                _logger.LogInformation("Withdrawal {WithdrawalId} rejected by {Admin}. Reason: {Reason}", id, User.Identity.Name, reason);
 
                 return Json(new { success = true, message = "Yêu cầu rút tiền đã bị từ chối" });
             }
@@ -489,7 +488,12 @@ namespace JohnHenryFashionWeb.Controllers
         [HttpPost("methods/toggle")]
         public async Task<IActionResult> TogglePaymentMethodV2([FromBody] ToggleMethodRequest request)
         {
-            var method = await _context.PaymentMethodConfigs.FindAsync(Guid.Parse(request.Id));
+            if (!Guid.TryParse(request.Id, out var methodId))
+            {
+                return Json(new { success = false, message = "ID phương thức thanh toán không hợp lệ" });
+            }
+
+            var method = await _context.PaymentMethodConfigs.FindAsync(methodId);
             if (method == null)
             {
                 return Json(new { success = false, message = "Không tìm thấy phương thức thanh toán" });
@@ -603,24 +607,42 @@ namespace JohnHenryFashionWeb.Controllers
             fromDate ??= DateTime.UtcNow.AddMonths(-1);
             toDate ??= DateTime.UtcNow;
 
-            var transactions = await _context.PaymentTransactions
-                .Where(t => t.CreatedAt >= fromDate && t.CreatedAt <= toDate)
+            var baseQuery = _context.PaymentTransactions
+                .Where(t => t.CreatedAt >= fromDate && t.CreatedAt <= toDate);
+
+            // Use DB-level aggregations instead of loading all records into memory
+            var totals = await baseQuery
+                .GroupBy(_ => true)
+                .Select(g => new
+                {
+                    TotalRevenue = g.Sum(t => t.Amount),
+                    TotalPlatformFee = g.Sum(t => t.PlatformFee),
+                    TotalSellerRevenue = g.Sum(t => t.SellerAmount),
+                    TransactionCount = g.Count(),
+                    AverageOrderValue = g.Average(t => t.Amount)
+                })
+                .FirstOrDefaultAsync();
+
+            var completedTransactions = await baseQuery.CountAsync(t => t.Status == "completed");
+            var pendingTransactions = await baseQuery.CountAsync(t => t.Status == "pending");
+            var failedTransactions = await baseQuery.CountAsync(t => t.Status == "failed");
+
+            var paymentMethodBreakdown = await baseQuery
+                .GroupBy(t => t.PaymentMethod)
+                .Select(g => new { Method = g.Key, Count = g.Count(), Amount = g.Sum(t => t.Amount) })
                 .ToListAsync();
 
             var stats = new
             {
-                TotalRevenue = transactions.Sum(t => t.Amount),
-                TotalPlatformFee = transactions.Sum(t => t.PlatformFee),
-                TotalSellerRevenue = transactions.Sum(t => t.SellerAmount),
-                TransactionCount = transactions.Count,
-                AverageOrderValue = transactions.Any() ? transactions.Average(t => t.Amount) : 0,
-                CompletedTransactions = transactions.Count(t => t.Status == "Completed"),
-                PendingTransactions = transactions.Count(t => t.Status == "Pending"),
-                FailedTransactions = transactions.Count(t => t.Status == "Failed"),
-                PaymentMethodBreakdown = transactions
-                    .GroupBy(t => t.PaymentMethod)
-                    .Select(g => new { Method = g.Key, Count = g.Count(), Amount = g.Sum(t => t.Amount) })
-                    .ToList()
+                TotalRevenue = totals?.TotalRevenue ?? 0,
+                TotalPlatformFee = totals?.TotalPlatformFee ?? 0,
+                TotalSellerRevenue = totals?.TotalSellerRevenue ?? 0,
+                TransactionCount = totals?.TransactionCount ?? 0,
+                AverageOrderValue = totals?.AverageOrderValue ?? 0,
+                CompletedTransactions = completedTransactions,
+                PendingTransactions = pendingTransactions,
+                FailedTransactions = failedTransactions,
+                PaymentMethodBreakdown = paymentMethodBreakdown
             };
 
             ViewBag.FromDate = fromDate;

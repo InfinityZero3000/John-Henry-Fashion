@@ -65,14 +65,8 @@ namespace JohnHenryFashionWeb.Migrations
                 oldType: "character varying(255)",
                 oldMaxLength: 255);
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "OrderId",
-                table: "RefundRequests",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(255)",
-                oldMaxLength: 255);
+            // PostgreSQL cannot auto-cast varchar to uuid; require explicit USING clause
+            migrationBuilder.Sql(@"ALTER TABLE ""RefundRequests"" ALTER COLUMN ""OrderId"" TYPE uuid USING ""OrderId""::uuid;");
 
             migrationBuilder.AlterColumn<decimal>(
                 name: "Amount",
