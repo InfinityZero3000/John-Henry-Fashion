@@ -132,7 +132,7 @@ namespace JohnHenryFashionWeb.Models
         public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
 
         // Computed properties
-        public string MainImageUrl => FeaturedImageUrl ?? "/images/default-product.jpg";
+        public string MainImageUrl => FeaturedImageUrl ?? "/images/placeholder.jpg";
     }
 
     public class ProductImage
@@ -180,6 +180,8 @@ namespace JohnHenryFashionWeb.Models
         public DateTime? DeliveredAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        [System.ComponentModel.DataAnnotations.Timestamp]
+        public byte[]? RowVersion { get; set; }
 
         // Computed properties
         public string? ShippingCity => ShippingAddress; // Simplified mapping
