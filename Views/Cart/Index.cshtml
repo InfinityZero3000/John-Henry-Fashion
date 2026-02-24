@@ -291,9 +291,9 @@
                                         <div class="product-card-mini">
                                             <a href="@Url.Action("ProductDetail", "Products", new { id = product.Id })" class="product-link">
                                                 <div class="product-image-mini">
-                                                    <img src="@(!string.IsNullOrEmpty(product.FeaturedImageUrl) ? product.FeaturedImageUrl : "/images/default-product.jpg")" 
+                                                    <img src="@CdnHelper.GetProductImageUrl(product.FeaturedImageUrl)" 
                                                          alt="@product.Name"
-                                                         onerror="this.src='/images/default-product.jpg'">
+                                                         onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
                                                 </div>
                                                 <div class="product-info-mini">
                                                     <h6 class="product-name-mini">@product.Name</h6>

@@ -352,7 +352,7 @@
                                     <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
                                         <div class="product-card-new">
                                             <div class="product-image-container">
-                                                <img src="@product.MainImageUrl" alt="@product.Name" class="product-image" loading="lazy">
+                                                <img src="@CdnHelper.GetProductImageUrl(product.MainImageUrl)" alt="@product.Name" class="product-image" loading="lazy">
                                             </div>
                                             <div class="product-info">
                                                 <h6 class="product-name">@product.Name</h6>

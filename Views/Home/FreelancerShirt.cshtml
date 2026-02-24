@@ -357,7 +357,7 @@
                                         <div class="product-card-new">
                                             <div class="product-image-container">
                                                 <a href="@Url.Action("ProductDetail", "Products", new { id = product.Id })">
-                                                    <img src="@product.FeaturedImageUrl" alt="@product.Name" class="product-image">
+                                                    <img src="@CdnHelper.GetProductImageUrl(product.FeaturedImageUrl)" alt="@product.Name" class="product-image" onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
                                                 </a>
                                             </div>
                                             <div class="product-info">

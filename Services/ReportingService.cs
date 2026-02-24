@@ -1148,7 +1148,7 @@ namespace JohnHenryFashionWeb.Services
                 {
                     ProductId = g.Key.ProductId,
                     ProductName = g.Key.ProductName,
-                    ImageUrl = g.Key.FeaturedImageUrl ?? "/images/default-product.jpg",
+                    ImageUrl = g.Key.FeaturedImageUrl ?? "/images/placeholder.jpg",
                     Sales = g.Sum(x => x.Quantity),
                     Revenue = g.Sum(x => x.UnitPrice * x.Quantity),
                     Views = 0 // Would need to integrate with analytics

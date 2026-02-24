@@ -6,7 +6,7 @@ public class ProductViewModel
     public string Name { get; set; } = string.Empty;
     public string SKU { get; set; } = string.Empty;
     public decimal Price { get; set; }
-    public string FeaturedImageUrl { get; set; } = string.Empty;
+    public string? FeaturedImageUrl { get; set; }
     public List<string> Images { get; set; } = new();
     public List<string> AvailableColors { get; set; } = new();
     public List<string> AvailableSizes { get; set; } = new();

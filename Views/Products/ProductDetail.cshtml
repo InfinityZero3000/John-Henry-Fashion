@@ -32,14 +32,14 @@
                     @if (Model.Images != null && Model.Images.Any())
                     {
                         <div class="thumbnails-column d-flex flex-column gap-2">
-                            <img src="@Model.FeaturedImageUrl" 
+                            <img src="@CdnHelper.GetProductImageUrl(Model.FeaturedImageUrl)" 
                                  alt="@Model.Name" 
                                  class="img-thumbnail thumbnail-img active"
                                  onclick="changeMainImage(this)"
                                  style="width: 80px; height: 100px; object-fit: cover; cursor: pointer;">
                             @foreach (var img in Model.Images)
                             {
-                                <img src="@img" 
+                                <img src="@CdnHelper.GetProductImageUrl(img)" 
                                      alt="@Model.Name" 
                                      class="img-thumbnail thumbnail-img"
                                      onclick="changeMainImage(this)"
@@ -50,7 +50,7 @@
                     
                     <!-- Main Image -->
                     <div class="main-image-wrapper flex-grow-1">
-                        <img src="@(Model.FeaturedImageUrl ?? "/images/placeholder.jpg")" 
+                        <img src="@CdnHelper.GetProductImageUrl(Model.FeaturedImageUrl)" 
                              alt="@Model.Name" 
                              class="img-fluid"
                              id="mainProductImage"
@@ -185,7 +185,7 @@
                             <div class="product-card-new">
                                 <div class="product-image-container">
                                     <a href="@Url.Action("ProductDetail", "Products", new { id = product.Id })">
-                                        <img src="@(product.FeaturedImageUrl ?? "/images/placeholder.jpg")" 
+                                        <img src="@CdnHelper.GetProductImageUrl(product.FeaturedImageUrl)" 
                                              alt="@product.Name" 
                                              class="product-image">
                                     </a>
@@ -452,7 +452,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0 text-center bg-white" style="padding-top: 80px !important;">
-                <img src="/images/size-chart.jpg" alt="Hướng dẫn chọn size John Henry" class="img-fluid w-100" style="max-height: 80vh; object-fit: contain; margin-top: 20px;">
+                <img src="@CdnHelper.GetCdnUrl("/images/size-chart.jpg")" alt="Hướng dẫn chọn size John Henry" class="img-fluid w-100" style="max-height: 80vh; object-fit: contain; margin-top: 20px;">
             </div>
         </div>
     </div>

@@ -450,7 +450,7 @@ namespace JohnHenryFashionWeb.Controllers
                 Name = product.Name,
                 SKU = product.SKU,
                 Price = product.Price,
-                FeaturedImageUrl = product.FeaturedImageUrl ?? "/images/default-product.jpg",
+                FeaturedImageUrl = product.FeaturedImageUrl,
                 Images = product.GalleryImages?.ToList() ?? new List<string>(),
                 StockQuantity = product.StockQuantity,
                 CategoryName = product.Category?.Name ?? "Chưa phân loại",

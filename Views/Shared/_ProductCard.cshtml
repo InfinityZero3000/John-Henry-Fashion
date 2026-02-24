@@ -4,7 +4,7 @@
     <div class="product-card-new">
         <div class="product-image-container">
             <a href="@Url.Action("ProductDetail", "Products", new { id = Model.Id })">
-                <img src="@Model.FeaturedImageUrl" alt="@Model.Name" class="product-image">
+                <img src="@CdnHelper.GetProductImageUrl(Model.FeaturedImageUrl)" alt="@Model.Name" class="product-image" onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
             </a>
         </div>
         <div class="product-info">

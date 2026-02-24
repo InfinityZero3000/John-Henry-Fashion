@@ -1165,7 +1165,7 @@ public class HomeController : Controller
                 name = p.Name,
                 sku = p.SKU,
                 price = p.Price,
-                image = p.FeaturedImageUrl ?? "/images/default-product.jpg"
+                image = p.FeaturedImageUrl ?? "/images/placeholder.jpg"
             })
             .ToListAsync();
 
@@ -1237,7 +1237,7 @@ public class HomeController : Controller
             Name = product.Name,
             SKU = product.SKU,
             Price = product.Price, // Chỉ dùng giá gốc từ database
-            FeaturedImageUrl = product.FeaturedImageUrl ?? "/images/default-product.jpg",
+            FeaturedImageUrl = product.FeaturedImageUrl,
             Images = product.GalleryImages?.ToList() ?? new List<string>(),
             StockQuantity = product.StockQuantity,
             CategoryName = product.Category?.Name ?? "Chưa phân loại",

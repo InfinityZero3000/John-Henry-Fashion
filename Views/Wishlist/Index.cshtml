@@ -41,10 +41,10 @@
                         <div class="product-card-new wishlist-card">
                             <div class="product-image-container">
                                 <a href="@Url.Action("ProductDetail", "Products", new { id = item.Product.Id })">
-                                    <img src="@(!string.IsNullOrEmpty(item.Product.FeaturedImageUrl) ? item.Product.FeaturedImageUrl : "/images/default-product.jpg")" 
+                                    <img src="@CdnHelper.GetProductImageUrl(item.Product.FeaturedImageUrl)" 
                                          alt="@item.Product.Name" 
                                          class="product-image"
-                                         onerror="this.src='/images/default-product.jpg'">
+                                         onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
                                 </a>
                                 
                                 <!-- Wishlist Action Buttons -->

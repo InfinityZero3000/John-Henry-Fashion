@@ -260,7 +260,7 @@
                             <div class="product-card-new">
                                 <div class="product-image-container">
                                     <a href="@Url.Action("ProductDetail", "Products", new { id = product.Id })">
-                                        <img src="@product.MainImageUrl" alt="@product.Name" class="product-image" onerror="this.src='/images/default-product.jpg'">
+                                        <img src="@CdnHelper.GetProductImageUrl(product.MainImageUrl)" alt="@product.Name" class="product-image" onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
                                     </a>
                                 </div>
                                 <div class="product-info">
@@ -334,7 +334,7 @@
                             <div class="product-card-new">
                                 <div class="product-image-container">
                                     <a href="@Url.Action("ProductDetail", "Products", new { id = product.Id })">
-                                        <img src="@product.MainImageUrl" alt="@product.Name" class="product-image" onerror="this.src='/images/default-product.jpg'">
+                                        <img src="@CdnHelper.GetProductImageUrl(product.MainImageUrl)" alt="@product.Name" class="product-image" onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
                                     </a>
                                 </div>
                                 <div class="product-info">
@@ -407,7 +407,7 @@
                             <div class="product-card-new">
                                 <div class="product-image-container">
                                     <a href="@Url.Action("ProductDetail", "Products", new { id = product.Id })">
-                                        <img src="@product.MainImageUrl" alt="@product.Name" class="product-image" onerror="this.src='/images/default-product.jpg'">
+                                        <img src="@CdnHelper.GetProductImageUrl(product.MainImageUrl)" alt="@product.Name" class="product-image" onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
                                     </a>
                                 </div>
                                 <div class="product-info">
