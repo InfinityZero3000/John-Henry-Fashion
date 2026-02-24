@@ -117,9 +117,20 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add Entity Framework and PostgreSQL
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add Entity Framework - dùng InMemory cho môi trường Testing, PostgreSQL cho Production/Development
+var isTestingEnvironment = builder.Environment.EnvironmentName == "Testing";
+
+if (isTestingEnvironment)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("TestDatabase_" + Guid.NewGuid()));
+    Log.Information("Using InMemory database for Testing environment");
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 // Register BCrypt password hasher (replaces default PBKDF2)
 builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, JohnHenryFashionWeb.Services.BcryptPasswordHasher<ApplicationUser>>();
@@ -275,8 +286,30 @@ builder.Services.AddApplicationInsightsTelemetry();
 
 // Add Memory Caching and Distributed Caching
 builder.Services.AddMemoryCache();
-builder.Services.AddDistributedMemoryCache();
-Log.Information("Using in-memory distributed cache for sessions");
+
+// Configure Redis Distributed Cache (fallback to in-memory if no connection string, or Testing env)
+var redisConnection = isTestingEnvironment ? null :
+    (builder.Configuration.GetConnectionString("RedisCloud")
+    ?? builder.Configuration.GetConnectionString("Redis")
+    ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION"));
+
+if (!isTestingEnvironment && !string.IsNullOrWhiteSpace(redisConnection) && !redisConnection.Equals("localhost:6379", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "JohnHenry:";
+    });
+    Log.Information("Using Redis distributed cache: {RedisHost}",
+        redisConnection.Substring(0, Math.Min(40, redisConnection.Length)) + "...");
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+    Log.Information(isTestingEnvironment
+        ? "Testing env: dùng in-memory cache (bypass Redis)"
+        : "Redis không được cấu hình hoặc đang dùng localhost — fallback sang in-memory cache");
+}
 
 // Add Session support
 builder.Services.AddSession(options =>
@@ -321,25 +354,33 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 });
 
 // Add Health Checks for Render deployment
-var healthChecksBuilder = builder.Services.AddHealthChecks()
-    .AddNpgSql(
+var healthChecksBuilder = builder.Services.AddHealthChecks();
+
+if (!isTestingEnvironment)
+{
+    healthChecksBuilder.AddNpgSql(
         builder.Configuration.GetConnectionString("DefaultConnection")!,
         name: "database",
         timeout: TimeSpan.FromSeconds(5),
         tags: new[] { "db", "sql", "postgres" });
 
-// Redis health check temporarily disabled to allow faster startup
-// External Redis (Upstash) can cause slow health checks
-// TODO: Re-enable after verifying Redis connection works properly
-var redisConnStr = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrWhiteSpace(redisConnStr))
-{
-    Log.Information("Redis configured but health check disabled for faster startup: {RedisHost}", 
-        redisConnStr.Substring(0, Math.Min(30, redisConnStr.Length)) + "...");
-}
-else
-{
-    Log.Warning("Redis connection string not found, using in-memory cache");
+    // Redis health check — enabled when RedisCloud connection string is available
+    var redisConnStr = builder.Configuration.GetConnectionString("RedisCloud")
+        ?? builder.Configuration.GetConnectionString("Redis");
+    if (!string.IsNullOrWhiteSpace(redisConnStr) && !redisConnStr.Equals("localhost:6379", StringComparison.OrdinalIgnoreCase))
+    {
+        healthChecksBuilder.AddRedis(
+            redisConnStr,
+            name: "redis",
+            timeout: TimeSpan.FromSeconds(5),
+            tags: new[] { "cache", "redis" });
+        Log.Information("Redis health check enabled: {RedisHost}",
+            redisConnStr.Substring(0, Math.Min(40, redisConnStr.Length)) + "...");
+    }
+    else
+    {
+        Log.Warning("Redis connection string không tìm thấy hoặc là localhost — bỏ qua Redis health check");
+    }
 }
 
 healthChecksBuilder.AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "api" });
@@ -560,6 +601,9 @@ using (var scope = app.Services.CreateScope())
         
         await SeedBlogPosts(context, userManager);
         Log.Information("Sample blog posts seeded successfully");
+
+        await SeedProducts(context);
+        Log.Information("Products seeded successfully");
     }
     catch (Exception ex)
     {
@@ -892,18 +936,52 @@ static async Task SeedBlogPosts(ApplicationDbContext context, UserManager<Applic
     await context.SaveChangesAsync();
 }
 
+static async Task SeedProducts(ApplicationDbContext context)
+{
+    // Only seed if the Products table is empty
+    if (await context.Products.AnyAsync())
+        return;
+
+    // Try the rich-format CSV first, fall back to the simple one
+    var csvCandidates = new[]
+    {
+        "database/seed/all_products_export.csv",
+        "database/seed/johnhenry_products.csv",
+        "database/johnhenry_products.csv",
+    };
+
+    string? csvPath = null;
+    foreach (var candidate in csvCandidates)
+    {
+        if (File.Exists(candidate)) { csvPath = candidate; break; }
+    }
+
+    if (csvPath == null)
+    {
+        Log.Warning("No product CSV found – skipping product seeding.");
+        return;
+    }
+
+    Log.Information("Seeding products from {CsvPath}", csvPath);
+    await JohnHenryFashionWeb.Scripts.ImportProductsFromCsv.RunAsync(context, csvPath);
+}
+
 // Check for import-products command
 if (args.Contains("--import-products"))
 {
     Console.WriteLine("\n╔════════════════════════════════════════════════╗");
     Console.WriteLine("║  JOHN HENRY - IMPORT PRODUCTS FROM CSV        ║");
     Console.WriteLine("╚════════════════════════════════════════════════╝\n");
-    
+
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var csvPath = "database/johnhenry_products.csv";
-        
+        // Prefer the rich-format export; fall back to the simple list
+        var csvPath = File.Exists("database/seed/all_products_export.csv")
+            ? "database/seed/all_products_export.csv"
+            : "database/seed/johnhenry_products.csv";
+
+
         await JohnHenryFashionWeb.Scripts.ImportProductsFromCsv.RunAsync(context, csvPath);
     }
     
@@ -925,3 +1003,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+// Required for WebApplicationFactory in integration tests
+public partial class Program { }

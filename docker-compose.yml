@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:15
+    image: postgres:16-alpine
     container_name: johnhenry_postgres
     environment:
       POSTGRES_DB: johnhenry_db
@@ -10,14 +8,71 @@ services:
       POSTGRES_PASSWORD: JohnHenry@2025!
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Init folder removed - using EF Core migrations instead
-      # - ./database/init:/docker-entrypoint-initdb.d
     restart: unless-stopped
     networks:
       - johnhenry_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U johnhenry_user -d johnhenry_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: johnhenry_redis
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+    networks:
+      - johnhenry_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  johnhenry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: johnhenry_app
+    ports:
+      - "5050:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=johnhenry_db;Username=johnhenry_user;Password=JohnHenry@2025!;SSL Mode=Disable
+      - ConnectionStrings__Redis=redis:6379
+      - ConnectionStrings__RedisCloud=
+      - JWT__SecretKey=${JWT_SECRET_KEY:-JohnHenryFashion_SuperSecret_JWT_Key_2025!}
+      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID:-}
+      - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET:-}
+      - EmailSettings__Username=${EMAIL_USERNAME:-}
+      - EmailSettings__Password=${EMAIL_PASSWORD:-}
+      - EmailSettings__FromEmail=${EMAIL_FROM:-}
+      - PaymentGateways__VNPay__TmnCode=${VNPAY_TMN_CODE:-}
+      - PaymentGateways__VNPay__HashSecret=${VNPAY_HASH_SECRET:-}
+      - PaymentGateways__MoMo__PartnerCode=${MOMO_PARTNER_CODE:-}
+      - PaymentGateways__MoMo__AccessKey=${MOMO_ACCESS_KEY:-}
+      - PaymentGateways__MoMo__SecretKey=${MOMO_SECRET_KEY:-}
+      - PaymentGateways__Stripe__SecretKey=${STRIPE_SECRET_KEY:-}
+      - CloudinarySettings__CloudName=${CLOUDINARY_CLOUD_NAME:-}
+      - CloudinarySettings__ApiKey=${CLOUDINARY_API_KEY:-}
+      - CloudinarySettings__ApiSecret=${CLOUDINARY_API_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - johnhenry_network
+    volumes:
+      - uploads_data:/app/wwwroot/uploads
+      - logs_data:/app/logs
+      - ./database/seed:/app/database/seed:ro
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -45,6 +100,10 @@ volumes:
   postgres_data:
     driver: local
   pgadmin_data:
+    driver: local
+  uploads_data:
+    driver: local
+  logs_data:
     driver: local
 
 networks:

@@ -3,7 +3,7 @@
 # ===========================
 
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore dependencies (layer cached)
@@ -23,11 +23,14 @@ RUN dotnet publish "JohnHenryFashionWeb.csproj" \
     /p:UseAppHost=false
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 # Copy published app
 COPY --from=build /app/publish .
+
+# Copy seed CSV files (needed for product seeding on first startup)
+COPY --from=build /src/database/seed /app/database/seed
 
 # Install curl for healthcheck
 USER root
