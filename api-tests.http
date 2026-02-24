@@ -1,0 +1,441 @@
+### John Henry Fashion - API Test File
+### Sử dụng với VS Code REST Client extension (humao.rest-client)
+### Cập nhật @baseUrl và @adminToken trước khi test
+
+@baseUrl = https://localhost:5001
+@adminToken = Bearer YOUR_ADMIN_JWT_TOKEN_HERE
+@userToken = Bearer YOUR_USER_JWT_TOKEN_HERE
+
+### ============================================================
+### ADDRESS API - Không cần xác thực
+### ============================================================
+
+### Lấy danh sách tỉnh/thành phố
+GET {{baseUrl}}/api/AddressApi/provinces
+Accept: application/json
+
+###
+
+### Lấy danh sách quận/huyện theo tỉnh (id=1 = Hà Nội)
+GET {{baseUrl}}/api/AddressApi/districts/1
+Accept: application/json
+
+###
+
+### Lấy danh sách phường/xã theo quận (id=1)
+GET {{baseUrl}}/api/AddressApi/wards/1
+Accept: application/json
+
+### ============================================================
+### VIETNAMESE ADDRESS API - Không cần xác thực (gọi external API)
+### ============================================================
+
+### Lấy danh sách 63 tỉnh/thành phố Việt Nam
+GET {{baseUrl}}/api/VietnameseAddress/provinces
+Accept: application/json
+
+###
+
+### Lấy quận/huyện của Hà Nội (code=01)
+GET {{baseUrl}}/api/VietnameseAddress/districts/01
+Accept: application/json
+
+###
+
+### Lấy phường/xã của quận Ba Đình (code=001)
+GET {{baseUrl}}/api/VietnameseAddress/wards/001
+Accept: application/json
+
+### ============================================================
+### ADMIN API - Yêu cầu Admin role
+### ============================================================
+
+### Dashboard Statistics
+GET {{baseUrl}}/api/admin/dashboard/stats
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Recent Orders
+GET {{baseUrl}}/api/admin/dashboard/recent-orders
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Recent Orders (limit 5)
+GET {{baseUrl}}/api/admin/dashboard/recent-orders?limit=5
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Products List
+GET {{baseUrl}}/api/admin/products
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Products với phân trang
+GET {{baseUrl}}/api/admin/products?page=1&pageSize=10
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Toggle Product Status
+POST {{baseUrl}}/api/admin/products/PRODUCT_ID_HERE/toggle-status
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Orders List
+GET {{baseUrl}}/api/admin/orders
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Orders với filter
+GET {{baseUrl}}/api/admin/orders?status=pending&page=1&pageSize=20
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Update Order Status
+POST {{baseUrl}}/api/admin/orders/ORDER_ID_HERE/status
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "Processing",
+  "note": "Đang xử lý đơn hàng"
+}
+
+###
+
+### Realtime Analytics
+GET {{baseUrl}}/api/admin/analytics/realtime
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Sales Analytics
+GET {{baseUrl}}/api/admin/analytics/sales
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Sales Analytics với date range
+GET {{baseUrl}}/api/admin/analytics/sales?startDate=2025-01-01&endDate=2025-12-31
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Users List
+GET {{baseUrl}}/api/admin/users
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Toggle User Status
+POST {{baseUrl}}/api/admin/users/USER_ID_HERE/toggle-status
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### System Health
+GET {{baseUrl}}/api/admin/system/health
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Get Banner by ID
+GET {{baseUrl}}/api/admin/banners/BANNER_ID_HERE
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Create Banner
+POST {{baseUrl}}/api/admin/banners
+Authorization: {{adminToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="Title"
+
+Banner Test
+------FormBoundary
+Content-Disposition: form-data; name="IsActive"
+
+true
+------FormBoundary--
+
+###
+
+### Update Banner
+POST {{baseUrl}}/api/admin/banners/BANNER_ID_HERE/update
+Authorization: {{adminToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="Title"
+
+Updated Banner
+------FormBoundary--
+
+###
+
+### Delete Banner
+POST {{baseUrl}}/api/admin/banners/BANNER_ID_HERE/delete
+Authorization: {{adminToken}}
+
+###
+
+### Toggle Banner (enable/disable)
+POST {{baseUrl}}/api/admin/banners/BANNER_ID_HERE/toggle
+Authorization: {{adminToken}}
+
+###
+
+### Activate Banner
+POST {{baseUrl}}/api/admin/banners/BANNER_ID_HERE/activate
+Authorization: {{adminToken}}
+
+###
+
+### Reorder Banners
+POST {{baseUrl}}/api/admin/banners/BANNER_ID_HERE/reorder
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "newPosition": 1
+}
+
+### ============================================================
+### LOGS API - Yêu cầu Admin role
+### ============================================================
+
+### Get Logs
+GET {{baseUrl}}/api/admin/logs
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Get Logs với filter level
+GET {{baseUrl}}/api/admin/logs?level=Error&page=1
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Get Logs với date range
+GET {{baseUrl}}/api/admin/logs?startDate=2025-01-01&endDate=2025-12-31
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Get Log by ID
+GET {{baseUrl}}/api/admin/logs/LOG_ID_HERE
+Authorization: {{adminToken}}
+Accept: application/json
+
+### ============================================================
+### PERMISSIONS API - Yêu cầu Admin role
+### ============================================================
+
+### Get All Roles
+GET {{baseUrl}}/api/admin/permissions/roles
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Get Role Permissions
+GET {{baseUrl}}/api/admin/permissions/roles/Admin
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Get Seller Role Permissions
+GET {{baseUrl}}/api/admin/permissions/roles/Seller
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Search Users
+GET {{baseUrl}}/api/admin/permissions/users/search?q=john
+Authorization: {{adminToken}}
+Accept: application/json
+
+###
+
+### Assign Role to User
+POST {{baseUrl}}/api/admin/permissions/users/USER_ID_HERE/roles
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "roleName": "Seller"
+}
+
+### ============================================================
+### NOTIFICATIONS API - Yêu cầu đăng nhập
+### ============================================================
+
+### Get Notifications
+GET {{baseUrl}}/api/Notifications
+Authorization: {{userToken}}
+Accept: application/json
+
+###
+
+### Get Unread Notifications
+GET {{baseUrl}}/api/Notifications?unreadOnly=true
+Authorization: {{userToken}}
+Accept: application/json
+
+###
+
+### Get Unread Count
+GET {{baseUrl}}/api/Notifications/unread-count
+Authorization: {{userToken}}
+Accept: application/json
+
+###
+
+### Mark Notification as Read
+POST {{baseUrl}}/api/Notifications/NOTIFICATION_ID_HERE/mark-read
+Authorization: {{userToken}}
+
+###
+
+### Mark All Notifications as Read
+POST {{baseUrl}}/api/Notifications/mark-all-read
+Authorization: {{userToken}}
+
+###
+
+### Delete Notification
+DELETE {{baseUrl}}/api/Notifications/NOTIFICATION_ID_HERE
+Authorization: {{userToken}}
+
+### ============================================================
+### SECURITY API - Yêu cầu đăng nhập
+### ============================================================
+
+### Security Check
+GET {{baseUrl}}/api/Security/check
+Authorization: {{userToken}}
+Accept: application/json
+
+###
+
+### Get Security Logs
+GET {{baseUrl}}/api/Security/logs
+Authorization: {{userToken}}
+Accept: application/json
+
+###
+
+### Change Password
+POST {{baseUrl}}/api/Security/change-password
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewPassword456!",
+  "confirmNewPassword": "NewPassword456!"
+}
+
+###
+
+### Toggle Two-Factor Authentication
+POST {{baseUrl}}/api/Security/two-factor
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "enable": true
+}
+
+###
+
+### Send Two-Factor Token
+POST {{baseUrl}}/api/Security/send-2fa-token
+Authorization: {{userToken}}
+
+###
+
+### Verify Two-Factor Token
+POST {{baseUrl}}/api/Security/verify-2fa-token
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "token": "123456"
+}
+
+###
+
+### Get Active Sessions
+GET {{baseUrl}}/api/Security/active-sessions
+Authorization: {{userToken}}
+Accept: application/json
+
+###
+
+### Delete Specific Session
+DELETE {{baseUrl}}/api/Security/sessions/SESSION_ID_HERE
+Authorization: {{userToken}}
+
+###
+
+### Delete All Other Sessions (logout everywhere)
+DELETE {{baseUrl}}/api/Security/sessions
+Authorization: {{userToken}}
+
+### ============================================================
+### AUTHENTICATION (để lấy token cho các test trên)
+### ============================================================
+
+### Login (lấy session cookie)
+POST {{baseUrl}}/Account/Login
+Content-Type: application/json
+
+{
+  "email": "admin@johnhenry.com",
+  "password": "Admin@123!",
+  "rememberMe": false
+}
+
+### ============================================================
+### HEALTH CHECKS
+### ============================================================
+
+### Health Check tất cả
+GET {{baseUrl}}/health
+Accept: application/json
+
+###
+
+### Health Check chi tiết
+GET {{baseUrl}}/health/detail
+Accept: application/json

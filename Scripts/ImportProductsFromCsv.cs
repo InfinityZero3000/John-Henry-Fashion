@@ -9,11 +9,30 @@ using JohnHenryFashionWeb.Models;
 namespace JohnHenryFashionWeb.Scripts
 {
     /// <summary>
-    /// Script to import products from CSV file into database
+    /// Script to import products from CSV file into database.
+    /// Supports two CSV formats:
+    ///   - 3-column:  sku,name,price
+    ///   - 12-column: SKU,Name,Price,category,brand,StockQuantity,InStock,IsFeatured,IsActive,Rating,ReviewCount,CreatedAt
     /// Usage: Uncomment the call in Program.cs and run: dotnet run
     /// </summary>
     public class ImportProductsFromCsv
     {
+        // Maps CSV category names to wwwroot/images/<folder> directory names
+        private static readonly System.Collections.Generic.Dictionary<string, string> CategoryFolderMap =
+            new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Áo nam",          "ao-nam" },
+                { "Thời trang nam",  "ao-nam" },
+                { "Áo nữ",           "ao-nu" },
+                { "Thời trang nữ",   "ao-nu" },
+                { "Quần nam",        "quan-nam" },
+                { "Quần nữ",         "quan-nu" },
+                { "Đầm nữ",          "dam-nu" },
+                { "Chân váy nữ",     "chan-vay-nu" },
+                { "Phụ kiện nam",    "phu-kien-nam" },
+                { "Phụ kiện nữ",     "phu-kien-nu" },
+            };
+
         public static async Task RunAsync(ApplicationDbContext context, string csvFilePath)
         {
             if (!File.Exists(csvFilePath))
@@ -26,10 +45,16 @@ namespace JohnHenryFashionWeb.Scripts
             Console.WriteLine("⏳ This may take a few minutes...\n");
 
             var lines = await File.ReadAllLinesAsync(csvFilePath);
-            
+            if (lines.Length == 0) { Console.WriteLine("⚠️  CSV file is empty."); return; }
+
+            // Detect header format
+            var headerParts = ParseCsvLine(lines[0]);
+            bool richFormat = headerParts.Length >= 4 &&
+                              headerParts[3].Trim().Equals("category", StringComparison.OrdinalIgnoreCase);
+
             // Skip header line
             var dataLines = lines.Skip(1).ToList();
-            Console.WriteLine($"📊 Found {dataLines.Count} products in CSV");
+            Console.WriteLine($"📊 Found {dataLines.Count} products in CSV (format: {(richFormat ? "rich 12-col" : "simple 3-col")})");
 
             int imported = 0;
             int updated = 0;
@@ -37,9 +62,10 @@ namespace JohnHenryFashionWeb.Scripts
 
             foreach (var line in dataLines)
             {
+                if (string.IsNullOrWhiteSpace(line)) { skipped++; continue; }
+
                 try
                 {
-                    // Parse CSV line: sku,name,price
                     var parts = ParseCsvLine(line);
                     if (parts.Length < 3)
                     {
@@ -48,9 +74,15 @@ namespace JohnHenryFashionWeb.Scripts
                         continue;
                     }
 
-                    var sku = parts[0].Trim();
-                    var name = parts[1].Trim();
+                    var sku      = parts[0].Trim();
+                    var name     = parts[1].Trim();
                     var priceStr = parts[2].Trim();
+
+                    // Extra fields from rich format
+                    var categoryName  = richFormat && parts.Length > 3  ? parts[3].Trim()  : string.Empty;
+                    var brandName     = richFormat && parts.Length > 4  ? parts[4].Trim()  : "John Henry";
+                    var stockStr      = richFormat && parts.Length > 5  ? parts[5].Trim()  : "100";
+                    var isFeaturedStr = richFormat && parts.Length > 7  ? parts[7].Trim()  : "f";
 
                     if (string.IsNullOrEmpty(sku) || string.IsNullOrEmpty(name))
                     {
@@ -58,12 +90,17 @@ namespace JohnHenryFashionWeb.Scripts
                         continue;
                     }
 
-                    if (!decimal.TryParse(priceStr, out decimal price))
+                    if (!decimal.TryParse(priceStr, System.Globalization.NumberStyles.Any,
+                                          System.Globalization.CultureInfo.InvariantCulture, out decimal price))
                     {
                         Console.WriteLine($"⚠️  Invalid price for {sku}: {priceStr}");
                         skipped++;
                         continue;
                     }
+
+                    int stock      = int.TryParse(stockStr, out int s) ? s : 100;
+                    bool isFeatured = isFeaturedStr.Equals("t", StringComparison.OrdinalIgnoreCase) ||
+                                      isFeaturedStr.Equals("true", StringComparison.OrdinalIgnoreCase);
 
                     // Check if product already exists by SKU
                     var existingProduct = await context.Products
@@ -80,45 +117,48 @@ namespace JohnHenryFashionWeb.Scripts
                     }
                     else
                     {
-                        // Determine image path based on product name
-                        var imagePath = GetImagePath(name, sku);
-                        
-                        // Get or create default category
-                        var defaultCategory = await context.Categories
-                            .FirstOrDefaultAsync(c => c.Name == "Chưa phân loại");
-                            
-                        if (defaultCategory == null)
+                        // Determine image path using category (preferred) or product name fallback
+                        var imagePath = GetImagePath(name, sku, categoryName);
+
+                        // Get or create category record
+                        var dbCategoryName = string.IsNullOrEmpty(categoryName) ? "Chưa phân loại" : categoryName;
+                        var dbCategorySlug = GenerateSlug(dbCategoryName);
+
+                        var dbCategory = await context.Categories
+                            .FirstOrDefaultAsync(c => c.Name == dbCategoryName);
+
+                        if (dbCategory == null)
                         {
-                            defaultCategory = new Category
+                            dbCategory = new Category
                             {
-                                Name = "Chưa phân loại",
-                                Slug = "chua-phan-loai",
-                                Description = "Sản phẩm chưa được phân loại",
+                                Name = dbCategoryName,
+                                Slug = dbCategorySlug,
+                                Description = $"Danh mục {dbCategoryName}",
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow,
                                 UpdatedAt = DateTime.UtcNow
                             };
-                            await context.Categories.AddAsync(defaultCategory);
+                            await context.Categories.AddAsync(dbCategory);
                             await context.SaveChangesAsync();
                         }
-                        
+
                         // Create new product
                         var product = new Product
                         {
                             SKU = sku,
                             Name = name,
-                            Slug = GenerateSlug(name),
+                            Slug = GenerateSlug(name) + "-" + sku.ToLower(),
                             Price = price,
-                            Description = $"Sản phẩm {name}",
-                            StockQuantity = 100,
+                            Description = $"Sản phẩm {name} - {brandName}",
+                            StockQuantity = stock,
                             ManageStock = true,
-                            InStock = true,
+                            InStock = stock > 0,
                             FeaturedImageUrl = imagePath,
                             IsActive = true,
-                            IsFeatured = false,
+                            IsFeatured = isFeatured,
                             Status = "active",
                             ViewCount = 0,
-                            CategoryId = defaultCategory.Id,
+                            CategoryId = dbCategory.Id,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow
                         };
@@ -198,39 +238,33 @@ namespace JohnHenryFashionWeb.Scripts
         }
 
         /// <summary>
-        /// Determine image path based on product name and SKU
+        /// Determine image path using category (preferred) or product name keywords (fallback).
+        /// Image filename = {sku}.jpg inside the wwwroot/images/{folder}/ directory.
         /// </summary>
-        private static string GetImagePath(string name, string sku)
+        private static string GetImagePath(string name, string sku, string? category = null)
         {
-            // Determine category from name
-            if (name.Contains("Áo") || name.Contains("áo"))
-            {
-                if (name.Contains("Polo") || name.Contains("polo"))
-                    return $"/images/ao-polo/{sku}.jpg";
-                if (name.Contains("Thun") || name.Contains("thun"))
-                    return $"/images/ao-thun/{sku}.jpg";
-                if (name.Contains("Sơ mi") || name.Contains("sơ mi"))
-                    return $"/images/ao-so-mi/{sku}.jpg";
-                if (name.Contains("Blazer") || name.Contains("blazer"))
-                    return $"/images/ao-blazer/{sku}.jpg";
-                return $"/images/ao/{sku}.jpg";
-            }
-            else if (name.Contains("Quần") || name.Contains("quần"))
-            {
-                if (name.Contains("Jean") || name.Contains("jean"))
-                    return $"/images/quan-jean/{sku}.jpg";
-                return $"/images/quan/{sku}.jpg";
-            }
-            else if (name.Contains("Đầm") || name.Contains("đầm"))
-            {
-                return $"/images/dam/{sku}.jpg";
-            }
-            else if (name.Contains("Váy") || name.Contains("váy"))
-            {
-                return $"/images/vay/{sku}.jpg";
-            }
-            
-            return $"/images/products/{sku}.jpg";
+            // 1. Try direct category → folder lookup
+            if (!string.IsNullOrEmpty(category) && CategoryFolderMap.TryGetValue(category, out var folderFromCategory))
+                return $"/images/{folderFromCategory}/{sku}.jpg";
+
+            // 2. Fallback: guess from product name keywords
+            bool isFemale = name.Contains("Nữ") || name.Contains("nữ") || name.Contains("Nu") ||
+                            name.Contains("Lady") || name.Contains("lady");
+
+            if (name.Contains("Quần") || name.Contains("quần") || name.Contains("Jean") || name.Contains("jean"))
+                return isFemale ? $"/images/quan-nu/{sku}.jpg" : $"/images/quan-nam/{sku}.jpg";
+
+            if (name.Contains("Đầm") || name.Contains("đầm"))
+                return $"/images/dam-nu/{sku}.jpg";
+
+            if (name.Contains("Chân váy") || name.Contains("chân váy"))
+                return $"/images/chan-vay-nu/{sku}.jpg";
+
+            if (name.Contains("Phụ kiện") || name.Contains("phụ kiện"))
+                return isFemale ? $"/images/phu-kien-nu/{sku}.jpg" : $"/images/phu-kien-nam/{sku}.jpg";
+
+            // Default: áo (shirt-type)
+            return isFemale ? $"/images/ao-nu/{sku}.jpg" : $"/images/ao-nam/{sku}.jpg";
         }
 
         /// <summary>
