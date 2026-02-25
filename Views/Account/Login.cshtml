@@ -1,7 +1,6 @@
 @model JohnHenryFashionWeb.ViewModels.LoginViewModel
 @{
     ViewData["Title"] = "Đăng nhập";
-    var cdnBase = "https://cdn.jsdelivr.net/gh/InfinityZero3000/John-Henry-Fashion@@main/wwwroot";
 }
 
 <style>
@@ -136,15 +135,16 @@
 <div class="video-background">
     <!-- Slideshow fallback (visible by default, hidden when video loads) -->
     <div class="slideshow-fallback" id="slideshow-fallback">
-        <div class="slide" style="background-image: url('@(cdnBase)/images/Banner/banner_bc74f787.jpg');"></div>
-        <div class="slide" style="background-image: url('@(cdnBase)/images/Banner/banner_ce30c4f7.jpg');"></div>
-        <div class="slide" style="background-image: url('@(cdnBase)/images/Banner/banner_e9d2886d.png');"></div>
-        <div class="slide" style="background-image: url('@(cdnBase)/images/johnhenry_blog_data/banners/banner_b1387970.jpg');"></div>
+        <div class="slide" style="background-image: url('/images/Banner/banner_bc74f787.jpg');"></div>
+        <div class="slide" style="background-image: url('/images/Banner/banner_ce30c4f7.jpg');"></div>
+        <div class="slide" style="background-image: url('/images/Banner/banner_e9d2886d.png');"></div>
+        <div class="slide" style="background-image: url('/images/johnhenry_blog_data/banners/banner_b1387970.jpg');"></div>
     </div>
 
-    <!-- Video from CDN - shown only if successfully loaded -->
+    <!-- Video (local) - shown only if successfully loaded -->
     <video id="bg-video" autoplay muted loop playsinline preload="none">
-        <source src="@(cdnBase)/videos/0_Woman_Shopping_3840x2160.mov" type="video/quicktime">
+        <source src="/videos/0_Woman_Shopping_3840x2160.mov" type="video/quicktime">
+        <source src="/videos/0_Woman_Shopping_3840x2160.mov" type="video/mp4">
     </video>
 
     <div class="video-overlay"></div>
