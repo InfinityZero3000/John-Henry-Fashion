@@ -372,6 +372,11 @@ FodyWeavers.xsd
 .env.development
 .env.production
 
+# Sensitive configuration files (use appsettings.template.json as reference)
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
 # Database files
 *.db
 *.sqlite
