@@ -31,14 +31,14 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var model = new ContactViewModel();
-            
+
             // Pre-fill if user is logged in
             if (User.Identity?.IsAuthenticated == true)
             {
-                var user = _userManager.GetUserAsync(User).Result;
+                var user = await _userManager.GetUserAsync(User);
                 if (user != null)
                 {
                     model.Name = $"{user.FirstName} {user.LastName}".Trim();

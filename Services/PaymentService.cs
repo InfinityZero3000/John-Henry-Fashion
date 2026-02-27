@@ -9,6 +9,43 @@ using System.Security.Cryptography;
 
 namespace JohnHenryFashionWeb.Services
 {
+    // QR Code related models
+    public class QRCodeResult
+    {
+        public bool Success { get; set; }
+        public bool IsSuccess { get; set; }
+        public string? QRCodeUrl { get; set; }
+        public string? QRDataUrl { get; set; }
+        public string? PaymentUrl { get; set; }
+        public string? DeepLink { get; set; }
+        public string? TransactionId { get; set; }
+        public string? ErrorMessage { get; set; }
+        public Guid OrderId { get; set; }
+        public int ExpiresInSeconds { get; set; }
+        public DateTime? ExpiresAt { get; set; }
+        public Dictionary<string, string>? AdditionalData { get; set; }
+    }
+
+    public class VNPayQRRequest
+    {
+        public Guid OrderId { get; set; }
+        public decimal Amount { get; set; }
+        public string? OrderInfo { get; set; }
+        public string? ReturnUrl { get; set; }
+        public string? NotifyUrl { get; set; }
+        public string? SessionId { get; set; }
+        public string? IpAddress { get; set; }
+    }
+
+    public class MoMoQRRequest
+    {
+        public Guid OrderId { get; set; }
+        public decimal Amount { get; set; }
+        public string? OrderInfo { get; set; }
+        public string? ReturnUrl { get; set; }
+        public string? NotifyUrl { get; set; }
+        public string? SessionId { get; set; }
+    }
     public interface IPaymentService
     {
         Task<PaymentResult> ProcessPaymentAsync(PaymentRequest request);

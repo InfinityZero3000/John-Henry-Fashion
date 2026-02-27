@@ -1285,7 +1285,7 @@ public class HomeController : Controller
         };
 
         // Reset all products to not featured
-        await _context.Database.ExecuteSqlRawAsync("UPDATE \"Products\" SET \"IsFeatured\" = false");
+        await _context.Products.Where(p => p.IsFeatured).ExecuteUpdateAsync(s => s.SetProperty(p => p.IsFeatured, false));
 
         // Update John Henry products
         var allSKUs = johnHenrySKUs.Concat(freelancerSKUs).Concat(bestSellerSKUs).ToArray();

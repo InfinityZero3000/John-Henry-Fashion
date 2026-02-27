@@ -251,33 +251,10 @@ namespace JohnHenryFashionWeb.Controllers
             }
             catch (Exception)
             {
-                // If table doesn't exist, create it manually using raw SQL
+                // If table doesn't exist, ensure it's created via EF migrations
                 try
                 {
-                    var createTableSql = @"
-                        CREATE TABLE IF NOT EXISTS ""Stores"" (
-                            ""Id"" uuid NOT NULL,
-                            ""Name"" character varying(255) NOT NULL,
-                            ""Address"" character varying(500) NOT NULL,
-                            ""Phone"" character varying(50),
-                            ""City"" character varying(100) NOT NULL,
-                            ""Province"" character varying(100) NOT NULL,
-                            ""Brand"" character varying(50) NOT NULL,
-                            ""StoreType"" character varying(50) NOT NULL,
-                            ""Latitude"" double precision,
-                            ""Longitude"" double precision,
-                            ""Description"" character varying(500),
-                            ""ImageUrl"" character varying(255),
-                            ""IsActive"" boolean NOT NULL,
-                            ""WorkingHours"" character varying(100),
-                            ""Email"" character varying(255),
-                            ""CreatedAt"" timestamp with time zone NOT NULL,
-                            ""UpdatedAt"" timestamp with time zone NOT NULL,
-                            CONSTRAINT ""PK_Stores"" PRIMARY KEY (""Id"")
-                        );
-                    ";
-                    
-                    await _context.Database.ExecuteSqlRawAsync(createTableSql);
+                    await _context.Database.EnsureCreatedAsync();
                 }
                 catch
                 {

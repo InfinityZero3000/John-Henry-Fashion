@@ -110,13 +110,14 @@ namespace JohnHenryFashionWeb.Controllers
         [HttpGet("inventory")]
         public async Task<IActionResult> Inventory(string search = "", string filter = "all", int page = 1, int pageSize = 20)
         {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login", "Account");
+
             var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
+                .Where(p => p.SellerId == currentUser.Id)
                 .AsQueryable();
-
-            // TODO: Filter by seller when seller-product relationship is implemented
-            // query = query.Where(p => p.SellerId == currentSellerId);
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -196,7 +197,11 @@ namespace JohnHenryFashionWeb.Controllers
                 return Json(new { success = false, message = "Không tìm thấy sản phẩm!" });
             }
 
-            // TODO: Check if product belongs to current seller
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null || product.SellerId != currentUser.Id)
+            {
+                return Json(new { success = false, message = "Bạn không có quyền cập nhật sản phẩm này!" });
+            }
 
             var oldStock = product.StockQuantity;
             product.StockQuantity = newStock;
@@ -214,12 +219,15 @@ namespace JohnHenryFashionWeb.Controllers
         [HttpGet("sales")]
         public async Task<IActionResult> Sales(DateTime? fromDate = null, DateTime? toDate = null)
         {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login", "Account");
+
             var startDate = fromDate ?? DateTime.UtcNow.AddMonths(-1);
             var endDate = toDate ?? DateTime.UtcNow;
 
-            // TODO: Filter by seller when relationship is implemented
             var salesData = await _context.Orders
                 .Where(o => o.CreatedAt >= startDate && o.CreatedAt <= endDate && o.PaymentStatus == "paid" && o.Status != "cancelled")
+                .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
                 .GroupBy(o => o.CreatedAt.Date)
                 .Select(g => new
                 {
@@ -253,15 +261,15 @@ namespace JohnHenryFashionWeb.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null) return Unauthorized();
 
-            // TODO: Filter by seller when seller-product relationship is implemented
-            // var sellerId = currentUser.Id;
-            
-            // Get top selling products (last 30 days) - showing all products temporarily
+            var sellerId = currentUser.Id;
+
+            // Get top selling products (last 30 days) - filtered by seller
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
             var topProducts = await _context.OrderItems
                 .Include(oi => oi.Order)
                 .Include(oi => oi.Product)
-                .Where(oi => oi.Order.PaymentStatus == "paid" 
+                .Where(oi => oi.Product != null && oi.Product.SellerId == sellerId)
+                .Where(oi => oi.Order.PaymentStatus == "paid"
                     && oi.Order.Status != "cancelled"
                     && oi.Order.CreatedAt >= thirtyDaysAgo)
                 .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
@@ -1227,14 +1235,13 @@ namespace JohnHenryFashionWeb.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Get all orders (temporarily showing all orders since SellerId is not assigned yet)
-            // TODO: Filter by seller when seller-product relationship is fully implemented
+            // Filter orders that contain seller's products
             var query = _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
+                .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
                 .AsQueryable();
-                // .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id));
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -1252,8 +1259,11 @@ namespace JohnHenryFashionWeb.Controllers
             }
 
             // Get status counts for filters
-            var allOrders = await _context.Orders.ToListAsync();
-                // .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
+            var allOrders = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.OrderItems.Any(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id))
+                .ToListAsync();
 
             var statusCounts = new Dictionary<string, int>
             {
@@ -1335,18 +1345,16 @@ namespace JohnHenryFashionWeb.Controllers
                 return RedirectToAction(nameof(Orders));
             }
 
-            // TODO: Check seller permission when seller-product relationship is implemented
-            // Check if seller has permission to view this order
-            // Seller can only view orders that contain their products
-            // var sellerProducts = order.OrderItems
-            //     .Where(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id)
-            //     .ToList();
+            // Check seller permission - seller can only view orders containing their products
+            var sellerProducts = order.OrderItems
+                .Where(oi => oi.Product != null && oi.Product.SellerId == currentUser.Id)
+                .ToList();
 
-            // if (!sellerProducts.Any())
-            // {
-            //     TempData["ErrorMessage"] = "Bạn không có quyền xem đơn hàng này.";
-            //     return RedirectToAction(nameof(Orders));
-            // }
+            if (!sellerProducts.Any())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền xem đơn hàng này.";
+                return RedirectToAction(nameof(Orders));
+            }
 
             // Get order status history
             var statusHistory = await _context.OrderStatusHistories

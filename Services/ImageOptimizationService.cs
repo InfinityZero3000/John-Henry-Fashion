@@ -17,6 +17,7 @@ namespace JohnHenryFashionWeb.Services
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<ImageOptimizationService> _logger;
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
 
         public ImageOptimizationService(IWebHostEnvironment environment, ILogger<ImageOptimizationService> logger)
         {
@@ -30,6 +31,9 @@ namespace JohnHenryFashionWeb.Services
             {
                 if (file == null || file.Length == 0)
                     throw new ArgumentException("Invalid file");
+
+                if (file.Length > MaxFileSize)
+                    throw new ArgumentException($"File size exceeds the maximum allowed size of {MaxFileSize / (1024 * 1024)}MB");
 
                 var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (!_allowedExtensions.Contains(extension))

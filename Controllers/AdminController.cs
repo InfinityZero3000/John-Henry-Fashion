@@ -235,8 +235,32 @@ namespace JohnHenryFashionWeb.Controllers
 
                 if (!string.IsNullOrEmpty(request.EmailTo))
                 {
-                    // TODO: Email the report
-                    return Json(new { success = true, message = "Report has been generated and emailed." });
+                    var emailBody = $@"
+                        <h2>Báo cáo {request.ReportType}</h2>
+                        <p>Báo cáo đã được tạo thành công.</p>
+                        <ul>
+                            <li><strong>Loại:</strong> {request.ReportType}</li>
+                            <li><strong>Từ:</strong> {request.StartDate:dd/MM/yyyy}</li>
+                            <li><strong>Đến:</strong> {request.EndDate:dd/MM/yyyy}</li>
+                            <li><strong>Định dạng:</strong> {request.Format.ToUpper()}</li>
+                        </ul>
+                        <p><em>Báo cáo được tạo tự động bởi hệ thống John Henry Fashion.</em></p>";
+
+                    var emailSent = await _emailService.SendEmailAsync(
+                        request.EmailTo,
+                        $"[John Henry] Báo cáo {request.ReportType} - {DateTime.UtcNow:dd/MM/yyyy}",
+                        emailBody,
+                        isHtml: true);
+
+                    if (emailSent)
+                    {
+                        return Json(new { success = true, message = "Báo cáo đã được gửi qua email thành công." });
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to send report email to {Email}", request.EmailTo);
+                        return Json(new { success = false, message = "Không thể gửi email. Vui lòng kiểm tra cấu hình email." });
+                    }
                 }
 
                 return File(reportData, contentType, fileName);
@@ -351,13 +375,17 @@ namespace JohnHenryFashionWeb.Controllers
         }
 
         [HttpPost("analytics/export")]
-        public IActionResult ExportAnalytics([FromBody] ViewModels.AnalyticsFilter filter)
+        public async Task<IActionResult> ExportAnalytics([FromBody] ViewModels.AnalyticsFilter filter)
         {
             try
             {
-                // TODO: Fix model conversion between ViewModels.AnalyticsFilter and Models.AnalyticsFilter
-                // var data = await _reportingService.ExportAnalyticsToExcelAsync(filter);
-                var data = new byte[0]; // Temporary placeholder
+                var modelFilter = new Models.AnalyticsFilter
+                {
+                    StartDate = filter.StartDate,
+                    EndDate = filter.EndDate
+                };
+
+                var data = await _reportingService.ExportAnalyticsToExcelAsync(modelFilter);
                 var fileName = $"analytics_export_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx";
                 var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -365,6 +393,7 @@ namespace JohnHenryFashionWeb.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error exporting analytics");
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -374,7 +403,7 @@ namespace JohnHenryFashionWeb.Controllers
         private ViewModels.AnalyticsFilter GetAnalyticsFilterFromQuery(string? dateRange)
         {
             var filter = new ViewModels.AnalyticsFilter();
-            
+
             switch (dateRange?.ToLower())
             {
                 case "today":
@@ -385,13 +414,23 @@ namespace JohnHenryFashionWeb.Controllers
                     filter.StartDate = DateTime.UtcNow.AddDays(-1).Date;
                     filter.EndDate = DateTime.UtcNow.AddDays(-1).Date.AddDays(1).AddSeconds(-1);
                     break;
+                case "7days":
                 case "last7days":
                     filter.StartDate = DateTime.UtcNow.AddDays(-7).Date;
                     filter.EndDate = DateTime.UtcNow;
                     break;
+                case "30days":
                 case "last30days":
                 default:
                     filter.StartDate = DateTime.UtcNow.AddDays(-30).Date;
+                    filter.EndDate = DateTime.UtcNow;
+                    break;
+                case "3months":
+                    filter.StartDate = DateTime.UtcNow.AddMonths(-3).Date;
+                    filter.EndDate = DateTime.UtcNow;
+                    break;
+                case "year":
+                    filter.StartDate = new DateTime(DateTime.UtcNow.Year, 1, 1);
                     filter.EndDate = DateTime.UtcNow;
                     break;
                 case "thismonth":
@@ -404,7 +443,7 @@ namespace JohnHenryFashionWeb.Controllers
                     filter.EndDate = firstDayOfLastMonth.AddMonths(1).AddSeconds(-1);
                     break;
             }
-            
+
             return filter;
         }
 
@@ -2625,34 +2664,39 @@ namespace JohnHenryFashionWeb.Controllers
 
         #region Analytics
         [HttpGet("analytics")]
-        public async Task<IActionResult> Analytics()
+        public async Task<IActionResult> Analytics(string? dateRange = null)
         {
             ViewData["CurrentSection"] = "Analytics";
             ViewData["Title"] = "Phân tích";
-            
-            var viewModel = await GenerateAdvancedAnalyticsData();
-            
+            ViewData["SelectedDateRange"] = dateRange ?? "7days";
+
+            var filter = GetAnalyticsFilterFromQuery(dateRange ?? "7days");
+            var viewModel = await GenerateAdvancedAnalyticsData(filter.StartDate, filter.EndDate);
+
             return View("Analytics", viewModel);
         }
         #endregion
 
         #region Advanced Reports
         [HttpGet("reports")]
-        public async Task<IActionResult> Reports()
+        public async Task<IActionResult> Reports(string? dateRange = null)
         {
             ViewData["CurrentSection"] = "reports";
             ViewData["Title"] = "Báo cáo";
-            
-            var viewModel = await GenerateAdvancedAnalyticsData();
-            
+            ViewData["SelectedDateRange"] = dateRange ?? "30days";
+
+            var filter = GetAnalyticsFilterFromQuery(dateRange ?? "30days");
+            var viewModel = await GenerateAdvancedAnalyticsData(filter.StartDate, filter.EndDate);
+
             return View("Reports", viewModel);
         }
 
-        private async Task<ViewModels.ReportsViewModel> GenerateAdvancedAnalyticsData()
+        private async Task<ViewModels.ReportsViewModel> GenerateAdvancedAnalyticsData(DateTime? startDateParam = null, DateTime? endDateParam = null)
         {
-            var endDate = DateTime.UtcNow;
-            var startDate = endDate.AddDays(-30);
-            var previousStartDate = startDate.AddDays(-30);
+            var endDate = endDateParam ?? DateTime.UtcNow;
+            var startDate = startDateParam ?? endDate.AddDays(-30);
+            var rangeDays = (endDate - startDate).Days;
+            var previousStartDate = startDate.AddDays(-rangeDays);
             var previousEndDate = startDate;
 
             // KPI Data - Include all completed/delivered orders, not just "paid" status

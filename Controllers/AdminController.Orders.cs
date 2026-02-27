@@ -313,7 +313,19 @@ namespace JohnHenryFashionWeb.Controllers
                         refundRequest.Id, order.OrderNumber, order.TotalAmount);
                 }
 
-                // TODO: Send cancellation email to customer
+                // Send cancellation email to customer
+                if (order.User?.Email != null)
+                {
+                    try
+                    {
+                        await _emailService.SendOrderStatusUpdateEmailAsync(order.User.Email, order);
+                        _logger.LogInformation("Cancellation email sent to {Email} for order {OrderNumber}", order.User.Email, order.OrderNumber);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Failed to send cancellation email for order {OrderNumber}", order.OrderNumber);
+                    }
+                }
 
                 return Json(new { success = true, message = "Đơn hàng đã được hủy thành công" });
             }

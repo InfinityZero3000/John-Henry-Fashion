@@ -955,7 +955,7 @@ namespace JohnHenryFashionWeb.Controllers
                         {
                             SessionId = request.SessionId,
                             Amount = session.TotalAmount,
-                            OrderId = session.Id.ToString(),
+                            OrderId = session.Id,
                             OrderInfo = $"Thanh toan don hang {session.Id}",
                             IpAddress = ipAddress,
                             ReturnUrl = returnUrl,
@@ -969,7 +969,7 @@ namespace JohnHenryFashionWeb.Controllers
                         {
                             SessionId = request.SessionId,
                             Amount = session.TotalAmount,
-                            OrderId = session.Id.ToString(),
+                            OrderId = session.Id,
                             OrderInfo = $"Thanh toan don hang {session.Id}",
                             ReturnUrl = returnUrl,
                             NotifyUrl = notifyUrl

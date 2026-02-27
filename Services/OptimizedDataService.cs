@@ -246,10 +246,10 @@ namespace JohnHenryFashionWeb.Services
         {
             try
             {
-                // Use raw SQL for better performance
-                await _context.Database.ExecuteSqlRawAsync(
-                    "UPDATE \"Products\" SET \"ViewCount\" = \"ViewCount\" + 1 WHERE \"Id\" = {0}",
-                    productId);
+                // Use ExecuteUpdateAsync for type-safe update
+                await _context.Products
+                    .Where(p => p.Id == productId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(p => p.ViewCount, p => p.ViewCount + 1));
 
                 // Clear the product cache
                 await _cacheService.RemoveAsync(CacheKeys.ProductById(productId));

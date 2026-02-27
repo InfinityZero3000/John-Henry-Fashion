@@ -82,21 +82,25 @@ namespace JohnHenryFashionWeb.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Generate a unique nonce for this request
+            var nonce = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+            context.Items["CspNonce"] = nonce;
+
             // Add security headers
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";
             context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
             context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
-            
-            // Add Content Security Policy for enhanced security
-            var csp = "default-src 'self'; " +
-                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.datatables.net; " +
-                     "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.datatables.net; " +
+
+            // Add Content Security Policy with nonce for inline scripts
+            var csp = $"default-src 'self'; " +
+                     $"script-src 'self' 'nonce-{nonce}' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.datatables.net; " +
+                     $"style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.datatables.net; " +
                      "img-src 'self' data: https:; " +
                      "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com https://cdn.jsdelivr.net; " +
                      "connect-src 'self' https://unpkg.com https://lottiefiles.com https://cdn.jsdelivr.net;";
-            
+
             context.Response.Headers["Content-Security-Policy"] = csp;
 
             await _next(context);
