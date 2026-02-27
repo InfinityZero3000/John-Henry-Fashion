@@ -585,3 +585,4 @@ System-working
 venv/
 .venv/
 avatars/
+.claude
