@@ -333,9 +333,9 @@
             <select class="admin-form-select" style="width: auto;" id="dateRangeSelect">
                 <option value="today">Hôm nay</option>
                 <option value="yesterday">Hôm qua</option>
-                <option value="week" selected>7 ngày qua</option>
-                <option value="month">30 ngày qua</option>
-                <option value="quarter">3 tháng qua</option>
+                <option value="7days">7 ngày qua</option>
+                <option value="30days">30 ngày qua</option>
+                <option value="3months">3 tháng qua</option>
                 <option value="year">Năm nay</option>
             </select>
             <button class="admin-btn admin-btn-success" onclick="exportReport('excel')">
@@ -714,9 +714,18 @@
 
         // Date range change
         document.getElementById('dateRangeSelect')?.addEventListener('change', function() {
-            console.log('Date range changed to:', this.value);
-            // TODO: Reload data with new date range
+            var url = new URL(window.location.href);
+            url.searchParams.set('dateRange', this.value);
+            window.location.href = url.toString();
         });
+
+        // Set selected date range from URL
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var range = params.get('dateRange') || '30days';
+            var select = document.getElementById('dateRangeSelect');
+            if (select) select.value = range;
+        })();
 
         function exportReport(format) {
             console.log('Exporting report as:', format);

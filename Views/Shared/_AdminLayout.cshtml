@@ -708,28 +708,28 @@
             @if (TempData["SuccessMessage"] != null)
             {
                 <text>
-                AdminNotification.success('@Html.Raw(TempData["SuccessMessage"])');
+                AdminNotification.success(@Json.Serialize(TempData["SuccessMessage"]));
                 </text>
             }
 
             @if (TempData["ErrorMessage"] != null)
             {
                 <text>
-                AdminNotification.error('Lỗi', '@Html.Raw(TempData["ErrorMessage"])');
+                AdminNotification.error('Lỗi', @Json.Serialize(TempData["ErrorMessage"]));
                 </text>
             }
 
             @if (TempData["WarningMessage"] != null)
             {
                 <text>
-                AdminNotification.warning('Cảnh báo', '@Html.Raw(TempData["WarningMessage"])');
+                AdminNotification.warning('Cảnh báo', @Json.Serialize(TempData["WarningMessage"]));
                 </text>
             }
 
             @if (TempData["InfoMessage"] != null)
             {
                 <text>
-                AdminNotification.info('Thông báo', '@Html.Raw(TempData["InfoMessage"])');
+                AdminNotification.info('Thông báo', @Json.Serialize(TempData["InfoMessage"]));
                 </text>
             }
         });

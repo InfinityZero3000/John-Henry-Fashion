@@ -236,10 +236,10 @@
             </h1>
         </div>
         <div class="admin-page-header-actions">
-            <select class="admin-form-select" style="width: auto;" onchange="updateDateRange(this.value)">
+            <select class="admin-form-select" style="width: auto;" id="dateRangeSelect" onchange="updateDateRange(this.value)">
                 <option value="today">Hôm nay</option>
                 <option value="yesterday">Hôm qua</option>
-                <option value="7days" selected>7 ngày qua</option>
+                <option value="7days">7 ngày qua</option>
                 <option value="30days">30 ngày qua</option>
                 <option value="3months">3 tháng qua</option>
                 <option value="year">Năm nay</option>
@@ -581,9 +581,18 @@
         });
 
         function updateDateRange(range) {
-            console.log('Date range changed to:', range);
-            // TODO: Implement date range update
+            var url = new URL(window.location.href);
+            url.searchParams.set('dateRange', range);
+            window.location.href = url.toString();
         }
+
+        // Set selected date range from URL
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var range = params.get('dateRange') || '7days';
+            var select = document.getElementById('dateRangeSelect');
+            if (select) select.value = range;
+        })();
 
         function refreshAnalytics() {
             console.log('Refreshing analytics...');

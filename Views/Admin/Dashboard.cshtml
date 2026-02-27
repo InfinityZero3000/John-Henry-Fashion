@@ -434,7 +434,7 @@
                     <div class="live-indicator"></div>
                     <small style="font-weight: 500;">Dữ liệu thời gian thực</small>
                 </div>
-                <small class="text-muted" style="font-size: 0.75rem;">Cập nhật: @DateTime.Now.ToString("HH:mm:ss")</small>
+                <small class="text-muted" style="font-size: 0.75rem;" id="dashboard-last-updated">Cập nhật: @DateTime.Now.ToString("HH:mm:ss")</small>
             </div>
         </div>
     </div>
@@ -449,7 +449,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="kpi-label">Doanh thu hôm nay</div>
-                            <div class="kpi-value">@((Model.DashboardSummary?.TodayRevenue ?? 0).ToString("C0", new System.Globalization.CultureInfo("vi-VN")))</div>
+                            <div class="kpi-value" id="kpi-today-revenue">@((Model.DashboardSummary?.TodayRevenue ?? 0).ToString("C0", new System.Globalization.CultureInfo("vi-VN")))</div>
                             <div class="kpi-growth text-success">
                                 <i data-lucide="arrow-up"></i>
                                 +@((Model.DashboardSummary?.RevenueGrowth ?? 0).ToString("F1"))% so với hôm qua
@@ -466,7 +466,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="kpi-label">Đơn hàng hôm nay</div>
-                            <div class="kpi-value">@(Model.DashboardSummary?.TodayOrders ?? 0)</div>
+                            <div class="kpi-value" id="kpi-today-orders">@(Model.DashboardSummary?.TodayOrders ?? 0)</div>
                             <div class="kpi-growth text-success">
                                 <i data-lucide="arrow-up"></i>
                                 +@((Model.DashboardSummary?.OrdersGrowth ?? 0).ToString("F1"))% so với hôm qua
@@ -483,7 +483,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="kpi-label">Khách truy cập</div>
-                            <div class="kpi-value">@(Model.DashboardSummary?.TodayVisitors ?? 0)</div>
+                            <div class="kpi-value" id="kpi-today-visitors">@(Model.DashboardSummary?.TodayVisitors ?? 0)</div>
                             <div class="kpi-growth text-success">
                                 <i data-lucide="arrow-up"></i>
                                 +@((Model.DashboardSummary?.VisitorsGrowth ?? 0).ToString("F1"))% so với hôm qua
@@ -500,7 +500,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="kpi-label">Tỷ lệ chuyển đổi</div>
-                            <div class="kpi-value">@((Model.DashboardSummary?.ConversionRate ?? 0).ToString("F1"))%</div>
+                            <div class="kpi-value" id="kpi-conversion-rate">@((Model.DashboardSummary?.ConversionRate ?? 0).ToString("F1"))%</div>
                             <div class="kpi-growth text-success">
                                 <i data-lucide="arrow-up"></i>
                                 +@((Model.DashboardSummary?.ConversionGrowth ?? 0).ToString("F1"))% so với hôm qua
@@ -1031,18 +1031,26 @@
         // Refresh notifications every 30 seconds
         setInterval(loadRecentNotifications, 30000);
 
-        // Auto-refresh disabled - API endpoint not implemented
-        // TODO: Implement /admin/api/dashboard/metrics endpoint if real-time updates needed
-        /*
+        // Auto-refresh dashboard metrics every 30 seconds
         setInterval(function() {
-            fetch('/admin/api/dashboard/metrics')
+            fetch('/api/admin/dashboard/stats')
                 .then(response => response.json())
-                .then(data => {
-                    console.log('Dashboard data refreshed');
+                .then(result => {
+                    if (result.success && result.data) {
+                        var d = result.data;
+                        var revenueEl = document.getElementById('kpi-today-revenue');
+                        var ordersEl = document.getElementById('kpi-today-orders');
+                        var visitorsEl = document.getElementById('kpi-today-visitors');
+                        var updatedEl = document.getElementById('dashboard-last-updated');
+
+                        if (revenueEl) revenueEl.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(d.todayRevenue || 0);
+                        if (ordersEl) ordersEl.textContent = d.todayOrders || 0;
+                        if (visitorsEl && d.todayVisitors !== undefined) visitorsEl.textContent = d.todayVisitors;
+                        if (updatedEl) updatedEl.textContent = 'Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
+                    }
                 })
                 .catch(error => console.error('Error refreshing dashboard:', error));
         }, 30000);
-        */
 
         // Initialize tooltips
         document.addEventListener('DOMContentLoaded', function() {

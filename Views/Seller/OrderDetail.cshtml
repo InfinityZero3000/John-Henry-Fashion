@@ -217,7 +217,7 @@
                                 {
                                     <div style="margin-bottom: 0;">
                                         <label style="color: var(--admin-text-muted); font-size: 0.875rem; margin-bottom: 0.25rem; display: block;">Địa chỉ thanh toán</label>
-                                        <div>@Html.Raw(Model.BillingAddress.Replace("\n", "<br>"))</div>
+                                        <div style="white-space: pre-line;">@Model.BillingAddress</div>
                                     </div>
                                 }
                             </div>
